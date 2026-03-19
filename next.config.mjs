@@ -1,11 +1,2 @@
-const nextConfig = {
-  reactStrictMode: true,
-  experimental: {
-    appDir: true,
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-};
-
+const nextConfig = { reactStrictMode: true };
 export default nextConfig;
