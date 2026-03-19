@@ -1,51 +1,61 @@
-use client;
-
 import { useState, useEffect } from 'react';
+import { FiAlertCircle, FiBarChart, FiDollarSign, FiSettings } from 'lucide-react';
 import Head from 'next/head';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useDarkMode } from '../hooks/useDarkMode';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
+import Nav from './nav';
+import Footer from './footer';
 
-export default function RootLayout({ children }) {
-  const [darkMode, setDarkMode] = useDarkMode();
-  const router = useRouter();
+interface LayoutProps {
+  children: React.ReactNode;
+}
+
+export default function Layout({ children }: LayoutProps) {
+  const [cashFlowData, setCashFlowData] = useState(() => {
+    const storedData = localStorage.getItem('cashFlowData');
+    return storedData ? JSON.parse(storedData) : {};
+  });
 
   useEffect(() => {
-    const storedDarkMode = localStorage.getItem('darkMode');
-    if (storedDarkMode !== null) {
-      setDarkMode(storedDarkMode === 'true');
-    }
-  }, []);
+    localStorage.setItem('cashFlowData', JSON.stringify(cashFlowData));
+  }, [cashFlowData]);
 
   return (
-    <html lang="en" className={darkMode ? 'dark' : ''}>
+    <>
       <Head>
-        <meta charSet="UTF-8" />
-        <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Cash Flow Pro - Automated Cash Flow Forecasting</title>
-        <meta name="description" content="Cash Flow Pro helps small businesses and freelancers predict and manage their cash flow with automated forecasting and alerts." />
-        <meta name="keywords" content="cash flow forecasting, small business finance, cash flow management, financial planning tools, budgeting software" />
-        <link rel="icon" href="/favicon.ico" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-        <link rel="manifest" href="/manifest.json" />
-        <meta property="og:title" content="Cash Flow Pro - Automated Cash Flow Forecasting" />
-        <meta property="og:description" content="Cash Flow Pro helps small businesses and freelancers predict and manage their cash flow with automated forecasting and alerts." />
-        <meta property="og:image" content="/og-image.png" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Cash Flow Pro - Automated Cash Flow Forecasting" />
-        <meta name="twitter:description" content="Cash Flow Pro helps small businesses and freelancers predict and manage their cash flow with automated forecasting and alerts." />
-        <meta name="twitter:image" content="/twitter-image.png" />
+        <title>Automated Cash Flow Forecasting | Cash Flow Pro</title>
+        <meta name="description" content="Predict and manage your cash flow with automated forecasting and alerts." />
+        <meta name="keywords" content="cash flow forecasting, automated forecasting, financial management" />
       </Head>
-      <body className="font-sans text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-900">
-        <Header />
-        <main className="container mx-auto p-4 pt-6 md:p-6 lg:p-12 xl:p-24">
-          {children}
-        </main>
-        <Footer />
-      </body>
-    </html>
+      <Nav />
+      <main className="container mx-auto p-4 pt-6 md:p-6 lg:p-12 xl:p-24">
+        <header className="mb-12">
+          <h1 className="text-3xl font-bold mb-4">Automated Cash Flow Forecasting</h1>
+          <p className="text-lg">Predict and manage your cash flow with automated forecasting and alerts.</p>
+        </header>
+        <section className="mb-12">
+          <h2 className="text-2xl font-bold mb-4">Features</h2>
+          <ul>
+            <li className="flex items-center mb-4">
+              <FiDollarSign size={24} className="mr-4" />
+              <span>Track income and expenses</span>
+            </li>
+            <li className="flex items-center mb-4">
+              <FiBarChart size={24} className="mr-4" />
+              <span>Identify trends and make informed financial decisions</span>
+            </li>
+            <li className="flex items-center mb-4">
+              <FiAlertCircle size={24} className="mr-4" />
+              <span>Receive personalized recommendations for improving cash flow and reducing financial stress</span>
+            </li>
+            <li className="flex items-center mb-4">
+              <FiSettings size={24} className="mr-4" />
+              <span>Customize your forecasting and alert settings</span>
+            </li>
+          </ul>
+        </section>
+        {children}
+      </main>
+      <Footer />
+    </>
   );
 }

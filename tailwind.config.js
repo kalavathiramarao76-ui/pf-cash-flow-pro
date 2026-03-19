@@ -8,26 +8,13 @@ module.exports = {
     extend: {
       colors: {
         primary: "#3498db",
-        secondary: "#2ecc71",
-        dark: "#1a1d23",
-        light: "#f9f9f9",
+        secondary: "#f1c40f",
+        success: "#2ecc71",
+        danger: "#e74c3c",
+        warning: "#f7dc6f",
+        info: "#3498db",
       },
-      typography: (theme) => ({
-        DEFAULT: {
-          css: {
-            color: theme("colors.dark"),
-            a: {
-              textDecoration: "none",
-              color: theme("colors.primary"),
-            },
-            "a:hover": {
-              color: theme("colors.secondary"),
-            },
-          },
-        },
-      }),
     },
   },
   plugins: [],
-  darkMode: "class",
 };
