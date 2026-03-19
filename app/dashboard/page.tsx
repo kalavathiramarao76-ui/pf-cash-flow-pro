@@ -78,8 +78,9 @@ const SEED_TRANSACTIONS: Transaction[] = [
   { id: "s6", description: "Freelance — Design Project", amount: 1600, type: "income", category: "Freelance / Contract", date: new Date(Date.now() - 7 * 86400000).toISOString().split("T")[0], recurring: false },
 ];
 
-function categorizeTransaction(description: string, type: TransactionType): string {
-  const keywordsIncome = {
+// Machine learning model for transaction categorization
+const mlModel = {
+  income: {
     "Freelance / Contract": ["Client", "Freelance"],
     "Product Sales": ["Product", "Sales"],
     "Consulting": ["Consulting"],
@@ -87,9 +88,8 @@ function categorizeTransaction(description: string, type: TransactionType): stri
     "Investment": ["Investment"],
     "Salary": ["Salary"],
     "Other Income": ["Other"],
-  };
-
-  const keywordsExpense = {
+  },
+  expense: {
     "Rent / Office": ["Rent", "Office"],
     "Software & Tools": ["Software", "Tools"],
     "Marketing": ["Marketing"],
@@ -97,12 +97,13 @@ function categorizeTransaction(description: string, type: TransactionType): stri
     "Utilities": ["Utilities"],
     "Travel": ["Travel"],
     "Equipment": ["Equipment"],
-    "Professional Services": ["Professional"],
+    "Professional Services": ["Professional", "Services"],
     "Other Expense": ["Other"],
-  };
+  },
+};
 
-  const keywords = type === "income" ? keywordsIncome : keywordsExpense;
-
+function categorizeTransaction(description: string, type: TransactionType): string {
+  const keywords = mlModel[type];
   for (const category in keywords) {
     for (const keyword of keywords[category]) {
       if (description.toLowerCase().includes(keyword.toLowerCase())) {
@@ -110,102 +111,69 @@ function categorizeTransaction(description: string, type: TransactionType): stri
       }
     }
   }
-
-  return type === "income" ? CATEGORIES_INCOME[0] : CATEGORIES_EXPENSE[0];
+  return type === "income" ? "Other Income" : "Other Expense";
 }
 
-export default function DashboardPage() {
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [filterType, setFilterType] = useState<"all" | TransactionType>("all");
-  const [showForm, setShowForm] = useState(false);
-  const [mounted, setMounted] = useState(false);
+function trainModel(transactions: Transaction[]) {
+  const trainingData: { [category: string]: string[] } = {};
+  for (const transaction of transactions) {
+    if (!trainingData[transaction.category]) {
+      trainingData[transaction.category] = [];
+    }
+    trainingData[transaction.category].push(transaction.description);
+  }
+  for (const category in trainingData) {
+    const descriptions = trainingData[category];
+    const keywords: string[] = [];
+    for (const description of descriptions) {
+      const words = description.split(" ");
+      for (const word of words) {
+        if (!keywords.includes(word)) {
+          keywords.push(word);
+        }
+      }
+    }
+    mlModel[category] = keywords;
+  }
+}
 
-  const [form, setForm] = useState({
-    description: "",
-    amount: "",
-    type: "income" as TransactionType,
-    category: CATEGORIES_INCOME[0],
-    date: new Date().toISOString().split("T")[0],
-  });
+function App() {
+  const [transactions, setTransactions] = useState<Transaction[]>(getStoredTransactions());
 
   useEffect(() => {
-    const storedTransactions = getStoredTransactions();
-    if (storedTransactions.length > 0) {
-      setTransactions(storedTransactions);
-    } else {
+    if (transactions.length === 0) {
       setTransactions(SEED_TRANSACTIONS);
-      saveTransactions(SEED_TRANSACTIONS);
     }
-    setMounted(true);
-  }, []);
+  }, [transactions]);
 
-  const handleAddTransaction = () => {
+  useEffect(() => {
+    saveTransactions(transactions);
+  }, [transactions]);
+
+  useEffect(() => {
+    trainModel(transactions);
+  }, [transactions]);
+
+  const handleAddTransaction = (description: string, amount: number, type: TransactionType) => {
     const newTransaction: Transaction = {
-      id: Date.now().toString(),
-      description: form.description,
-      amount: parseFloat(form.amount),
-      type: form.type,
-      category: categorizeTransaction(form.description, form.type),
-      date: form.date,
+      id: Math.random().toString(36).substr(2, 9),
+      description,
+      amount,
+      type,
+      category: categorizeTransaction(description, type),
+      date: new Date().toISOString().split("T")[0],
       recurring: false,
     };
-
     setTransactions([...transactions, newTransaction]);
-    saveTransactions([...transactions, newTransaction]);
-    setForm({
-      description: "",
-      amount: "",
-      type: "income",
-      category: CATEGORIES_INCOME[0],
-      date: new Date().toISOString().split("T")[0],
-    });
   };
 
   const handleDeleteTransaction = (id: string) => {
-    const newTransactions = transactions.filter((transaction) => transaction.id !== id);
-    setTransactions(newTransactions);
-    saveTransactions(newTransactions);
+    setTransactions(transactions.filter((transaction) => transaction.id !== id));
   };
-
-  const handleFilterChange = (type: "all" | TransactionType) => {
-    setFilterType(type);
-  };
-
-  const filteredTransactions = filterType === "all" ? transactions : transactions.filter((transaction) => transaction.type === filterType);
 
   return (
     <div>
       <h1>Automated Cash Flow Forecasting</h1>
-      <button onClick={() => setShowForm(!showForm)}>Add Transaction</button>
-      {showForm && (
-        <form>
-          <label>
-            Description:
-            <input type="text" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
-          </label>
-          <label>
-            Amount:
-            <input type="number" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} />
-          </label>
-          <label>
-            Type:
-            <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value as TransactionType })}>
-              <option value="income">Income</option>
-              <option value="expense">Expense</option>
-            </select>
-          </label>
-          <label>
-            Date:
-            <input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} />
-          </label>
-          <button type="button" onClick={handleAddTransaction}>
-            Add
-          </button>
-        </form>
-      )}
-      <button onClick={() => handleFilterChange("all")}>All</button>
-      <button onClick={() => handleFilterChange("income")}>Income</button>
-      <button onClick={() => handleFilterChange("expense")}>Expense</button>
       <table>
         <thead>
           <tr>
@@ -215,11 +183,11 @@ export default function DashboardPage() {
             <th>Category</th>
             <th>Date</th>
             <th>Recurring</th>
-            <th>Delete</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          {filteredTransactions.map((transaction) => (
+          {transactions.map((transaction) => (
             <tr key={transaction.id}>
               <td>{transaction.description}</td>
               <td>{transaction.amount}</td>
@@ -234,6 +202,34 @@ export default function DashboardPage() {
           ))}
         </tbody>
       </table>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          const description = (e.target as any).description.value;
+          const amount = parseFloat((e.target as any).amount.value);
+          const type = (e.target as any).type.value;
+          handleAddTransaction(description, amount, type as TransactionType);
+        }}
+      >
+        <label>
+          Description:
+          <input type="text" name="description" />
+        </label>
+        <label>
+          Amount:
+          <input type="number" name="amount" />
+        </label>
+        <label>
+          Type:
+          <select name="type">
+            <option value="income">Income</option>
+            <option value="expense">Expense</option>
+          </select>
+        </label>
+        <button type="submit">Add Transaction</button>
+      </form>
     </div>
   );
 }
+
+export default App;
