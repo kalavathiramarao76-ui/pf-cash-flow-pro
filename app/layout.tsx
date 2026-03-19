@@ -3,20 +3,21 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "Cash Flow Pro — Automated Cash Flow Forecasting",
+    default: "Automated Cash Flow Forecasting | Cash Flow Pro",
     template: "%s | Cash Flow Pro",
   },
   description:
-    "Cash Flow Pro helps freelancers and small businesses automate cash flow forecasting, track income and expenses, and project future balances with precision. Take control of your financial future today.",
+    "Unlock accurate financial predictions with Cash Flow Pro, the ultimate tool for freelancers and small businesses to automate cash flow forecasting, track income and expenses, and project future balances with precision.",
   keywords: [
     "cash flow forecasting",
-    "cash flow management",
-    "freelancer finance",
-    "small business accounting",
-    "income tracking",
-    "expense tracking",
-    "financial projections",
-    "automated forecasting",
+    "automated cash flow management",
+    "financial forecasting software",
+    "small business accounting tools",
+    "freelance finance management",
+    "income and expense tracking",
+    "financial projections and analysis",
+    "cash flow prediction and planning",
+    "business budgeting and forecasting",
   ],
   authors: [{ name: "Cash Flow Pro Team" }],
   creator: "Cash Flow Pro",
@@ -27,9 +28,9 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: "https://cashflowpro.app",
     siteName: "Cash Flow Pro",
-    title: "Cash Flow Pro — Automated Cash Flow Forecasting",
+    title: "Automated Cash Flow Forecasting | Cash Flow Pro",
     description:
-      "Automate your cash flow forecasting. Track income, manage expenses, and project future balances with precision. Built for freelancers and small businesses.",
+      "Discover the power of automated cash flow forecasting with Cash Flow Pro. Streamline your financial management, track income and expenses, and make informed decisions with precise financial projections.",
     images: [
       {
         url: "/og-image.png",
@@ -41,9 +42,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Cash Flow Pro — Automated Cash Flow Forecasting",
+    title: "Automated Cash Flow Forecasting | Cash Flow Pro",
     description:
-      "Automate your cash flow forecasting. Built for freelancers and small businesses.",
+      "Transform your financial management with Cash Flow Pro. Automate cash flow forecasting, track income and expenses, and unlock data-driven insights for informed decision-making.",
     images: ["/og-image.png"],
     creator: "@cashflowpro",
   },
