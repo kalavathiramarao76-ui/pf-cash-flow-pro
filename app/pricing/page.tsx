@@ -1,11 +1,11 @@
+"use client";
+
 use client;
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { localStorage } from '../utils/localStorage';
 import Link from 'next/link';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheck } from '@fortawesome/free-solid-svg-icons';
 
 export default function PricingPage() {
   const router = useRouter();
@@ -90,7 +90,7 @@ export default function PricingPage() {
             <ul>
               {plan.features.map((feature, index) => (
                 <li key={index} className="flex items-center mb-2">
-                  <FontAwesomeIcon icon={faCheck} className="text-green-500 mr-2" />
+                  <span>✦</span>
                   <span>{feature}</span>
                 </li>
               ))}

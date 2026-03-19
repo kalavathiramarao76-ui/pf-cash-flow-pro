@@ -2,8 +2,6 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { AiOutlineArrowRight } from 'react-icons/ai';
-import { motion } from 'framer-motion';
 
 interface Feature {
   title: string;
@@ -109,7 +107,7 @@ export default function Page() {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {features.map((feature, index) => (
-              <motion.div
+              <div
                 key={index}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -122,7 +120,7 @@ export default function Page() {
                 <p className="text-sm md:text-lg lg:text-2xl mb-4">
                   {feature.description}
                 </p>
-              </motion.div>
+              </div>
             ))}
           </div>
         </section>
@@ -132,7 +130,7 @@ export default function Page() {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {pricingPlans.map((plan, index) => (
-              <motion.div
+              <div
                 key={index}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -159,7 +157,7 @@ export default function Page() {
                   Sign Up
                   <AiOutlineArrowRight className="ml-2" />
                 </Link>
-              </motion.div>
+              </div>
             ))}
           </div>
         </section>
@@ -169,7 +167,7 @@ export default function Page() {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {faqs.map((faq, index) => (
-              <motion.div
+              <div
                 key={index}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -182,7 +180,7 @@ export default function Page() {
                 <p className="text-sm md:text-lg lg:text-2xl mb-4">
                   {faq.answer}
                 </p>
-              </motion.div>
+              </div>
             ))}
           </div>
         </section>
