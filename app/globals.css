@@ -1,0 +1,130 @@
+use client;
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  @font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url('/fonts/Inter.woff2') format('woff2');
+  }
+
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply bg-gray-900 text-gray-100;
+    font-family: 'Inter', sans-serif;
+    line-height: 1.6;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold;
+    color: #fff;
+  }
+
+  a {
+    @apply text-blue-500;
+    transition: color 0.2s ease;
+  }
+
+  a:hover {
+    @apply text-blue-700;
+  }
+
+  button {
+    @apply bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded;
+  }
+
+  input, textarea, select {
+    @apply bg-gray-800 text-gray-100 border border-gray-700 rounded py-2 px-4;
+  }
+
+  label {
+    @apply block text-gray-100 mb-2;
+  }
+
+  .dark-mode {
+    @apply bg-gray-900 text-gray-100;
+  }
+
+  .dark-mode button {
+    @apply bg-blue-500 hover:bg-blue-700;
+  }
+
+  .dark-mode input, .dark-mode textarea, .dark-mode select {
+    @apply bg-gray-800 border border-gray-700;
+  }
+}
+
+@layer components {
+  .container {
+    @apply max-w-5xl mx-auto p-4;
+  }
+
+  .hero {
+    @apply bg-gradient-to-r from-blue-500 to-blue-700;
+    background-size: 100% 300px;
+    background-position: 0% 100%;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #fff;
+  }
+
+  .feature-grid {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4;
+  }
+
+  .feature {
+    @apply bg-gray-800 p-4 rounded;
+  }
+
+  .pricing-table {
+    @apply table-auto w-full;
+  }
+
+  .pricing-table th, .pricing-table td {
+    @apply py-2 px-4;
+  }
+
+  .pricing-table th {
+    @apply bg-gray-900 text-gray-100;
+  }
+
+  .pricing-table td {
+    @apply bg-gray-800 border-b border-gray-700;
+  }
+
+  .faq {
+    @apply mb-4;
+  }
+
+  .faq h2 {
+    @apply font-bold mb-2;
+  }
+
+  .faq p {
+    @apply mb-4;
+  }
+
+  .footer {
+    @apply bg-gray-900 text-gray-100 p-4;
+  }
+}
+
+@layer utilities {
+  .scrollbar-hide {
+    @apply overflow-y-hidden;
+  }
+
+  .scrollbar-show {
+    @apply overflow-y-auto;
+  }
+}
