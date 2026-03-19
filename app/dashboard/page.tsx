@@ -97,44 +97,19 @@ const mlModel = {
     "Utilities": ["Utilities"],
     "Travel": ["Travel"],
     "Equipment": ["Equipment"],
-    "Professional Services": ["Professional", "Services"],
+    "Professional Services": ["Professional Services"],
     "Other Expense": ["Other"],
   },
 };
 
-function categorizeTransaction(description: string, type: TransactionType): string {
-  const keywords = mlModel[type];
+function categorizeTransaction(transaction: Transaction): string {
+  const keywords = mlModel[transaction.type];
   for (const category in keywords) {
-    for (const keyword of keywords[category]) {
-      if (description.toLowerCase().includes(keyword.toLowerCase())) {
-        return category;
-      }
+    if (keywords[category].some((keyword) => transaction.description.toLowerCase().includes(keyword.toLowerCase()))) {
+      return category;
     }
   }
-  return type === "income" ? "Other Income" : "Other Expense";
-}
-
-function trainModel(transactions: Transaction[]) {
-  const trainingData: { [category: string]: string[] } = {};
-  for (const transaction of transactions) {
-    if (!trainingData[transaction.category]) {
-      trainingData[transaction.category] = [];
-    }
-    trainingData[transaction.category].push(transaction.description);
-  }
-  for (const category in trainingData) {
-    const descriptions = trainingData[category];
-    const keywords: string[] = [];
-    for (const description of descriptions) {
-      const words = description.split(" ");
-      for (const word of words) {
-        if (!keywords.includes(word)) {
-          keywords.push(word);
-        }
-      }
-    }
-    mlModel[category] = keywords;
-  }
+  return transaction.type === "income" ? "Other Income" : "Other Expense";
 }
 
 function App() {
@@ -144,27 +119,15 @@ function App() {
     if (transactions.length === 0) {
       setTransactions(SEED_TRANSACTIONS);
     }
-  }, [transactions]);
+  }, []);
 
   useEffect(() => {
     saveTransactions(transactions);
   }, [transactions]);
 
-  useEffect(() => {
-    trainModel(transactions);
-  }, [transactions]);
-
-  const handleAddTransaction = (description: string, amount: number, type: TransactionType) => {
-    const newTransaction: Transaction = {
-      id: Math.random().toString(36).substr(2, 9),
-      description,
-      amount,
-      type,
-      category: categorizeTransaction(description, type),
-      date: new Date().toISOString().split("T")[0],
-      recurring: false,
-    };
-    setTransactions([...transactions, newTransaction]);
+  const handleAddTransaction = (transaction: Transaction) => {
+    const categorizedTransaction = { ...transaction, category: categorizeTransaction(transaction) };
+    setTransactions([...transactions, categorizedTransaction]);
   };
 
   const handleDeleteTransaction = (id: string) => {
@@ -177,11 +140,11 @@ function App() {
       <table>
         <thead>
           <tr>
+            <th>Date</th>
             <th>Description</th>
             <th>Amount</th>
             <th>Type</th>
             <th>Category</th>
-            <th>Date</th>
             <th>Recurring</th>
             <th>Actions</th>
           </tr>
@@ -189,45 +152,24 @@ function App() {
         <tbody>
           {transactions.map((transaction) => (
             <tr key={transaction.id}>
+              <td>{transaction.date}</td>
               <td>{transaction.description}</td>
               <td>{transaction.amount}</td>
               <td>{transaction.type}</td>
               <td>{transaction.category}</td>
-              <td>{transaction.date}</td>
               <td>{transaction.recurring ? "Yes" : "No"}</td>
               <td>
-                <button onClick={() => handleDeleteTransaction(transaction.id)}>Delete</button>
+                <button onClick={() => handleDeleteTransaction(transaction.id)}>
+                  <Trash2 />
+                </button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          const description = (e.target as any).description.value;
-          const amount = parseFloat((e.target as any).amount.value);
-          const type = (e.target as any).type.value;
-          handleAddTransaction(description, amount, type as TransactionType);
-        }}
-      >
-        <label>
-          Description:
-          <input type="text" name="description" />
-        </label>
-        <label>
-          Amount:
-          <input type="number" name="amount" />
-        </label>
-        <label>
-          Type:
-          <select name="type">
-            <option value="income">Income</option>
-            <option value="expense">Expense</option>
-          </select>
-        </label>
-        <button type="submit">Add Transaction</button>
-      </form>
+      <button onClick={() => handleAddTransaction({ id: Math.random().toString(), description: "New Transaction", amount: 0, type: "income", date: new Date().toISOString().split("T")[0], recurring: false })}>
+        <Plus />
+      </button>
     </div>
   );
 }

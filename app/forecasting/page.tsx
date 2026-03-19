@@ -104,28 +104,28 @@ export default function ForecastingPage() {
         const income = txs.filter((t) => t.type === "income").reduce((s, t) => s + t.amount, 0);
         const expenses = txs.filter((t) => t.type === "expense").reduce((s, t) => s + t.amount, 0);
         const derived = income - expenses;
-        if (derived > 0) setCurrentBalance(derived.toString());
+        setCurrentBalance(derived.toString());
       }
     } catch {
-      // ignore
+      setCurrentBalance("10000");
     }
   }, []);
 
   const forecastData = useMemo(() => {
-    const data: { month: number; balance: number; income: number; expenses: number }[] = [];
+    const data: { month: number; balance: number }[] = [];
     let balance = parseInt(currentBalance);
     for (let i = 0; i < horizon; i++) {
       let income = 0;
       let expenses = 0;
-      for (const item of recurringItems) {
+      recurringItems.forEach((item) => {
         if (item.type === "income") {
           income += getMonthlyEquivalent(item);
         } else {
           expenses += getMonthlyEquivalent(item);
         }
-      }
+      });
       balance += income - expenses;
-      data.push({ month: i + 1, balance, income, expenses });
+      data.push({ month: i + 1, balance });
     }
     return data;
   }, [currentBalance, horizon, recurringItems]);
@@ -149,53 +149,63 @@ export default function ForecastingPage() {
         <label>Safety Threshold:</label>
         <input type="number" value={safetyThreshold} onChange={(e) => setSafetyThreshold(e.target.value)} />
       </div>
-      <div>
-        <button onClick={() => setShowAddForm(!showAddForm)}>Add Recurring Item</button>
-        {showAddForm && (
-          <div>
-            <label>Label:</label>
-            <input type="text" value={newItem.label} onChange={(e) => setNewItem({ ...newItem, label: e.target.value })} />
-            <label>Amount:</label>
-            <input type="number" value={newItem.amount} onChange={(e) => setNewItem({ ...newItem, amount: e.target.value })} />
-            <label>Type:</label>
-            <select value={newItem.type} onChange={(e) => setNewItem({ ...newItem, type: e.target.value as "income" | "expense" })}>
-              <option value="income">Income</option>
-              <option value="expense">Expense</option>
-            </select>
-            <label>Frequency:</label>
-            <select value={newItem.frequency} onChange={(e) => setNewItem({ ...newItem, frequency: e.target.value as RecurringItem["frequency"] })}>
-              <option value="monthly">Monthly</option>
-              <option value="quarterly">Quarterly</option>
-              <option value="yearly">Yearly</option>
-            </select>
-            <button onClick={() => {
-              setRecurringItems([...recurringItems, { id: Math.random().toString(), ...newItem }]);
-              setNewItem({ label: "", amount: "", type: "income", frequency: "monthly" });
-              setShowAddForm(false);
-            }}>Add</button>
-          </div>
-        )}
-      </div>
-      <div>
-        <h2>Recurring Items:</h2>
-        <ul>
-          {recurringItems.map((item) => (
-            <li key={item.id}>{item.label} ({item.type}) - {item.amount} ({item.frequency})</li>
-          ))}
-        </ul>
-      </div>
-      <div>
-        <h2>Forecast:</h2>
-        <AreaChart width={500} height={300} data={forecastData}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="month" />
-          <YAxis />
-          <Tooltip />
-          <Area type="monotone" dataKey="balance" stroke="#8884d8" fill="#8884d8" />
-          <Area type="monotone" dataKey="income" stroke="#82ca9d" fill="#82ca9d" />
-          <Area type="monotone" dataKey="expenses" stroke="#ffc658" fill="#ffc658" />
-        </AreaChart>
-      </div>
+      <h2>Recurring Items:</h2>
+      <ul>
+        {recurringItems.map((item) => (
+          <li key={item.id}>
+            <span style={{ color: item.type === "income" ? "green" : "red" }}>
+              {item.label} ({item.type}) - ${getMonthlyEquivalent(item)} per month
+            </span>
+            <button onClick={() => setRecurringItems(recurringItems.filter((i) => i.id !== item.id))}>
+              <Trash2 />
+            </button>
+          </li>
+        ))}
+      </ul>
+      {showAddForm ? (
+        <div>
+          <label>Label:</label>
+          <input type="text" value={newItem.label} onChange={(e) => setNewItem({ ...newItem, label: e.target.value })} />
+          <br />
+          <label>Amount:</label>
+          <input type="number" value={newItem.amount} onChange={(e) => setNewItem({ ...newItem, amount: e.target.value })} />
+          <br />
+          <label>Type:</label>
+          <select value={newItem.type} onChange={(e) => setNewItem({ ...newItem, type: e.target.value as "income" | "expense" })}>
+            <option value="income">Income</option>
+            <option value="expense">Expense</option>
+          </select>
+          <br />
+          <label>Frequency:</label>
+          <select value={newItem.frequency} onChange={(e) => setNewItem({ ...newItem, frequency: e.target.value as RecurringItem["frequency"] })}>
+            <option value="monthly">Monthly</option>
+            <option value="quarterly">Quarterly</option>
+            <option value="yearly">Yearly</option>
+          </select>
+          <br />
+          <button onClick={() => {
+            setRecurringItems([...recurringItems, { id: Math.random().toString(), ...newItem }]);
+            setNewItem({ label: "", amount: "", type: "income", frequency: "monthly" });
+            setShowAddForm(false);
+          }}>
+            Add
+          </button>
+        </div>
+      ) : (
+        <button onClick={() => setShowAddForm(true)}>
+          <Plus />
+          Add Recurring Item
+        </button>
+      )}
+      <h2>Forecast:</h2>
+      <LineChart width={500} height={300} data={forecastData}>
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="month" />
+        <YAxis />
+        <Tooltip />
+        <Legend />
+        <Line type="monotone" dataKey="balance" stroke="#8884d8" activeDot={{ r: 8 }} />
+      </LineChart>
     </div>
   );
 }
