@@ -1,4 +1,4 @@
-"use client";
+use client;
 
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
@@ -112,11 +112,12 @@ export default function ForecastingPage() {
   }, []);
 
   const forecastData = useMemo(() => {
-    const data: { month: number; balance: number }[] = [];
-    let balance = parseInt(currentBalance);
+    const data = [];
     for (let i = 0; i < horizon; i++) {
+      let balance = parseInt(currentBalance);
       let income = 0;
       let expenses = 0;
+
       recurringItems.forEach((item) => {
         if (item.type === "income") {
           income += getMonthlyEquivalent(item);
@@ -124,8 +125,14 @@ export default function ForecastingPage() {
           expenses += getMonthlyEquivalent(item);
         }
       });
+
       balance += income - expenses;
-      data.push({ month: i + 1, balance });
+      data.push({
+        month: i + 1,
+        balance,
+        income,
+        expenses,
+      });
     }
     return data;
   }, [currentBalance, horizon, recurringItems]);
@@ -140,9 +147,9 @@ export default function ForecastingPage() {
       <div>
         <label>Horizon (months):</label>
         <select value={horizon} onChange={(e) => setHorizon(parseInt(e.target.value) as 3 | 6 | 12)}>
-          <option value="3">3 months</option>
-          <option value="6">6 months</option>
-          <option value="12">12 months</option>
+          <option value="3">3</option>
+          <option value="6">6</option>
+          <option value="12">12</option>
         </select>
       </div>
       <div>
@@ -154,10 +161,14 @@ export default function ForecastingPage() {
         {recurringItems.map((item) => (
           <li key={item.id}>
             <span style={{ color: item.type === "income" ? "green" : "red" }}>
-              {item.label} ({item.type}) - ${getMonthlyEquivalent(item)} per month
+              {item.label} ({item.type}) - ${getMonthlyEquivalent(item)} / month
             </span>
-            <button onClick={() => setRecurringItems(recurringItems.filter((i) => i.id !== item.id))}>
-              <Trash2 />
+            <button onClick={() => {
+              const newItems = recurringItems.filter((i) => i.id !== item.id);
+              setRecurringItems(newItems);
+              localStorage.setItem(RECURRING_KEY, JSON.stringify(newItems));
+            }}>
+              Remove
             </button>
           </li>
         ))}
@@ -184,8 +195,9 @@ export default function ForecastingPage() {
           </select>
           <br />
           <button onClick={() => {
-            setRecurringItems([...recurringItems, { id: Math.random().toString(), ...newItem }]);
-            setNewItem({ label: "", amount: "", type: "income", frequency: "monthly" });
+            const newItems = [...recurringItems, newItem];
+            setRecurringItems(newItems);
+            localStorage.setItem(RECURRING_KEY, JSON.stringify(newItems));
             setShowAddForm(false);
           }}>
             Add
@@ -193,7 +205,6 @@ export default function ForecastingPage() {
         </div>
       ) : (
         <button onClick={() => setShowAddForm(true)}>
-          <Plus />
           Add Recurring Item
         </button>
       )}
@@ -205,6 +216,8 @@ export default function ForecastingPage() {
         <Tooltip />
         <Legend />
         <Line type="monotone" dataKey="balance" stroke="#8884d8" activeDot={{ r: 8 }} />
+        <Line type="monotone" dataKey="income" stroke="#82ca9d" />
+        <Line type="monotone" dataKey="expenses" stroke="#8884d8" />
       </LineChart>
     </div>
   );

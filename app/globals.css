@@ -26,6 +26,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   line-height: 1.6;
+  font-size: 16px;
 }
 
 @layer utilities {
@@ -61,10 +62,6 @@ body {
 }
 
 /* SEO Optimization */
-body {
-  font-size: 16px;
-}
-
 img {
   width: 100%;
   height: auto;
