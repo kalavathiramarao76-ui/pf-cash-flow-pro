@@ -66,3 +66,26 @@ img[lazy].loaded{opacity:1;}
     scroll-behavior: auto !important;
   }
 }
+/* Optimizations for better page load times and responsiveness */
+img {
+  image-rendering: high-quality;
+  image-orientation: from-image;
+}
+body {
+  text-rendering: optimizeLegibility;
+}
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+a {
+  -webkit-touch-callout: none;
+}
+/* Preload fonts to improve page load times */
+@font-face {
+  font-family: 'Inter';
+  src: url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+}
+/* Preload images to improve page load times */
+img {
+  content-visibility: auto;
+}

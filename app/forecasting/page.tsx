@@ -117,47 +117,131 @@ export default function ForecastingPage() {
     }
   }, []);
 
-  const handleMouseEnter = (data: any, index: number) => {
-    console.log(`Mouse entered data point ${index} with value ${data.balance}`);
+  const handleAddItem = () => {
+    const newItemWithId = { ...newItem, id: Math.random().toString(36).substr(2, 9) };
+    setRecurringItems([...recurringItems, newItemWithId]);
+    setNewItem({
+      label: "",
+      amount: "",
+      type: "income",
+      frequency: "monthly",
+    });
+    setShowAddForm(false);
   };
 
-  const handleMouseLeave = (data: any, index: number) => {
-    console.log(`Mouse left data point ${index} with value ${data.balance}`);
+  const handleRemoveItem = (id: string) => {
+    setRecurringItems(recurringItems.filter((item) => item.id !== id));
   };
 
-  const handleClick = (data: any, index: number) => {
-    console.log(`Data point ${index} with value ${data.balance} clicked`);
+  const handleUpdateItem = (id: string, updatedItem: RecurringItem) => {
+    setRecurringItems(
+      recurringItems.map((item) => (item.id === id ? updatedItem : item))
+    );
+  };
+
+  const handleSaveRecurringItems = () => {
+    try {
+      localStorage.setItem(RECURRING_KEY, JSON.stringify(recurringItems));
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (
     <div>
       <h1>Automated Cash Flow Forecasting</h1>
-      <ResponsiveContainer width="100%" height={300}>
-        <LineChart
-          data={forecastData}
-          margin={{
-            top: 5,
-            right: 30,
-            left: 20,
-            bottom: 5,
-          }}
-        >
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="month" />
-          <YAxis />
-          <Tooltip />
-          <Legend />
-          <Line
-            type="monotone"
-            dataKey="balance"
-            stroke="#8884d8"
-            activeDot={{ r: 8 }}
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-            onClick={handleClick}
-          />
-        </LineChart>
-      </ResponsiveContainer>
+      <div>
+        <label>Current Balance:</label>
+        <input
+          type="number"
+          value={currentBalance}
+          onChange={(e) => setCurrentBalance(e.target.value)}
+        />
+      </div>
+      <div>
+        <label>Horizon:</label>
+        <select value={horizon} onChange={(e) => setHorizon(parseInt(e.target.value as string))}>
+          <option value={3}>3 months</option>
+          <option value={6}>6 months</option>
+          <option value={12}>12 months</option>
+        </select>
+      </div>
+      <div>
+        <label>Safety Threshold:</label>
+        <input
+          type="number"
+          value={safetyThreshold}
+          onChange={(e) => setSafetyThreshold(e.target.value)}
+        />
+      </div>
+      <div>
+        <h2>Recurring Items:</h2>
+        <ul>
+          {recurringItems.map((item) => (
+            <li key={item.id}>
+              <span>
+                {item.label} ({item.type}) - {item.amount} ({item.frequency})
+              </span>
+              <button onClick={() => handleRemoveItem(item.id)}>Remove</button>
+              <button onClick={() => handleUpdateItem(item.id, item)}>Update</button>
+            </li>
+          ))}
+        </ul>
+        {showAddForm ? (
+          <div>
+            <label>Label:</label>
+            <input
+              type="text"
+              value={newItem.label}
+              onChange={(e) => setNewItem({ ...newItem, label: e.target.value })}
+            />
+            <label>Amount:</label>
+            <input
+              type="number"
+              value={newItem.amount}
+              onChange={(e) => setNewItem({ ...newItem, amount: e.target.value })}
+            />
+            <label>Type:</label>
+            <select
+              value={newItem.type}
+              onChange={(e) => setNewItem({ ...newItem, type: e.target.value as "income" | "expense" })}
+            >
+              <option value="income">Income</option>
+              <option value="expense">Expense</option>
+            </select>
+            <label>Frequency:</label>
+            <select
+              value={newItem.frequency}
+              onChange={(e) =>
+                setNewItem({ ...newItem, frequency: e.target.value as RecurringItem["frequency"] })
+              }
+            >
+              <option value="monthly">Monthly</option>
+              <option value="quarterly">Quarterly</option>
+              <option value="yearly">Yearly</option>
+            </select>
+            <button onClick={handleAddItem}>Add</button>
+          </div>
+        ) : (
+          <button onClick={() => setShowAddForm(true)}>Add Recurring Item</button>
+        )}
+      </div>
+      <div>
+        <h2>Forecast:</h2>
+        <ResponsiveContainer width="100%" height={300}>
+          <LineChart data={forecastData}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="month" />
+            <YAxis />
+            <Tooltip />
+            <Legend />
+            <Line type="monotone" dataKey="balance" stroke="#8884d8" activeDot={{ r: 8 }} />
+            <Line type="monotone" dataKey="income" stroke="#82ca9d" />
+            <Line type="monotone" dataKey="expenses" stroke="#8884d8" />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+      <button onClick={handleSaveRecurringItems}>Save Recurring Items</button>
     </div>
   );
 }
