@@ -5,14 +5,14 @@
 :root{--foreground-rgb:15,23,42;--background-rgb:248,250,252;}
 *{box-sizing:border-box;padding:0;margin:0;}
 html{scroll-behavior:smooth;}
-body{color:rgb(var(--foreground-rgb));background:rgb(var(--background-rgb));font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;line-height:1.6;font-size:16px;}
+body{color:rgb(var(--foreground-rgb));background:rgb(var(--background-rgb));font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;line-height:1.6;font-size:16px;text-rendering: optimizeLegibility;}
 @layer utilities{.text-balance{text-wrap:balance;}.gradient-text{@apply bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent;}.glass-card{@apply bg-white/80 backdrop-blur-sm border border-white/20 shadow-xl;}}
 ::-webkit-scrollbar{width:6px;}
 ::-webkit-scrollbar-track{background:#f1f5f9;}
 ::-webkit-scrollbar-thumb{background:#c7d2fe;border-radius:3px;}
 ::-webkit-scrollbar-thumb:hover{background:#818cf8;}
-img{width:100%;height:auto;display:block;object-fit:contain;loading:lazy;will-change:opacity;}
-a{text-decoration:none;color:inherit;}
+img{width:100%;height:auto;display:block;object-fit:contain;loading:lazy;will-change:opacity;image-rendering: high-quality;image-orientation: from-image;}
+a{text-decoration:none;color:inherit;-webkit-touch-callout: none;}
 a:hover{text-decoration:underline;}
 h1,h2,h3,h4,h5,h6{font-weight:bold;line-height:1.2;margin-bottom:0.5rem;}
 h1{font-size:2.5rem;}
@@ -66,26 +66,10 @@ img[lazy].loaded{opacity:1;}
     scroll-behavior: auto !important;
   }
 }
-/* Optimizations for better page load times and responsiveness */
-img {
-  image-rendering: high-quality;
-  image-orientation: from-image;
-}
-body {
-  text-rendering: optimizeLegibility;
-}
 * {
   -webkit-tap-highlight-color: transparent;
 }
-a {
-  -webkit-touch-callout: none;
-}
-/* Preload fonts to improve page load times */
 @font-face {
   font-family: 'Inter';
   src: url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
-}
-/* Preload images to improve page load times */
-img {
-  content-visibility: auto;
 }

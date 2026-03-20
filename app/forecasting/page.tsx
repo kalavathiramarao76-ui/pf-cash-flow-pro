@@ -123,8 +123,8 @@ export default function ForecastingPage() {
     setNewItem({
       label: "",
       amount: "",
-      type: "income",
-      frequency: "monthly",
+      type: "income" as "income" | "expense",
+      frequency: "monthly" as RecurringItem["frequency"],
     });
     setShowAddForm(false);
   };
@@ -159,11 +159,11 @@ export default function ForecastingPage() {
         />
       </div>
       <div>
-        <label>Horizon:</label>
-        <select value={horizon} onChange={(e) => setHorizon(parseInt(e.target.value as string))}>
-          <option value={3}>3 months</option>
-          <option value={6}>6 months</option>
-          <option value={12}>12 months</option>
+        <label>Horizon (months):</label>
+        <select value={horizon} onChange={(e) => setHorizon(parseInt(e.target.value) as 3 | 6 | 12)}>
+          <option value="3">3 months</option>
+          <option value="6">6 months</option>
+          <option value="12">12 months</option>
         </select>
       </div>
       <div>
@@ -183,7 +183,9 @@ export default function ForecastingPage() {
                 {item.label} ({item.type}) - {item.amount} ({item.frequency})
               </span>
               <button onClick={() => handleRemoveItem(item.id)}>Remove</button>
-              <button onClick={() => handleUpdateItem(item.id, item)}>Update</button>
+              <button onClick={() => handleUpdateItem(item.id, { ...item, amount: item.amount + 100 })}>
+                Update
+              </button>
             </li>
           ))}
         </ul>
@@ -237,11 +239,11 @@ export default function ForecastingPage() {
             <Legend />
             <Line type="monotone" dataKey="balance" stroke="#8884d8" activeDot={{ r: 8 }} />
             <Line type="monotone" dataKey="income" stroke="#82ca9d" />
-            <Line type="monotone" dataKey="expenses" stroke="#8884d8" />
+            <Line type="monotone" dataKey="expenses" stroke="#ff0000" />
           </LineChart>
         </ResponsiveContainer>
+        <button onClick={handleSaveRecurringItems}>Save Recurring Items</button>
       </div>
-      <button onClick={handleSaveRecurringItems}>Save Recurring Items</button>
     </div>
   );
 }
