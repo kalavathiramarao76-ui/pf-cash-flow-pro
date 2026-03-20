@@ -102,10 +102,10 @@ const mlModel = {
   },
 };
 
-function categorizeTransaction(transaction: Transaction): string {
+function categorizeTransaction(transaction: Omit<Transaction, 'category'>): string {
   const keywords = mlModel[transaction.type];
   for (const category in keywords) {
-    if (keywords[category].some((keyword) => transaction.description.toLowerCase().includes(keyword.toLowerCase()))) {
+    if (keywords[category].some(keyword => transaction.description.toLowerCase().includes(keyword.toLowerCase()))) {
       return category;
     }
   }
@@ -125,68 +125,91 @@ function App() {
     saveTransactions(transactions);
   }, [transactions]);
 
-  const handleAddTransaction = () => {
-    const newTransaction: Transaction = {
+  const handleAddTransaction = (newTransaction: Omit<Transaction, 'id' | 'category'>) => {
+    const transaction: Transaction = {
       id: Date.now().toString(),
-      description: "",
-      amount: 0,
-      type: "income",
-      category: "",
-      date: new Date().toISOString().split("T")[0],
-      recurring: false,
+      category: categorizeTransaction(newTransaction),
+      ...newTransaction,
     };
-    setTransactions([...transactions, newTransaction]);
+    setTransactions([...transactions, transaction]);
   };
 
   const handleDeleteTransaction = (id: string) => {
-    setTransactions(transactions.filter((transaction) => transaction.id !== id));
-  };
-
-  const handleUpdateTransaction = (id: string, updatedTransaction: Transaction) => {
-    setTransactions(transactions.map((transaction) => (transaction.id === id ? updatedTransaction : transaction)));
-  };
-
-  const handleCategorizeTransaction = (id: string) => {
-    const updatedTransaction = transactions.find((transaction) => transaction.id === id);
-    if (updatedTransaction) {
-      updatedTransaction.category = categorizeTransaction(updatedTransaction);
-      setTransactions(transactions.map((transaction) => (transaction.id === id ? updatedTransaction : transaction)));
-    }
+    setTransactions(transactions.filter(transaction => transaction.id !== id));
   };
 
   return (
     <div>
       <h1>Automated Cash Flow Forecasting</h1>
-      <button onClick={handleAddTransaction}>
-        <Plus />
-        Add Transaction
-      </button>
-      <ul>
-        {transactions.map((transaction) => (
-          <li key={transaction.id}>
-            <span>
-              {transaction.description} ({transaction.type})
-            </span>
-            <span>
-              {transaction.amount} {transaction.currency}
-            </span>
-            <span>
-              {transaction.date}
-            </span>
-            <span>
-              {transaction.category}
-            </span>
-            <button onClick={() => handleDeleteTransaction(transaction.id)}>
-              <Trash2 />
-              Delete
-            </button>
-            <button onClick={() => handleCategorizeTransaction(transaction.id)}>
-              <Tag />
-              Categorize
-            </button>
-          </li>
-        ))}
-      </ul>
+      <table>
+        <thead>
+          <tr>
+            <th>Description</th>
+            <th>Amount</th>
+            <th>Type</th>
+            <th>Category</th>
+            <th>Date</th>
+            <th>Recurring</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {transactions.map(transaction => (
+            <tr key={transaction.id}>
+              <td>{transaction.description}</td>
+              <td>{transaction.amount}</td>
+              <td>{transaction.type}</td>
+              <td>{transaction.category}</td>
+              <td>{transaction.date}</td>
+              <td>{transaction.recurring ? 'Yes' : 'No'}</td>
+              <td>
+                <button onClick={() => handleDeleteTransaction(transaction.id)}>
+                  <Trash2 />
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <form onSubmit={(e) => {
+        e.preventDefault();
+        const newTransaction: Omit<Transaction, 'id' | 'category'> = {
+          description: e.currentTarget.description.value,
+          amount: parseFloat(e.currentTarget.amount.value),
+          type: e.currentTarget.type.value as TransactionType,
+          date: e.currentTarget.date.value,
+          recurring: e.currentTarget.recurring.checked,
+        };
+        handleAddTransaction(newTransaction);
+        e.currentTarget.reset();
+      }}>
+        <label>
+          Description:
+          <input type="text" name="description" />
+        </label>
+        <label>
+          Amount:
+          <input type="number" name="amount" />
+        </label>
+        <label>
+          Type:
+          <select name="type">
+            <option value="income">Income</option>
+            <option value="expense">Expense</option>
+          </select>
+        </label>
+        <label>
+          Date:
+          <input type="date" name="date" />
+        </label>
+        <label>
+          Recurring:
+          <input type="checkbox" name="recurring" />
+        </label>
+        <button type="submit">
+          <Plus />
+        </button>
+      </form>
     </div>
   );
 }
