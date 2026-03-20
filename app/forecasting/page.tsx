@@ -111,30 +111,11 @@ export default function ForecastingPage() {
         setRecurringItems(JSON.parse(stored));
       } else {
         setRecurringItems(DEFAULT_RECURRING);
-        localStorage.setItem(RECURRING_KEY, JSON.stringify(DEFAULT_RECURRING));
       }
     } catch (error) {
       console.error(error);
     }
   }, []);
-
-  const handleAddItem = () => {
-    const newItemWithId = { ...newItem, id: Math.random().toString(36).substr(2, 9) };
-    setRecurringItems([...recurringItems, newItemWithId]);
-    setNewItem({
-      label: "",
-      amount: "",
-      type: "income" as "income" | "expense",
-      frequency: "monthly" as RecurringItem["frequency"],
-    });
-    setShowAddForm(false);
-    localStorage.setItem(RECURRING_KEY, JSON.stringify([...recurringItems, newItemWithId]));
-  };
-
-  const handleRemoveItem = (id: string) => {
-    setRecurringItems(recurringItems.filter((item) => item.id !== id));
-    localStorage.setItem(RECURRING_KEY, JSON.stringify(recurringItems.filter((item) => item.id !== id)));
-  };
 
   return (
     <div>
@@ -156,7 +137,7 @@ export default function ForecastingPage() {
         <input type="number" value={safetyThreshold} onChange={(e) => setSafetyThreshold(e.target.value)} />
       </div>
       <div>
-        <button onClick={() => setShowAddForm(true)}>Add Recurring Item</button>
+        <button onClick={() => setShowAddForm(!showAddForm)}>Add Recurring Item</button>
         {showAddForm && (
           <div>
             <label>Label:</label>
@@ -174,7 +155,11 @@ export default function ForecastingPage() {
               <option value="quarterly">Quarterly</option>
               <option value="yearly">Yearly</option>
             </select>
-            <button onClick={handleAddItem}>Add</button>
+            <button onClick={() => {
+              setRecurringItems([...recurringItems, { id: Math.random().toString(), ...newItem }]);
+              setNewItem({ label: "", amount: "", type: "income", frequency: "monthly" });
+              setShowAddForm(false);
+            }}>Add</button>
           </div>
         )}
       </div>
@@ -183,8 +168,10 @@ export default function ForecastingPage() {
         <ul>
           {recurringItems.map((item) => (
             <li key={item.id}>
-              {item.label} ({item.type}) - {item.amount} ({item.frequency})
-              <button onClick={() => handleRemoveItem(item.id)}>Remove</button>
+              <span>{item.label}</span>
+              <span>{item.amount}</span>
+              <span>{item.type}</span>
+              <span>{item.frequency}</span>
             </li>
           ))}
         </ul>
@@ -200,7 +187,7 @@ export default function ForecastingPage() {
             <Legend />
             <Line type="monotone" dataKey="balance" stroke="#8884d8" activeDot={{ r: 8 }} />
             <Line type="monotone" dataKey="income" stroke="#82ca9d" />
-            <Line type="monotone" dataKey="expenses" stroke="#ff0000" />
+            <Line type="monotone" dataKey="expenses" stroke="#8884d8" />
           </LineChart>
         </ResponsiveContainer>
       </div>

@@ -26,56 +26,9 @@ ul,ol{margin-bottom:1rem;}
 li{margin-bottom:0.5rem;}
 img[lazy]{opacity:0;transition:opacity 0.3s;}
 img[lazy].loaded{opacity:1;}
-@media only screen and (max-width:768px){body{font-size:14px;}}
-@font-face{font-family:'Inter';src:url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');font-display:swap;}
-
-/* Optimizations for better page loading times and responsiveness */
-body {
-  font-size: 16px;
-  line-height: 1.6;
-  font-family: 'Inter', system-ui, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-/* Use CSS grid for layout to improve responsiveness */
 .container {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
   gap: 20px;
 }
-
-/* Optimize images by using the 'image' tag with 'srcset' and 'sizes' attributes */
-img {
-  width: 100%;
-  height: auto;
-  display: block;
-  object-fit: contain;
-  loading: lazy;
-  will-change: opacity;
-}
-
-/* Use media queries to optimize styles for different screen sizes */
-@media only screen and (max-width: 768px) {
-  body {
-    font-size: 14px;
-  }
-}
-
-/* Optimize scrollbars for better performance */
-::-webkit-scrollbar {
-  width: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: #f1f5f9;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #c7d2fe;
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #818cf8;
-}
+@media only screen and (max-width:768px){body{font-size:14px;}}
