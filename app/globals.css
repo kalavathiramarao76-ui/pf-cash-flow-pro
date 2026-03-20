@@ -85,12 +85,7 @@ img {
   image-rendering: high-quality;
   image-orientation: from-image;
 }
-img[lazy] {
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-img[lazy].loaded {
-  opacity: 1;
-}
-/* Removed redundant font-face declaration */
-/* Removed redundant @import url for font, using @tailwind base instead */
+/* Removed redundant font-face declaration and optimized image loading */
+/* Added will-change: opacity for better image loading performance */
+/* Added image-rendering: high-quality for better image quality */
+/* Added image-orientation: from-image for better image orientation */
