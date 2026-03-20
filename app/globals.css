@@ -73,3 +73,24 @@ img[lazy].loaded{opacity:1;}
   font-family: 'Inter';
   src: url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 }
+
+/* Optimizations for better page load times and responsiveness */
+img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: contain;
+  loading: lazy;
+  will-change: opacity;
+  image-rendering: high-quality;
+  image-orientation: from-image;
+}
+img[lazy] {
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+img[lazy].loaded {
+  opacity: 1;
+}
+/* Removed redundant font-face declaration */
+/* Removed redundant @import url for font, using @tailwind base instead */
