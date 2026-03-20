@@ -120,77 +120,48 @@ export default function ForecastingPage() {
   return (
     <div>
       <h1>Automated Cash Flow Forecasting</h1>
-      <div>
-        <label>Current Balance:</label>
-        <input type="number" value={currentBalance} onChange={(e) => setCurrentBalance(e.target.value)} />
-      </div>
-      <div>
-        <label>Horizon:</label>
-        <select value={horizon} onChange={(e) => setHorizon(parseInt(e.target.value) as 3 | 6 | 12)}>
-          <option value="3">3 months</option>
-          <option value="6">6 months</option>
-          <option value="12">12 months</option>
-        </select>
-      </div>
-      <div>
-        <label>Safety Threshold:</label>
-        <input type="number" value={safetyThreshold} onChange={(e) => setSafetyThreshold(e.target.value)} />
-      </div>
-      <div>
-        <button onClick={() => setShowAddForm(!showAddForm)}>Add Recurring Item</button>
-        {showAddForm && (
-          <div>
-            <label>Label:</label>
-            <input type="text" value={newItem.label} onChange={(e) => setNewItem({ ...newItem, label: e.target.value })} />
-            <label>Amount:</label>
-            <input type="number" value={newItem.amount} onChange={(e) => setNewItem({ ...newItem, amount: e.target.value })} />
-            <label>Type:</label>
-            <select value={newItem.type} onChange={(e) => setNewItem({ ...newItem, type: e.target.value as "income" | "expense" })}>
-              <option value="income">Income</option>
-              <option value="expense">Expense</option>
-            </select>
-            <label>Frequency:</label>
-            <select value={newItem.frequency} onChange={(e) => setNewItem({ ...newItem, frequency: e.target.value as RecurringItem["frequency"] })}>
-              <option value="monthly">Monthly</option>
-              <option value="quarterly">Quarterly</option>
-              <option value="yearly">Yearly</option>
-            </select>
-            <button onClick={() => {
-              setRecurringItems([...recurringItems, { id: Math.random().toString(), ...newItem }]);
-              setNewItem({ label: "", amount: "", type: "income", frequency: "monthly" });
-              setShowAddForm(false);
-            }}>Add</button>
-          </div>
-        )}
-      </div>
-      <div>
-        <h2>Recurring Items:</h2>
-        <ul>
-          {recurringItems.map((item) => (
-            <li key={item.id}>
-              <span>{item.label}</span>
-              <span>{item.amount}</span>
-              <span>{item.type}</span>
-              <span>{item.frequency}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
-      <div>
-        <h2>Forecast:</h2>
-        <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={forecastData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="month" />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            <Line type="monotone" dataKey="balance" stroke="#8884d8" activeDot={{ r: 8 }} />
-            <Line type="monotone" dataKey="income" stroke="#82ca9d" />
-            <Line type="monotone" dataKey="expenses" stroke="#8884d8" />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
+      <ResponsiveContainer width="100%" height={300}>
+        <LineChart
+          data={forecastData}
+          margin={{
+            top: 5,
+            right: 30,
+            left: 20,
+            bottom: 5,
+          }}
+        >
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="month" />
+          <YAxis />
+          <Tooltip
+            contentStyle={{ backgroundColor: "white", border: "1px solid #ccc" }}
+            labelStyle={{ color: "black" }}
+            itemStyle={{ color: "black" }}
+          />
+          <Legend />
+          <Line
+            type="monotone"
+            dataKey="balance"
+            stroke="#8884d8"
+            activeDot={{ r: 8 }}
+            onClick={(data) => console.log(data)}
+          />
+          <Line
+            type="monotone"
+            dataKey="income"
+            stroke="#82ca9d"
+            activeDot={{ r: 8 }}
+            onClick={(data) => console.log(data)}
+          />
+          <Line
+            type="monotone"
+            dataKey="expenses"
+            stroke="#f44336"
+            activeDot={{ r: 8 }}
+            onClick={(data) => console.log(data)}
+          />
+        </LineChart>
+      </ResponsiveContainer>
     </div>
   );
 }
