@@ -1,5 +1,4 @@
-use client;
-
+import client;
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import {
@@ -109,38 +108,32 @@ export default function ForecastingPage() {
         setCurrentBalance(derived.toString());
       }
     } catch {
-      setCurrentBalance("10000");
+      // ignore
     }
   }, []);
 
   const forecastData = useMemo(() => {
-    const data: any[] = [];
+    const data: { month: number; balance: number }[] = [];
+    let balance = parseInt(currentBalance);
     for (let i = 0; i < horizon; i++) {
-      let balance = parseInt(currentBalance);
       let income = 0;
       let expenses = 0;
-
-      recurringItems.forEach((item) => {
+      for (const item of recurringItems) {
         if (item.type === "income") {
           income += getMonthlyEquivalent(item);
         } else {
           expenses += getMonthlyEquivalent(item);
         }
-      });
-
+      }
       balance += income - expenses;
-      data.push({
-        month: i + 1,
-        balance: balance,
-        income: income,
-        expenses: expenses,
-      });
+      data.push({ month: i + 1, balance });
     }
     return data;
   }, [currentBalance, horizon, recurringItems]);
 
   const handleAddItem = () => {
-    setRecurringItems([...recurringItems, { ...newItem, id: Math.random().toString(36).substr(2, 9) }]);
+    const newItemWithId = { ...newItem, id: `r${recurringItems.length + 1}` };
+    setRecurringItems([...recurringItems, newItemWithId]);
     setNewItem({
       label: "",
       amount: "",
@@ -150,77 +143,90 @@ export default function ForecastingPage() {
     setShowAddForm(false);
   };
 
+  const handleRemoveItem = (id: string) => {
+    setRecurringItems(recurringItems.filter((item) => item.id !== id));
+  };
+
+  const handleUpdateItem = (id: string, updatedItem: RecurringItem) => {
+    setRecurringItems(
+      recurringItems.map((item) => (item.id === id ? updatedItem : item))
+    );
+  };
+
   return (
     <div>
       <h1>Automated Cash Flow Forecasting</h1>
-      <div>
-        <label>Current Balance:</label>
-        <input type="number" value={currentBalance} onChange={(e) => setCurrentBalance(e.target.value)} />
-      </div>
-      <div>
-        <label>Horizon (months):</label>
-        <select value={horizon} onChange={(e) => setHorizon(parseInt(e.target.value) as 3 | 6 | 12)}>
-          <option value="3">3 months</option>
-          <option value="6">6 months</option>
-          <option value="12">12 months</option>
-        </select>
-      </div>
-      <div>
-        <label>Safety Threshold:</label>
-        <input type="number" value={safetyThreshold} onChange={(e) => setSafetyThreshold(e.target.value)} />
-      </div>
-      <div>
-        <button onClick={() => setShowAddForm(!showAddForm)}>Add Recurring Item</button>
-        {showAddForm && (
-          <div>
-            <label>Label:</label>
-            <input type="text" value={newItem.label} onChange={(e) => setNewItem({ ...newItem, label: e.target.value })} />
-            <br />
-            <label>Amount:</label>
-            <input type="number" value={newItem.amount} onChange={(e) => setNewItem({ ...newItem, amount: e.target.value })} />
-            <br />
-            <label>Type:</label>
-            <select value={newItem.type} onChange={(e) => setNewItem({ ...newItem, type: e.target.value as "income" | "expense" })}>
+      <p>Current Balance: ${currentBalance}</p>
+      <p>Horizon: {horizon} months</p>
+      <p>Safety Threshold: ${safetyThreshold}</p>
+      <LineChart width={500} height={300} data={forecastData}>
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="month" />
+        <YAxis />
+        <Tooltip />
+        <Legend />
+        <Line type="monotone" dataKey="balance" stroke="#8884d8" activeDot={{ r: 8 }} />
+      </LineChart>
+      <h2>Recurring Items</h2>
+      <ul>
+        {recurringItems.map((item) => (
+          <li key={item.id}>
+            {item.label} ({item.type}) - ${item.amount} ({item.frequency})
+            <button onClick={() => handleRemoveItem(item.id)}>Remove</button>
+            <button onClick={() => handleUpdateItem(item.id, { ...item, amount: item.amount + 100 })}>
+              Update
+            </button>
+          </li>
+        ))}
+      </ul>
+      {showAddForm ? (
+        <form>
+          <label>
+            Label:
+            <input
+              type="text"
+              value={newItem.label}
+              onChange={(e) => setNewItem({ ...newItem, label: e.target.value })}
+            />
+          </label>
+          <label>
+            Amount:
+            <input
+              type="number"
+              value={newItem.amount}
+              onChange={(e) => setNewItem({ ...newItem, amount: parseInt(e.target.value) })}
+            />
+          </label>
+          <label>
+            Type:
+            <select
+              value={newItem.type}
+              onChange={(e) => setNewItem({ ...newItem, type: e.target.value as "income" | "expense" })}
+            >
               <option value="income">Income</option>
               <option value="expense">Expense</option>
             </select>
-            <br />
-            <label>Frequency:</label>
-            <select value={newItem.frequency} onChange={(e) => setNewItem({ ...newItem, frequency: e.target.value as RecurringItem["frequency"] })}>
+          </label>
+          <label>
+            Frequency:
+            <select
+              value={newItem.frequency}
+              onChange={(e) =>
+                setNewItem({ ...newItem, frequency: e.target.value as RecurringItem["frequency"] })
+              }
+            >
               <option value="monthly">Monthly</option>
               <option value="quarterly">Quarterly</option>
               <option value="yearly">Yearly</option>
             </select>
-            <br />
-            <button onClick={handleAddItem}>Add Item</button>
-          </div>
-        )}
-      </div>
-      <div>
-        <h2>Recurring Items:</h2>
-        <ul>
-          {recurringItems.map((item) => (
-            <li key={item.id}>
-              {item.label} ({item.type}) - {item.amount} ({item.frequency})
-            </li>
-          ))}
-        </ul>
-      </div>
-      <div>
-        <h2>Forecast:</h2>
-        <LineChart width={800} height={400} data={forecastData}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="month" />
-          <YAxis />
-          <Tooltip />
-          <Legend />
-          <Line type="monotone" dataKey="balance" stroke="#8884d8" activeDot={{ r: 8 }} />
-          <Line type="monotone" dataKey="income" stroke="#82ca9d" />
-          <Line type="monotone" dataKey="expenses" stroke="#ff0000" />
-          <ReferenceLine y={parseInt(safetyThreshold)} stroke="red" strokeDasharray="3 3" />
-          <Brush dataKey="month" height={30} stroke="#8884d8" />
-        </LineChart>
-      </div>
+          </label>
+          <button type="button" onClick={handleAddItem}>
+            Add
+          </button>
+        </form>
+      ) : (
+        <button onClick={() => setShowAddForm(true)}>Add Recurring Item</button>
+      )}
     </div>
   );
 }

@@ -67,6 +67,7 @@ img {
   height: auto;
   display: block;
   object-fit: contain;
+  loading: lazy;
 }
 
 a {
@@ -139,3 +140,28 @@ img[lazy].loaded {
 
 /* Prefetch fonts */
 <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" as="style" crossorigin="anonymous">
+
+/* Optimize images and fonts for better page loading performance */
+img {
+  will-change: opacity;
+}
+
+/* Use font-display: swap to ensure text is displayed immediately */
+@font-face {
+  font-family: 'Inter';
+  src: url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+  font-display: swap;
+}
+
+/* Leverage browser caching for static assets */
+/* Add the following meta tag to the HTML head */
+/* <meta http-equiv="Cache-Control" content="max-age=31536000, public"> */
+
+/* Minify and compress CSS files */
+/* Use a build tool like Webpack or Rollup to minify and compress CSS files */
+
+/* Optimize server response time */
+/* Ensure the server responds quickly to requests, aim for a response time of under 200ms */
+
+/* Use a content delivery network (CDN) to reduce latency */
+/* Use a CDN to serve static assets, reducing the distance between the user and the server */

@@ -125,67 +125,51 @@ function App() {
     saveTransactions(transactions);
   }, [transactions]);
 
-  const handleAddTransaction = () => {
-    const newTransaction: Transaction = {
-      id: Date.now().toString(),
-      description: "",
-      amount: 0,
-      type: "income",
-      category: "",
-      date: new Date().toISOString().split("T")[0],
-      recurring: false,
-    };
-    setTransactions([...transactions, newTransaction]);
+  const handleAddTransaction = (newTransaction: Transaction) => {
+    const categorizedTransaction = { ...newTransaction, category: categorizeTransaction(newTransaction) };
+    setTransactions([...transactions, categorizedTransaction]);
   };
 
   const handleDeleteTransaction = (id: string) => {
     setTransactions(transactions.filter((transaction) => transaction.id !== id));
   };
 
-  const handleUpdateTransaction = (id: string, updatedTransaction: Transaction) => {
-    setTransactions(transactions.map((transaction) => (transaction.id === id ? updatedTransaction : transaction)));
-  };
-
-  const handleCategorizeTransactions = () => {
-    setTransactions(
-      transactions.map((transaction) => ({
-        ...transaction,
-        category: categorizeTransaction(transaction),
-      }))
-    );
-  };
-
   return (
     <div>
       <h1>Automated Cash Flow Forecasting</h1>
-      <button onClick={handleAddTransaction}>
+      <table>
+        <thead>
+          <tr>
+            <th>Description</th>
+            <th>Amount</th>
+            <th>Type</th>
+            <th>Category</th>
+            <th>Date</th>
+            <th>Recurring</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {transactions.map((transaction) => (
+            <tr key={transaction.id}>
+              <td>{transaction.description}</td>
+              <td>{transaction.amount}</td>
+              <td>{transaction.type}</td>
+              <td>{transaction.category}</td>
+              <td>{transaction.date}</td>
+              <td>{transaction.recurring ? "Yes" : "No"}</td>
+              <td>
+                <button onClick={() => handleDeleteTransaction(transaction.id)}>
+                  <Trash2 />
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <button onClick={() => handleAddTransaction({ id: Date.now().toString(), description: "New Transaction", amount: 0, type: "income", date: new Date().toISOString().split("T")[0], recurring: false })}>
         <Plus />
-        Add Transaction
       </button>
-      <button onClick={handleCategorizeTransactions}>
-        <Tag />
-        Categorize Transactions
-      </button>
-      <ul>
-        {transactions.map((transaction) => (
-          <li key={transaction.id}>
-            <span>
-              {transaction.description} ({transaction.type})
-            </span>
-            <span>
-              {transaction.amount} {transaction.category}
-            </span>
-            <button onClick={() => handleDeleteTransaction(transaction.id)}>
-              <Trash2 />
-              Delete
-            </button>
-            <button onClick={() => handleUpdateTransaction(transaction.id, { ...transaction, category: categorizeTransaction(transaction) })}>
-              <RefreshCw />
-              Update
-            </button>
-          </li>
-        ))}
-      </ul>
     </div>
   );
 }
