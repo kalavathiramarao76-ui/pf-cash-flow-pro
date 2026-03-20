@@ -66,6 +66,7 @@ img {
   width: 100%;
   height: auto;
   display: block;
+  object-fit: contain;
 }
 
 a {
@@ -80,6 +81,7 @@ a:hover {
 h1, h2, h3, h4, h5, h6 {
   font-weight: bold;
   line-height: 1.2;
+  margin-bottom: 0.5rem;
 }
 
 h1 {
@@ -117,3 +119,23 @@ ul, ol {
 li {
   margin-bottom: 0.5rem;
 }
+
+/* Lazy loading images */
+img[lazy] {
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+img[lazy].loaded {
+  opacity: 1;
+}
+
+/* Critical CSS */
+@media only screen and (max-width: 768px) {
+  body {
+    font-size: 14px;
+  }
+}
+
+/* Prefetch fonts */
+<link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" as="style" crossorigin="anonymous">

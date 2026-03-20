@@ -26,6 +26,8 @@ import {
   Legend,
   AreaChart,
   Area,
+  Brush,
+  ReferenceLine,
 } from "recharts";
 
 interface RecurringItem {
@@ -112,7 +114,7 @@ export default function ForecastingPage() {
   }, []);
 
   const forecastData = useMemo(() => {
-    const data = [];
+    const data: any[] = [];
     for (let i = 0; i < horizon; i++) {
       let balance = parseInt(currentBalance);
       let income = 0;
@@ -129,13 +131,24 @@ export default function ForecastingPage() {
       balance += income - expenses;
       data.push({
         month: i + 1,
-        balance,
-        income,
-        expenses,
+        balance: balance,
+        income: income,
+        expenses: expenses,
       });
     }
     return data;
   }, [currentBalance, horizon, recurringItems]);
+
+  const handleAddItem = () => {
+    setRecurringItems([...recurringItems, { ...newItem, id: Math.random().toString(36).substr(2, 9) }]);
+    setNewItem({
+      label: "",
+      amount: "",
+      type: "income" as "income" | "expense",
+      frequency: "monthly" as RecurringItem["frequency"],
+    });
+    setShowAddForm(false);
+  };
 
   return (
     <div>
@@ -147,78 +160,67 @@ export default function ForecastingPage() {
       <div>
         <label>Horizon (months):</label>
         <select value={horizon} onChange={(e) => setHorizon(parseInt(e.target.value) as 3 | 6 | 12)}>
-          <option value="3">3</option>
-          <option value="6">6</option>
-          <option value="12">12</option>
+          <option value="3">3 months</option>
+          <option value="6">6 months</option>
+          <option value="12">12 months</option>
         </select>
       </div>
       <div>
         <label>Safety Threshold:</label>
         <input type="number" value={safetyThreshold} onChange={(e) => setSafetyThreshold(e.target.value)} />
       </div>
-      <h2>Recurring Items:</h2>
-      <ul>
-        {recurringItems.map((item) => (
-          <li key={item.id}>
-            <span style={{ color: item.type === "income" ? "green" : "red" }}>
-              {item.label} ({item.type}) - ${getMonthlyEquivalent(item)} / month
-            </span>
-            <button onClick={() => {
-              const newItems = recurringItems.filter((i) => i.id !== item.id);
-              setRecurringItems(newItems);
-              localStorage.setItem(RECURRING_KEY, JSON.stringify(newItems));
-            }}>
-              Remove
-            </button>
-          </li>
-        ))}
-      </ul>
-      {showAddForm ? (
-        <div>
-          <label>Label:</label>
-          <input type="text" value={newItem.label} onChange={(e) => setNewItem({ ...newItem, label: e.target.value })} />
-          <br />
-          <label>Amount:</label>
-          <input type="number" value={newItem.amount} onChange={(e) => setNewItem({ ...newItem, amount: e.target.value })} />
-          <br />
-          <label>Type:</label>
-          <select value={newItem.type} onChange={(e) => setNewItem({ ...newItem, type: e.target.value as "income" | "expense" })}>
-            <option value="income">Income</option>
-            <option value="expense">Expense</option>
-          </select>
-          <br />
-          <label>Frequency:</label>
-          <select value={newItem.frequency} onChange={(e) => setNewItem({ ...newItem, frequency: e.target.value as RecurringItem["frequency"] })}>
-            <option value="monthly">Monthly</option>
-            <option value="quarterly">Quarterly</option>
-            <option value="yearly">Yearly</option>
-          </select>
-          <br />
-          <button onClick={() => {
-            const newItems = [...recurringItems, newItem];
-            setRecurringItems(newItems);
-            localStorage.setItem(RECURRING_KEY, JSON.stringify(newItems));
-            setShowAddForm(false);
-          }}>
-            Add
-          </button>
-        </div>
-      ) : (
-        <button onClick={() => setShowAddForm(true)}>
-          Add Recurring Item
-        </button>
-      )}
-      <h2>Forecast:</h2>
-      <LineChart width={500} height={300} data={forecastData}>
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="month" />
-        <YAxis />
-        <Tooltip />
-        <Legend />
-        <Line type="monotone" dataKey="balance" stroke="#8884d8" activeDot={{ r: 8 }} />
-        <Line type="monotone" dataKey="income" stroke="#82ca9d" />
-        <Line type="monotone" dataKey="expenses" stroke="#8884d8" />
-      </LineChart>
+      <div>
+        <button onClick={() => setShowAddForm(!showAddForm)}>Add Recurring Item</button>
+        {showAddForm && (
+          <div>
+            <label>Label:</label>
+            <input type="text" value={newItem.label} onChange={(e) => setNewItem({ ...newItem, label: e.target.value })} />
+            <br />
+            <label>Amount:</label>
+            <input type="number" value={newItem.amount} onChange={(e) => setNewItem({ ...newItem, amount: e.target.value })} />
+            <br />
+            <label>Type:</label>
+            <select value={newItem.type} onChange={(e) => setNewItem({ ...newItem, type: e.target.value as "income" | "expense" })}>
+              <option value="income">Income</option>
+              <option value="expense">Expense</option>
+            </select>
+            <br />
+            <label>Frequency:</label>
+            <select value={newItem.frequency} onChange={(e) => setNewItem({ ...newItem, frequency: e.target.value as RecurringItem["frequency"] })}>
+              <option value="monthly">Monthly</option>
+              <option value="quarterly">Quarterly</option>
+              <option value="yearly">Yearly</option>
+            </select>
+            <br />
+            <button onClick={handleAddItem}>Add Item</button>
+          </div>
+        )}
+      </div>
+      <div>
+        <h2>Recurring Items:</h2>
+        <ul>
+          {recurringItems.map((item) => (
+            <li key={item.id}>
+              {item.label} ({item.type}) - {item.amount} ({item.frequency})
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div>
+        <h2>Forecast:</h2>
+        <LineChart width={800} height={400} data={forecastData}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="month" />
+          <YAxis />
+          <Tooltip />
+          <Legend />
+          <Line type="monotone" dataKey="balance" stroke="#8884d8" activeDot={{ r: 8 }} />
+          <Line type="monotone" dataKey="income" stroke="#82ca9d" />
+          <Line type="monotone" dataKey="expenses" stroke="#ff0000" />
+          <ReferenceLine y={parseInt(safetyThreshold)} stroke="red" strokeDasharray="3 3" />
+          <Brush dataKey="month" height={30} stroke="#8884d8" />
+        </LineChart>
+      </div>
     </div>
   );
 }
