@@ -102,13 +102,11 @@ const mlModel = {
   },
 };
 
-function categorizeTransaction(transaction: Omit<Transaction, 'category'>): string {
+function categorizeTransaction(transaction: Transaction): string {
   const keywords = mlModel[transaction.type];
   for (const category in keywords) {
-    for (const keyword of keywords[category]) {
-      if (transaction.description.toLowerCase().includes(keyword.toLowerCase())) {
-        return category;
-      }
+    if (keywords[category].some((keyword) => transaction.description.toLowerCase().includes(keyword.toLowerCase()))) {
+      return category;
     }
   }
   return transaction.type === "income" ? "Other Income" : "Other Expense";
@@ -127,33 +125,35 @@ function App() {
     saveTransactions(transactions);
   }, [transactions]);
 
-  const addTransaction = (transaction: Omit<Transaction, 'id' | 'category'>) => {
-    const newTransaction: Transaction = {
-      id: Date.now().toString(),
-      category: categorizeTransaction(transaction),
-      ...transaction,
-    };
-    setTransactions([...transactions, newTransaction]);
+  const handleAddTransaction = (newTransaction: Transaction) => {
+    const categorizedTransaction = { ...newTransaction, category: categorizeTransaction(newTransaction) };
+    setTransactions([...transactions, categorizedTransaction]);
   };
 
-  const removeTransaction = (id: string) => {
+  const handleRemoveTransaction = (id: string) => {
     setTransactions(transactions.filter((transaction) => transaction.id !== id));
   };
 
   return (
     <div>
       <h1>Automated Cash Flow Forecasting</h1>
+      <button onClick={() => handleAddTransaction({ id: Date.now().toString(), description: "New Transaction", amount: 0, type: "income", date: new Date().toISOString().split("T")[0], recurring: false })}>
+        <Plus />
+        Add Transaction
+      </button>
       <ul>
         {transactions.map((transaction) => (
           <li key={transaction.id}>
-            <span>{transaction.description}</span>
-            <span>{transaction.amount}</span>
-            <span>{transaction.category}</span>
-            <button onClick={() => removeTransaction(transaction.id)}>Remove</button>
+            <span>
+              {transaction.description} ({transaction.type}) - {transaction.amount}
+            </span>
+            <button onClick={() => handleRemoveTransaction(transaction.id)}>
+              <Trash2 />
+              Remove
+            </button>
           </li>
         ))}
       </ul>
-      <button onClick={() => addTransaction({ description: "New Transaction", amount: 100, type: "income", date: new Date().toISOString().split("T")[0], recurring: false })}>Add Transaction</button>
     </div>
   );
 }
