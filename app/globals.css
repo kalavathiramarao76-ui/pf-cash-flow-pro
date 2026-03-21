@@ -89,12 +89,12 @@ img {
   }
 }
 @media only screen and (max-width: 768px) {
-  .container {
-    grid-template-columns: repeat(6, 1fr);
+  img {
+    image-rendering: auto;
   }
 }
 @media only screen and (max-width: 480px) {
-  .container {
-    grid-template-columns: repeat(4, 1fr);
+  img {
+    image-rendering: auto;
   }
 }
