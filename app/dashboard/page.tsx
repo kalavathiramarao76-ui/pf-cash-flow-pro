@@ -119,7 +119,7 @@ function App() {
     if (transactions.length === 0) {
       setTransactions(SEED_TRANSACTIONS);
     }
-  }, [transactions]);
+  }, []);
 
   useEffect(() => {
     saveTransactions(transactions);
@@ -130,17 +130,29 @@ function App() {
     setTransactions([...transactions, categorizedTransaction]);
   };
 
-  const handleUpdateTransaction = (updatedTransaction: Transaction) => {
-    const categorizedTransaction = { ...updatedTransaction, category: categorizeTransaction(updatedTransaction) };
-    setTransactions(transactions.map((transaction) => transaction.id === updatedTransaction.id ? categorizedTransaction : transaction));
-  };
-
   const handleDeleteTransaction = (id: string) => {
     setTransactions(transactions.filter((transaction) => transaction.id !== id));
   };
 
   return (
-    // existing JSX code
+    <div>
+      <h1>Automated Cash Flow Forecasting</h1>
+      <button onClick={() => handleAddTransaction({ id: Date.now().toString(), description: "New Transaction", amount: 0, type: "income", date: new Date().toISOString().split("T")[0], recurring: false })}>
+        <Plus />
+      </button>
+      <ul>
+        {transactions.map((transaction) => (
+          <li key={transaction.id}>
+            <span>{transaction.description}</span>
+            <span>{transaction.amount}</span>
+            <span>{transaction.category}</span>
+            <button onClick={() => handleDeleteTransaction(transaction.id)}>
+              <Trash2 />
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
 
