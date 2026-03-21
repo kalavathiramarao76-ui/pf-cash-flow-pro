@@ -83,3 +83,22 @@ img {
   image-rendering: high-quality;
   image-orientation: from-image;
 }
+@media only screen and (max-width: 600px) {
+  img {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: contain;
+    loading: lazy;
+    will-change: opacity;
+    image-rendering: high-quality;
+    image-orientation: from-image;
+  }
+}
+@media only screen and (max-width: 1024px) {
+  .container {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 10px;
+  }
+}
