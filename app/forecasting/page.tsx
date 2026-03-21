@@ -106,134 +106,59 @@ export default function ForecastingPage() {
     if (monthData) {
       const incomeDetails = recurringItems
         .filter((item) => item.type === "income")
-        .map((item) => ({
-          label: item.label,
-          amount: getMonthlyEquivalent(item),
-        }));
+        .map((item) => ({ label: item.label, amount: getMonthlyEquivalent(item) }));
       const expenseDetails = recurringItems
         .filter((item) => item.type === "expense")
-        .map((item) => ({
-          label: item.label,
-          amount: getMonthlyEquivalent(item),
-        }));
-      console.log("Drill down data for month", month);
-      console.log("Income details:", incomeDetails);
-      console.log("Expense details:", expenseDetails);
+        .map((item) => ({ label: item.label, amount: getMonthlyEquivalent(item) }));
+      console.log(`Drill down for month ${month}:`, {
+        balance: monthData.balance,
+        income: monthData.income,
+        expenses: monthData.expenses,
+        incomeDetails,
+        expenseDetails,
+      });
     }
   };
 
   return (
     <div>
       <h1>Automated Cash Flow Forecasting</h1>
-      <div>
-        <label>Current Balance:</label>
-        <input
-          type="number"
-          value={currentBalance}
-          onChange={(e) => setCurrentBalance(e.target.value)}
-        />
-      </div>
-      <div>
-        <label>Horizon:</label>
-        <select value={horizon} onChange={(e) => setHorizon(parseInt(e.target.value) as 3 | 6 | 12)}>
-          <option value={3}>3 months</option>
-          <option value={6}>6 months</option>
-          <option value={12}>12 months</option>
-        </select>
-      </div>
-      <div>
-        <label>Safety Threshold:</label>
-        <input
-          type="number"
-          value={safetyThreshold}
-          onChange={(e) => setSafetyThreshold(e.target.value)}
-        />
-      </div>
-      <div>
-        <button onClick={() => setShowAddForm(!showAddForm)}>Add Recurring Item</button>
-        {showAddForm && (
-          <div>
-            <label>Label:</label>
-            <input
-              type="text"
-              value={newItem.label}
-              onChange={(e) => setNewItem({ ...newItem, label: e.target.value })}
-            />
-            <label>Amount:</label>
-            <input
-              type="number"
-              value={newItem.amount}
-              onChange={(e) => setNewItem({ ...newItem, amount: e.target.value })}
-            />
-            <label>Type:</label>
-            <select
-              value={newItem.type}
-              onChange={(e) => setNewItem({ ...newItem, type: e.target.value as "income" | "expense" })}
-            >
-              <option value="income">Income</option>
-              <option value="expense">Expense</option>
-            </select>
-            <label>Frequency:</label>
-            <select
-              value={newItem.frequency}
-              onChange={(e) =>
-                setNewItem({ ...newItem, frequency: e.target.value as RecurringItem["frequency"] })
-              }
-            >
-              <option value="monthly">Monthly</option>
-              <option value="quarterly">Quarterly</option>
-              <option value="yearly">Yearly</option>
-            </select>
-            <button
-              onClick={() => {
-                setRecurringItems([...recurringItems, { ...newItem, id: Math.random().toString(36).substr(2, 9) }]);
-                setNewItem({
-                  label: "",
-                  amount: "",
-                  type: "income" as "income" | "expense",
-                  frequency: "monthly" as RecurringItem["frequency"],
-                });
-                setShowAddForm(false);
-              }}
-            >
-              Add
-            </button>
-          </div>
-        )}
-      </div>
-      <div>
-        <h2>Recurring Items:</h2>
-        <ul>
-          {recurringItems.map((item) => (
-            <li key={item.id}>
-              {item.label} ({item.type}) - {item.amount} ({item.frequency})
-            </li>
-          ))}
-        </ul>
-      </div>
-      <div>
-        <h2>Forecast:</h2>
-        <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={forecastData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="month" />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            <Line type="monotone" dataKey="balance" stroke="#8884d8" activeDot={{ r: 8 }} />
-            <Line type="monotone" dataKey="income" stroke="#82ca9d" />
-            <Line type="monotone" dataKey="expenses" stroke="#8884d8" />
-          </LineChart>
-        </ResponsiveContainer>
-        <ul>
+      <ResponsiveContainer width="100%" height={300}>
+        <LineChart data={forecastData}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="month" />
+          <YAxis />
+          <Tooltip />
+          <Legend />
+          <Line type="monotone" dataKey="balance" stroke="#8884d8" />
+          <Line type="monotone" dataKey="income" stroke="#82ca9d" />
+          <Line type="monotone" dataKey="expenses" stroke="#f44336" />
+        </LineChart>
+      </ResponsiveContainer>
+      <table>
+        <thead>
+          <tr>
+            <th>Month</th>
+            <th>Balance</th>
+            <th>Income</th>
+            <th>Expenses</th>
+            <th>Drill Down</th>
+          </tr>
+        </thead>
+        <tbody>
           {forecastData.map((data) => (
-            <li key={data.month}>
-              Month {data.month}: Balance - {data.balance}, Income - {data.income}, Expenses - {data.expenses}
-              <button onClick={() => handleDrillDown(data.month)}>Drill Down</button>
-            </li>
+            <tr key={data.month}>
+              <td>{data.month}</td>
+              <td>${data.balance.toFixed(2)}</td>
+              <td>${data.income.toFixed(2)}</td>
+              <td>${data.expenses.toFixed(2)}</td>
+              <td>
+                <button onClick={() => handleDrillDown(data.month)}>Drill Down</button>
+              </td>
+            </tr>
           ))}
-        </ul>
-      </div>
+        </tbody>
+      </table>
     </div>
   );
 }

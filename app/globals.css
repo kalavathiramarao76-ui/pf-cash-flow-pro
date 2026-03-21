@@ -84,27 +84,46 @@ img[lazy].loaded{opacity:1;}
 @font-face {
   font-family: 'Inter';
   src: url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap') format('woff2');
-  font-weight: 300 900;
-  font-style: normal;
 }
+/* Optimizations for better page load times and responsiveness */
 img {
-  content-visibility: auto;
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: contain;
+  loading: lazy;
+  will-change: opacity;
+  image-rendering: high-quality;
+  image-orientation: from-image;
 }
-body {
+/* Use CSS grid for layout to reduce layout shifts */
+.container {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 20px;
+}
+/* Use media queries to apply different styles for different screen sizes */
+@media only screen and (max-width:480px){
+  .container {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+}
+@media only screen and (max-width:768px) and (min-width:481px){
+  .container {
+    grid-template-columns: repeat(6, 1fr);
+    gap: 15px;
+  }
+}
+@media only screen and (max-width:1024px) and (min-width:769px){
+  .container {
+    grid-template-columns: repeat(8, 1fr);
+    gap: 18px;
+  }
+}
+/* Use font face to load fonts only when needed */
+@font-face {
+  font-family: 'Inter';
+  src: url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap') format('woff2');
   font-display: swap;
-}
-@layer utilities {
-  .lazy-load {
-    opacity: 0;
-    transition: opacity 0.3s;
-  }
-  .lazy-load.loaded {
-    opacity: 1;
-  }
-}
-img[lazy] {
-  content-visibility: auto;
-}
-img[lazy].loaded {
-  content-visibility: visible;
 }
