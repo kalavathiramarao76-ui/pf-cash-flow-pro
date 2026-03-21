@@ -101,6 +101,13 @@ export default function ForecastingPage() {
     return data;
   }, [currentBalance, horizon, recurringItems]);
 
+  const handleDrillDown = (month: number) => {
+    const monthData = forecastData.find((data) => data.month === month);
+    if (monthData) {
+      alert(`Month: ${month}, Balance: ${monthData.balance}, Income: ${monthData.income}, Expenses: ${monthData.expenses}`);
+    }
+  };
+
   useEffect(() => {
     setMounted(true);
 
@@ -117,54 +124,16 @@ export default function ForecastingPage() {
     }
   }, []);
 
-  const handleAddItem = () => {
-    const newItemWithId = { ...newItem, id: `r${recurringItems.length + 1}` };
-    setRecurringItems([...recurringItems, newItemWithId]);
-    setNewItem({
-      label: "",
-      amount: "",
-      type: "income" as "income" | "expense",
-      frequency: "monthly" as RecurringItem["frequency"],
-    });
-    setShowAddForm(false);
-  };
-
-  const handleRemoveItem = (id: string) => {
-    setRecurringItems(recurringItems.filter((item) => item.id !== id));
-  };
-
-  const handleUpdateItem = (id: string, updatedItem: RecurringItem) => {
-    setRecurringItems(
-      recurringItems.map((item) => (item.id === id ? updatedItem : item))
-    );
-  };
-
-  const handleUpdateBalance = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setCurrentBalance(event.target.value);
-  };
-
-  const handleUpdateHorizon = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setHorizon(parseInt(event.target.value) as 3 | 6 | 12);
-  };
-
-  const handleUpdateSafetyThreshold = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSafetyThreshold(event.target.value);
-  };
-
-  const handleToggleAddForm = () => {
-    setShowAddForm(!showAddForm);
-  };
-
   return (
     <div>
       <h1>Automated Cash Flow Forecasting</h1>
       <div>
         <label>Current Balance:</label>
-        <input type="number" value={currentBalance} onChange={handleUpdateBalance} />
+        <input type="number" value={currentBalance} onChange={(e) => setCurrentBalance(e.target.value)} />
       </div>
       <div>
         <label>Horizon:</label>
-        <select value={horizon} onChange={handleUpdateHorizon}>
+        <select value={horizon} onChange={(e) => setHorizon(parseInt(e.target.value) as 3 | 6 | 12)}>
           <option value="3">3 months</option>
           <option value="6">6 months</option>
           <option value="12">12 months</option>
@@ -172,94 +141,71 @@ export default function ForecastingPage() {
       </div>
       <div>
         <label>Safety Threshold:</label>
-        <input type="number" value={safetyThreshold} onChange={handleUpdateSafetyThreshold} />
+        <input type="number" value={safetyThreshold} onChange={(e) => setSafetyThreshold(e.target.value)} />
       </div>
-      <button onClick={handleToggleAddForm}>
-        {showAddForm ? "Cancel" : "Add New Recurring Item"}
-      </button>
-      {showAddForm && (
-        <div>
-          <label>Label:</label>
-          <input
-            type="text"
-            value={newItem.label}
-            onChange={(event) => setNewItem({ ...newItem, label: event.target.value })}
-          />
-          <label>Amount:</label>
-          <input
-            type="number"
-            value={newItem.amount}
-            onChange={(event) => setNewItem({ ...newItem, amount: event.target.value })}
-          />
-          <label>Type:</label>
-          <select
-            value={newItem.type}
-            onChange={(event) =>
-              setNewItem({ ...newItem, type: event.target.value as "income" | "expense" })
-            }
-          >
-            <option value="income">Income</option>
-            <option value="expense">Expense</option>
-          </select>
-          <label>Frequency:</label>
-          <select
-            value={newItem.frequency}
-            onChange={(event) =>
-              setNewItem({ ...newItem, frequency: event.target.value as RecurringItem["frequency"] })
-            }
-          >
-            <option value="monthly">Monthly</option>
-            <option value="quarterly">Quarterly</option>
-            <option value="yearly">Yearly</option>
-          </select>
-          <button onClick={handleAddItem}>Add Item</button>
-        </div>
-      )}
-      <h2>Recurring Items:</h2>
-      <ul>
-        {recurringItems.map((item) => (
-          <li key={item.id}>
-            <span>
+      <div>
+        <h2>Recurring Items:</h2>
+        <ul>
+          {recurringItems.map((item) => (
+            <li key={item.id}>
               {item.label} ({item.type}) - {item.amount} ({item.frequency})
-            </span>
-            <button onClick={() => handleRemoveItem(item.id)}>Remove</button>
-            <button onClick={() => handleUpdateItem(item.id, item)}>Update</button>
-          </li>
-        ))}
-      </ul>
-      <h2>Forecast:</h2>
-      <ResponsiveContainer width="100%" height={300}>
-        <LineChart data={forecastData}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="month" />
-          <YAxis />
-          <Tooltip />
-          <Legend />
-          <Line type="monotone" dataKey="balance" stroke="#8884d8" activeDot={{ r: 8 }} />
-          <Line type="monotone" dataKey="income" stroke="#82ca9d" />
-          <Line type="monotone" dataKey="expenses" stroke="#ff0000" />
-        </LineChart>
-      </ResponsiveContainer>
-      <table>
-        <thead>
-          <tr>
-            <th>Month</th>
-            <th>Balance</th>
-            <th>Income</th>
-            <th>Expenses</th>
-          </tr>
-        </thead>
-        <tbody>
-          {forecastData.map((data) => (
-            <tr key={data.month}>
-              <td>{data.month}</td>
-              <td>{data.balance}</td>
-              <td>{data.income}</td>
-              <td>{data.expenses}</td>
-            </tr>
+            </li>
           ))}
-        </tbody>
-      </table>
+        </ul>
+        {showAddForm ? (
+          <div>
+            <label>Label:</label>
+            <input type="text" value={newItem.label} onChange={(e) => setNewItem({ ...newItem, label: e.target.value })} />
+            <br />
+            <label>Amount:</label>
+            <input type="number" value={newItem.amount} onChange={(e) => setNewItem({ ...newItem, amount: e.target.value })} />
+            <br />
+            <label>Type:</label>
+            <select value={newItem.type} onChange={(e) => setNewItem({ ...newItem, type: e.target.value as "income" | "expense" })}>
+              <option value="income">Income</option>
+              <option value="expense">Expense</option>
+            </select>
+            <br />
+            <label>Frequency:</label>
+            <select value={newItem.frequency} onChange={(e) => setNewItem({ ...newItem, frequency: e.target.value as RecurringItem["frequency"] })}>
+              <option value="monthly">Monthly</option>
+              <option value="quarterly">Quarterly</option>
+              <option value="yearly">Yearly</option>
+            </select>
+            <br />
+            <button onClick={() => {
+              setRecurringItems([...recurringItems, { id: Math.random().toString(), ...newItem }]);
+              setNewItem({ label: "", amount: "", type: "income", frequency: "monthly" });
+              setShowAddForm(false);
+            }}>Add</button>
+          </div>
+        ) : (
+          <button onClick={() => setShowAddForm(true)}>Add Recurring Item</button>
+        )}
+      </div>
+      <div>
+        <h2>Forecast:</h2>
+        <ResponsiveContainer width="100%" height={300}>
+          <LineChart data={forecastData}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="month" />
+            <YAxis />
+            <Tooltip />
+            <Legend />
+            <Line type="monotone" dataKey="balance" stroke="#8884d8" activeDot={{ r: 8 }} />
+            <Line type="monotone" dataKey="income" stroke="#82ca9d" />
+            <Line type="monotone" dataKey="expenses" stroke="#ff0000" />
+          </LineChart>
+        </ResponsiveContainer>
+        <ul>
+          {forecastData.map((data, index) => (
+            <li key={index}>
+              Month {data.month}: Balance - {data.balance}, Income - {data.income}, Expenses - {data.expenses}
+              <button onClick={() => handleDrillDown(data.month)}>Drill Down</button>
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 }
