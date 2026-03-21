@@ -106,31 +106,37 @@ export default function ForecastingPage() {
     if (monthData) {
       const incomeDetails = recurringItems
         .filter((item) => item.type === "income")
-        .map((item) => ({ label: item.label, amount: getMonthlyEquivalent(item) }));
+        .map((item) => ({
+          label: item.label,
+          amount: getMonthlyEquivalent(item),
+        }));
       const expenseDetails = recurringItems
         .filter((item) => item.type === "expense")
-        .map((item) => ({ label: item.label, amount: getMonthlyEquivalent(item) }));
-      console.log(`Drill down for month ${month}:`, {
-        balance: monthData.balance,
-        income: monthData.income,
-        expenses: monthData.expenses,
-        incomeDetails,
-        expenseDetails,
-      });
+        .map((item) => ({
+          label: item.label,
+          amount: getMonthlyEquivalent(item),
+        }));
+      console.log(`Drill down for month ${month}:`);
+      console.log(`Income: ${incomeDetails.map((item) => `${item.label}: $${item.amount}`).join(", ")}`);
+      console.log(`Expenses: ${expenseDetails.map((item) => `${item.label}: $${item.amount}`).join(", ")}`);
     }
+  };
+
+  const handleMouseOver = (data: any, index: number) => {
+    console.log(`Mouse over: Month ${data.month}, Balance: $${data.balance}`);
   };
 
   return (
     <div>
       <h1>Automated Cash Flow Forecasting</h1>
       <ResponsiveContainer width="100%" height={300}>
-        <LineChart data={forecastData}>
+        <LineChart data={forecastData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="month" />
           <YAxis />
           <Tooltip />
           <Legend />
-          <Line type="monotone" dataKey="balance" stroke="#8884d8" activeDot={{ r: 8 }} />
+          <Line type="monotone" dataKey="balance" stroke="#8884d8" activeDot={{ r: 8 }} onMouseOver={handleMouseOver} />
           <Line type="monotone" dataKey="income" stroke="#82ca9d" />
           <Line type="monotone" dataKey="expenses" stroke="#ff0000" />
         </LineChart>
@@ -149,9 +155,9 @@ export default function ForecastingPage() {
           {forecastData.map((data, index) => (
             <tr key={index}>
               <td>{data.month}</td>
-              <td>{data.balance}</td>
-              <td>{data.income}</td>
-              <td>{data.expenses}</td>
+              <td>${data.balance}</td>
+              <td>${data.income}</td>
+              <td>${data.expenses}</td>
               <td>
                 <button onClick={() => handleDrillDown(data.month)}>Drill Down</button>
               </td>

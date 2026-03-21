@@ -83,32 +83,23 @@ img[lazy].loaded{opacity:1;}
 }
 @font-face {
   font-family: 'Inter';
-  src: url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+  src: url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap') format('woff2');
 }
 img {
-  width: 100%;
-  height: auto;
-  display: block;
-  object-fit: contain;
-  loading: lazy;
-  will-change: opacity;
-  image-rendering: high-quality;
-  image-orientation: from-image;
+  content-visibility: auto;
 }
-@media only screen and (min-width: 1200px) {
-  .container {
-    grid-template-columns: repeat(12, 1fr);
-    gap: 20px;
+body {
+  font-display: optional;
+}
+@layer utilities {
+  .lazy {
+    filter: blur(10px);
   }
 }
-@media (max-width: 480px) {
-  .glass-card {
-    @apply bg-white/90;
-    backdrop-blur-sm: none;
-  }
+img[lazy] {
+  filter: blur(10px);
+  transition: filter 0.3s;
 }
-@media (max-width: 768px) {
-  .gradient-text {
-    @apply bg-gradient-to-r from-indigo-500 to-violet-500;
-  }
+img[lazy].loaded {
+  filter: blur(0);
 }
