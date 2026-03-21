@@ -97,38 +97,19 @@ const mlModel = {
     "Utilities": ["Utilities"],
     "Travel": ["Travel"],
     "Equipment": ["Equipment"],
-    "Professional Services": ["Professional", "Services"],
+    "Professional Services": ["Professional Services"],
     "Other Expense": ["Other"],
   },
 };
 
-function categorizeTransaction(transaction: Transaction): string {
-  const keywords = transaction.description.toLowerCase().split(" ");
-  let category: string | null = null;
-
-  if (transaction.type === "income") {
-    for (const incomeCategory in mlModel.income) {
-      for (const keyword of mlModel.income[incomeCategory]) {
-        if (keywords.includes(keyword.toLowerCase())) {
-          category = incomeCategory;
-          break;
-        }
-      }
-      if (category) break;
-    }
-  } else if (transaction.type === "expense") {
-    for (const expenseCategory in mlModel.expense) {
-      for (const keyword of mlModel.expense[expenseCategory]) {
-        if (keywords.includes(keyword.toLowerCase())) {
-          category = expenseCategory;
-          break;
-        }
-      }
-      if (category) break;
+function categorizeTransaction(transaction: Omit<Transaction, 'category'>): string {
+  const keywords = mlModel[transaction.type];
+  for (const category in keywords) {
+    if (keywords[category].some(keyword => transaction.description.toLowerCase().includes(keyword.toLowerCase()))) {
+      return category;
     }
   }
-
-  return category || (transaction.type === "income" ? "Other Income" : "Other Expense");
+  return transaction.type === "income" ? "Other Income" : "Other Expense";
 }
 
 function App() {
@@ -138,38 +119,36 @@ function App() {
     if (transactions.length === 0) {
       setTransactions(SEED_TRANSACTIONS);
     }
-  }, [transactions]);
+  }, []);
 
   useEffect(() => {
     saveTransactions(transactions);
   }, [transactions]);
 
-  const handleAddTransaction = (newTransaction: Transaction) => {
-    const categorizedTransaction = { ...newTransaction, category: categorizeTransaction(newTransaction) };
-    setTransactions([...transactions, categorizedTransaction]);
+  const handleAddTransaction = (transaction: Omit<Transaction, 'id' | 'category'>) => {
+    const newTransaction: Transaction = {
+      id: Date.now().toString(),
+      category: categorizeTransaction(transaction),
+      ...transaction,
+    };
+    setTransactions([...transactions, newTransaction]);
   };
 
   const handleDeleteTransaction = (id: string) => {
-    setTransactions(transactions.filter((transaction) => transaction.id !== id));
+    setTransactions(transactions.filter(transaction => transaction.id !== id));
   };
 
   return (
     <div>
       <h1>Automated Cash Flow Forecasting</h1>
-      <button onClick={() => handleAddTransaction({ id: Date.now().toString(), description: "New Transaction", amount: 0, type: "income", date: new Date().toISOString().split("T")[0], recurring: false })}>
-        <Plus />
-        Add Transaction
-      </button>
+      <button onClick={() => handleAddTransaction({ description: "Test Transaction", amount: 100, type: "income", date: new Date().toISOString().split("T")[0], recurring: false })}>Add Transaction</button>
       <ul>
-        {transactions.map((transaction) => (
+        {transactions.map(transaction => (
           <li key={transaction.id}>
-            <span>
-              {transaction.description} ({transaction.type}) - {transaction.amount}
-            </span>
-            <button onClick={() => handleDeleteTransaction(transaction.id)}>
-              <Trash2 />
-              Delete
-            </button>
+            <span>{transaction.description}</span>
+            <span>{transaction.amount}</span>
+            <span>{transaction.category}</span>
+            <button onClick={() => handleDeleteTransaction(transaction.id)}>Delete</button>
           </li>
         ))}
       </ul>

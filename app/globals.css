@@ -86,7 +86,6 @@ img[lazy].loaded{opacity:1;}
   src: url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap') format('woff2');
   font-weight: 300 900;
   font-style: normal;
-  font-display: swap;
 }
 img {
   content-visibility: auto;
@@ -94,18 +93,14 @@ img {
 body {
   font-display: optional;
 }
-@layer utilities {
-  .lazy-load {
-    transition: opacity 0.3s;
-    will-change: opacity;
+@keyframes load {
+  0% {
+    opacity: 0;
   }
-  .lazy-load.loaded {
+  100% {
     opacity: 1;
   }
 }
 img[lazy] {
-  opacity: 0;
-}
-img[lazy].loaded {
-  opacity: 1;
+  animation: load 0.3s;
 }
