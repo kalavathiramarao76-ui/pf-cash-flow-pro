@@ -135,10 +135,10 @@ export default function ForecastingPage() {
       </div>
       <div>
         <label>Horizon:</label>
-        <select value={horizon} onChange={(e) => setHorizon(parseInt(e.target.value) as 3 | 6 | 12)}>
-          <option value="3">3 months</option>
-          <option value="6">6 months</option>
-          <option value="12">12 months</option>
+        <select value={horizon} onChange={(e) => setHorizon(parseInt(e.target.value as string))}>
+          <option value={3}>3 months</option>
+          <option value={6}>6 months</option>
+          <option value={12}>12 months</option>
         </select>
       </div>
       <div>
@@ -186,7 +186,7 @@ export default function ForecastingPage() {
             </select>
             <button
               onClick={() => {
-                setRecurringItems([...recurringItems, { ...newItem, id: `r${recurringItems.length + 1}` }]);
+                setRecurringItems([...recurringItems, { ...newItem, id: Math.random().toString(36).substr(2, 9) }]);
                 setNewItem({
                   label: "",
                   amount: "",

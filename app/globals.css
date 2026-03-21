@@ -94,9 +94,18 @@ img {
 body {
   font-display: optional;
 }
+@layer utilities {
+  .lazy-load {
+    transition: opacity 0.3s;
+    will-change: opacity;
+  }
+  .lazy-load.loaded {
+    opacity: 1;
+  }
+}
 img[lazy] {
-  content-visibility: hidden;
+  opacity: 0;
 }
 img[lazy].loaded {
-  content-visibility: visible;
+  opacity: 1;
 }
