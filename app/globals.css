@@ -91,16 +91,20 @@ img {
   content-visibility: auto;
 }
 body {
-  font-display: optional;
+  font-display: swap;
 }
-@keyframes load {
-  0% {
+@layer utilities {
+  .lazy-load {
     opacity: 0;
+    transition: opacity 0.3s;
   }
-  100% {
+  .lazy-load.loaded {
     opacity: 1;
   }
 }
 img[lazy] {
-  animation: load 0.3s;
+  content-visibility: auto;
+}
+img[lazy].loaded {
+  content-visibility: visible;
 }
