@@ -103,15 +103,32 @@ const mlModel = {
 };
 
 function categorizeTransaction(transaction: Transaction): string {
-  const keywords = mlModel[transaction.type];
-  for (const category in keywords) {
-    for (const keyword of keywords[category]) {
-      if (transaction.description.toLowerCase().includes(keyword.toLowerCase())) {
-        return category;
+  const keywords = transaction.description.split(" ");
+  let category = "";
+
+  if (transaction.type === "income") {
+    for (const incomeCategory in mlModel.income) {
+      for (const keyword of mlModel.income[incomeCategory]) {
+        if (keywords.includes(keyword)) {
+          category = incomeCategory;
+          break;
+        }
       }
+      if (category) break;
+    }
+  } else if (transaction.type === "expense") {
+    for (const expenseCategory in mlModel.expense) {
+      for (const keyword of mlModel.expense[expenseCategory]) {
+        if (keywords.includes(keyword)) {
+          category = expenseCategory;
+          break;
+        }
+      }
+      if (category) break;
     }
   }
-  return transaction.type === "income" ? "Other Income" : "Other Expense";
+
+  return category;
 }
 
 function App() {
@@ -121,14 +138,14 @@ function App() {
     if (transactions.length === 0) {
       setTransactions(SEED_TRANSACTIONS);
     }
-  }, [transactions]);
+  }, []);
 
   useEffect(() => {
     saveTransactions(transactions);
   }, [transactions]);
 
-  const handleAddTransaction = (transaction: Transaction) => {
-    const categorizedTransaction = { ...transaction, category: categorizeTransaction(transaction) };
+  const handleAddTransaction = (newTransaction: Transaction) => {
+    const categorizedTransaction = { ...newTransaction, category: categorizeTransaction(newTransaction) };
     setTransactions([...transactions, categorizedTransaction]);
   };
 
@@ -161,17 +178,13 @@ function App() {
               <td>{transaction.date}</td>
               <td>{transaction.recurring ? "Yes" : "No"}</td>
               <td>
-                <button onClick={() => handleDeleteTransaction(transaction.id)}>
-                  <Trash2 />
-                </button>
+                <button onClick={() => handleDeleteTransaction(transaction.id)}>Delete</button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
-      <button onClick={() => handleAddTransaction({ id: Math.random().toString(), description: "New Transaction", amount: 0, type: "income", category: "", date: new Date().toISOString().split("T")[0], recurring: false })}>
-        <Plus />
-      </button>
+      <button onClick={() => handleAddTransaction({ id: Math.random().toString(), description: "New Transaction", amount: 0, type: "income", category: "", date: new Date().toISOString().split("T")[0], recurring: false })}>Add Transaction</button>
     </div>
   );
 }
