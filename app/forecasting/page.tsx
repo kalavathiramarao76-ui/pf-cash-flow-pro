@@ -104,26 +104,32 @@ export default function ForecastingPage() {
   const handleDrillDown = (month: number) => {
     const monthData = forecastData.find((data) => data.month === month);
     if (monthData) {
-      const incomeDetails = recurringItems.filter((item) => item.type === "income").map((item) => ({
-        label: item.label,
-        amount: getMonthlyEquivalent(item),
-      }));
-      const expenseDetails = recurringItems.filter((item) => item.type === "expense").map((item) => ({
-        label: item.label,
-        amount: getMonthlyEquivalent(item),
-      }));
-      alert(`Month: ${month}, Balance: ${monthData.balance}, Income: ${monthData.income}, Expenses: ${monthData.expenses}
-        Income Details:
-          ${incomeDetails.map((item) => `${item.label}: ${item.amount}`).join("\n")}
-        Expense Details:
-          ${expenseDetails.map((item) => `${item.label}: ${item.amount}`).join("\n")}`);
+      const incomeDetails = recurringItems
+        .filter((item) => item.type === "income")
+        .map((item) => ({
+          label: item.label,
+          amount: getMonthlyEquivalent(item),
+        }));
+      const expenseDetails = recurringItems
+        .filter((item) => item.type === "expense")
+        .map((item) => ({
+          label: item.label,
+          amount: getMonthlyEquivalent(item),
+        }));
+      console.log(`Drill down for month ${month}:`, {
+        balance: monthData.balance,
+        income: monthData.income,
+        expenses: monthData.expenses,
+        incomeDetails,
+        expenseDetails,
+      });
     }
   };
 
   return (
     <div>
       <h1>Automated Cash Flow Forecasting</h1>
-      <ResponsiveContainer width="100%" height={300}>
+      <ResponsiveContainer width="100%" height={400}>
         <LineChart data={forecastData}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="month" />
@@ -159,35 +165,6 @@ export default function ForecastingPage() {
           ))}
         </tbody>
       </table>
-      <button onClick={() => setShowAddForm(!showAddForm)}>Add New Recurring Item</button>
-      {showAddForm && (
-        <form>
-          <label>
-            Label:
-            <input type="text" value={newItem.label} onChange={(e) => setNewItem({ ...newItem, label: e.target.value })} />
-          </label>
-          <label>
-            Amount:
-            <input type="number" value={newItem.amount} onChange={(e) => setNewItem({ ...newItem, amount: e.target.value })} />
-          </label>
-          <label>
-            Type:
-            <select value={newItem.type} onChange={(e) => setNewItem({ ...newItem, type: e.target.value as "income" | "expense" })}>
-              <option value="income">Income</option>
-              <option value="expense">Expense</option>
-            </select>
-          </label>
-          <label>
-            Frequency:
-            <select value={newItem.frequency} onChange={(e) => setNewItem({ ...newItem, frequency: e.target.value as RecurringItem["frequency"] })}>
-              <option value="monthly">Monthly</option>
-              <option value="quarterly">Quarterly</option>
-              <option value="yearly">Yearly</option>
-            </select>
-          </label>
-          <button type="submit">Add</button>
-        </form>
-      )}
     </div>
   );
 }
