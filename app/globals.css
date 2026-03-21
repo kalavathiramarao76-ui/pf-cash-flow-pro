@@ -90,11 +90,12 @@ img {
 }
 @media only screen and (max-width: 768px) {
   img {
-    image-rendering: auto;
+    image-rendering: crisp-edges;
   }
 }
-@media only screen and (max-width: 480px) {
+@media only screen and (prefers-reduced-motion: reduce) {
   img {
     image-rendering: auto;
+    transition: none;
   }
 }
