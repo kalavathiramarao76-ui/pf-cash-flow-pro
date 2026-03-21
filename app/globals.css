@@ -73,8 +73,6 @@ img[lazy].loaded{opacity:1;}
   font-family: 'Inter';
   src: url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 }
-
-/* Optimizations for better page load times and responsiveness */
 img {
   width: 100%;
   height: auto;
@@ -85,7 +83,3 @@ img {
   image-rendering: high-quality;
   image-orientation: from-image;
 }
-/* Removed redundant font-face declaration and optimized image loading */
-/* Added will-change: opacity for better image loading performance */
-/* Added image-rendering: high-quality for better image quality */
-/* Added image-orientation: from-image for better image orientation */
