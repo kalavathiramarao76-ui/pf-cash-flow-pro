@@ -182,16 +182,22 @@ export default function ForecastingPage() {
         </ResponsiveContainer>
         {selectedMonth !== null && (
           <div>
-            <h3>Drill Down - Month {selectedMonth}</h3>
-            <p>Balance: {forecastData[selectedMonth - 1].balance}</p>
-            <p>Income: {forecastData[selectedMonth - 1].income}</p>
-            <p>Expenses: {forecastData[selectedMonth - 1].expenses}</p>
+            <h3>Drill Down for Month {selectedMonth}:</h3>
+            <ul>
+              {recurringItems.map((item) => (
+                <li key={item.id}>
+                  {item.label} ({item.type}) - {getMonthlyEquivalent(item)}
+                </li>
+              ))}
+            </ul>
             <button onClick={handleBack}>Back</button>
           </div>
         )}
-        <button onClick={() => handleDrillDown(1)}>Drill Down - Month 1</button>
-        <button onClick={() => handleDrillDown(2)}>Drill Down - Month 2</button>
-        <button onClick={() => handleDrillDown(3)}>Drill Down - Month 3</button>
+        {forecastData.map((data, index) => (
+          <button key={index} onClick={() => handleDrillDown(data.month)}>
+            Drill Down for Month {data.month}
+          </button>
+        ))}
       </div>
     </div>
   );
