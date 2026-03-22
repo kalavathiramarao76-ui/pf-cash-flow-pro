@@ -113,28 +113,69 @@ function categorizeTransaction(transaction: Transaction): string {
 }
 
 function App() {
-  const [transactions, setTransactions] = useState<Transaction[]>(getStoredTransactions() || SEED_TRANSACTIONS);
+  const [transactions, setTransactions] = useState<Transaction[]>(getStoredTransactions());
+
+  useEffect(() => {
+    if (transactions.length === 0) {
+      setTransactions(SEED_TRANSACTIONS);
+    }
+  }, []);
 
   useEffect(() => {
     saveTransactions(transactions);
   }, [transactions]);
 
-  const handleAddTransaction = (newTransaction: Transaction) => {
-    const categorizedTransaction = { ...newTransaction, category: categorizeTransaction(newTransaction) };
-    setTransactions([...transactions, categorizedTransaction]);
-  };
-
-  const handleUpdateTransaction = (updatedTransaction: Transaction) => {
-    const categorizedTransaction = { ...updatedTransaction, category: categorizeTransaction(updatedTransaction) };
-    setTransactions(transactions.map(transaction => transaction.id === updatedTransaction.id ? categorizedTransaction : transaction));
+  const handleAddTransaction = (transaction: Transaction) => {
+    setTransactions([...transactions, transaction]);
   };
 
   const handleDeleteTransaction = (id: string) => {
     setTransactions(transactions.filter(transaction => transaction.id !== id));
   };
 
+  const handleCategorizeTransactions = () => {
+    setTransactions(transactions.map(transaction => ({ ...transaction, category: categorizeTransaction(transaction) })));
+  };
+
   return (
-    // existing JSX code
+    <div>
+      <h1>Automated Cash Flow Forecasting</h1>
+      <button onClick={handleCategorizeTransactions}>Categorize Transactions</button>
+      <ul>
+        {transactions.map(transaction => (
+          <li key={transaction.id}>
+            <span>{transaction.description}</span>
+            <span>{transaction.amount}</span>
+            <span>{transaction.category}</span>
+            <button onClick={() => handleDeleteTransaction(transaction.id)}>Delete</button>
+          </li>
+        ))}
+      </ul>
+      <form onSubmit={event => {
+        event.preventDefault();
+        const transaction: Transaction = {
+          id: Math.random().toString(36).substr(2, 9),
+          description: event.target.description.value,
+          amount: parseFloat(event.target.amount.value),
+          type: event.target.type.value as TransactionType,
+          category: "",
+          date: new Date().toISOString().split("T")[0],
+          recurring: false,
+        };
+        handleAddTransaction(transaction);
+        event.target.description.value = "";
+        event.target.amount.value = "";
+        event.target.type.value = "";
+      }}>
+        <input type="text" name="description" placeholder="Description" />
+        <input type="number" name="amount" placeholder="Amount" />
+        <select name="type">
+          <option value="income">Income</option>
+          <option value="expense">Expense</option>
+        </select>
+        <button type="submit">Add Transaction</button>
+      </form>
+    </div>
   );
 }
 
