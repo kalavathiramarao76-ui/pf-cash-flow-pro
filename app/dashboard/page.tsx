@@ -124,6 +124,11 @@ function App() {
     setTransactions([...transactions, categorizedTransaction]);
   };
 
+  const handleUpdateTransaction = (updatedTransaction: Transaction) => {
+    const categorizedTransaction = { ...updatedTransaction, category: categorizeTransaction(updatedTransaction) };
+    setTransactions(transactions.map(transaction => transaction.id === updatedTransaction.id ? categorizedTransaction : transaction));
+  };
+
   const handleDeleteTransaction = (id: string) => {
     setTransactions(transactions.filter(transaction => transaction.id !== id));
   };
