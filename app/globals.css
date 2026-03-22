@@ -31,6 +31,8 @@ img[lazy].loaded{opacity:1;}
   grid-template-columns: repeat(12, 1fr);
   gap: 20px;
   padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 @media (max-width:480px){
   body{font-size:14px;}
@@ -66,5 +68,22 @@ img[lazy].loaded{opacity:1;}
     grid-template-columns: repeat(12, 1fr);
     gap: 20px;
     padding: 20px;
+  }
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 248, 250, 252;
+    --background-rgb: 15, 23, 42;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none;
+    transition: none;
+  }
+}
+@media (min-width: 1200px) {
+  .container {
+    max-width: 80%;
   }
 }
