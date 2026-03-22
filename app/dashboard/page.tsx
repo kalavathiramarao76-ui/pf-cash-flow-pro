@@ -97,7 +97,7 @@ const mlModel = {
     "Utilities": ["Utilities"],
     "Travel": ["Travel"],
     "Equipment": ["Equipment"],
-    "Professional Services": ["Professional", "Services"],
+    "Professional Services": ["Professional Services"],
     "Other Expense": ["Other"],
   },
 };
@@ -111,7 +111,7 @@ function categorizeTransaction(transaction: Transaction): string {
       }
     }
   }
-  return transaction.type === "income" ? CATEGORIES_INCOME[0] : CATEGORIES_EXPENSE[0];
+  return transaction.type === "income" ? "Other Income" : "Other Expense";
 }
 
 function App() {
