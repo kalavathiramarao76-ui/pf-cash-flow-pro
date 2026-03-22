@@ -97,38 +97,19 @@ const mlModel = {
     "Utilities": ["Utilities"],
     "Travel": ["Travel"],
     "Equipment": ["Equipment"],
-    "Professional Services": ["Professional", "Services"],
+    "Professional Services": ["Professional Services"],
     "Other Expense": ["Other"],
   },
 };
 
 function categorizeTransaction(transaction: Transaction): string {
-  const keywords = transaction.description.split(" ");
-  let category = "";
-
-  if (transaction.type === "income") {
-    for (const incomeCategory in mlModel.income) {
-      for (const keyword of mlModel.income[incomeCategory]) {
-        if (keywords.includes(keyword)) {
-          category = incomeCategory;
-          break;
-        }
-      }
-      if (category) break;
-    }
-  } else if (transaction.type === "expense") {
-    for (const expenseCategory in mlModel.expense) {
-      for (const keyword of mlModel.expense[expenseCategory]) {
-        if (keywords.includes(keyword)) {
-          category = expenseCategory;
-          break;
-        }
-      }
-      if (category) break;
+  const keywords = mlModel[transaction.type];
+  for (const category in keywords) {
+    if (keywords[category].some(keyword => transaction.description.toLowerCase().includes(keyword.toLowerCase()))) {
+      return category;
     }
   }
-
-  return category;
+  return transaction.type === "income" ? CATEGORIES_INCOME[0] : CATEGORIES_EXPENSE[0];
 }
 
 function App() {
@@ -138,55 +119,37 @@ function App() {
     if (transactions.length === 0) {
       setTransactions(SEED_TRANSACTIONS);
     }
-  }, [transactions]);
+  }, []);
 
   useEffect(() => {
     saveTransactions(transactions);
   }, [transactions]);
 
-  const handleAddTransaction = (newTransaction: Transaction) => {
-    const categorizedTransaction = { ...newTransaction, category: categorizeTransaction(newTransaction) };
+  const handleAddTransaction = (transaction: Transaction) => {
+    const categorizedTransaction = { ...transaction, category: categorizeTransaction(transaction) };
     setTransactions([...transactions, categorizedTransaction]);
   };
 
   const handleDeleteTransaction = (id: string) => {
-    setTransactions(transactions.filter((transaction) => transaction.id !== id));
+    setTransactions(transactions.filter(transaction => transaction.id !== id));
   };
 
   return (
     <div>
       <h1>Automated Cash Flow Forecasting</h1>
-      <table>
-        <thead>
-          <tr>
-            <th>Description</th>
-            <th>Amount</th>
-            <th>Type</th>
-            <th>Category</th>
-            <th>Date</th>
-            <th>Recurring</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {transactions.map((transaction) => (
-            <tr key={transaction.id}>
-              <td>{transaction.description}</td>
-              <td>{transaction.amount}</td>
-              <td>{transaction.type}</td>
-              <td>{transaction.category}</td>
-              <td>{transaction.date}</td>
-              <td>{transaction.recurring ? "Yes" : "No"}</td>
-              <td>
-                <button onClick={() => handleDeleteTransaction(transaction.id)}>Delete</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <button onClick={() => handleAddTransaction({ id: "new", description: "New Transaction", amount: 0, type: "income", date: new Date().toISOString().split("T")[0], recurring: false })}>
+      <button onClick={() => handleAddTransaction({ id: Math.random().toString(), description: "New Transaction", amount: 100, type: "income", date: new Date().toISOString().split("T")[0], recurring: false })}>
         Add Transaction
       </button>
+      <ul>
+        {transactions.map(transaction => (
+          <li key={transaction.id}>
+            <span>{transaction.description}</span>
+            <span>{transaction.amount}</span>
+            <span>{transaction.category}</span>
+            <button onClick={() => handleDeleteTransaction(transaction.id)}>Delete</button>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

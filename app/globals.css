@@ -30,6 +30,7 @@ img[lazy].loaded{opacity:1;}
   display: grid;
   grid-template-columns: repeat(12, 1fr);
   gap: 20px;
+  padding: 20px;
 }
 @media only screen and (max-width:480px){
   body{font-size:12px;}
@@ -42,6 +43,7 @@ img[lazy].loaded{opacity:1;}
   .container {
     grid-template-columns: repeat(4, 1fr);
     gap: 10px;
+    padding: 10px;
   }
 }
 @media only screen and (max-width:768px) and (min-width:481px){
@@ -55,6 +57,7 @@ img[lazy].loaded{opacity:1;}
   .container {
     grid-template-columns: repeat(6, 1fr);
     gap: 15px;
+    padding: 15px;
   }
 }
 @media only screen and (max-width:1024px) and (min-width:769px){
@@ -68,6 +71,21 @@ img[lazy].loaded{opacity:1;}
   .container {
     grid-template-columns: repeat(8, 1fr);
     gap: 18px;
+    padding: 18px;
+  }
+}
+@media only screen and (min-width:1025px){
+  body{font-size:16px;}
+  h1{font-size:2.5rem;}
+  h2{font-size:2rem;}
+  h3{font-size:1.75rem;}
+  h4{font-size:1.5rem;}
+  h5{font-size:1.25rem;}
+  h6{font-size:1rem;}
+  .container {
+    grid-template-columns: repeat(12, 1fr);
+    gap: 20px;
+    padding: 20px;
   }
 }
 @media only screen and (prefers-reduced-motion: reduce){
@@ -83,47 +101,19 @@ img[lazy].loaded{opacity:1;}
 }
 @font-face {
   font-family: 'Inter';
-  src: url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap') format('woff2');
+  src: url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900') format('woff2');
 }
-/* Optimizations for better page load times and responsiveness */
-img {
-  width: 100%;
-  height: auto;
-  display: block;
-  object-fit: contain;
-  loading: lazy;
-  will-change: opacity;
-  image-rendering: high-quality;
-  image-orientation: from-image;
+:focus {
+  outline: 2px solid #818cf8;
+  outline-offset: 2px;
 }
-/* Use CSS grid for layout to reduce layout shifts */
-.container {
-  display: grid;
-  grid-template-columns: repeat(12, 1fr);
-  gap: 20px;
+:focus-visible {
+  outline: 2px solid #818cf8;
+  outline-offset: 2px;
 }
-/* Use media queries to apply different styles for different screen sizes */
-@media only screen and (max-width:480px){
-  .container {
-    grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
-  }
+[role="button"] {
+  cursor: pointer;
 }
-@media only screen and (max-width:768px) and (min-width:481px){
-  .container {
-    grid-template-columns: repeat(6, 1fr);
-    gap: 15px;
-  }
-}
-@media only screen and (max-width:1024px) and (min-width:769px){
-  .container {
-    grid-template-columns: repeat(8, 1fr);
-    gap: 18px;
-  }
-}
-/* Use font face to load fonts only when needed */
-@font-face {
-  font-family: 'Inter';
-  src: url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap') format('woff2');
-  font-display: swap;
+[role="link"] {
+  cursor: pointer;
 }
