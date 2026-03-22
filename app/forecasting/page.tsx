@@ -83,6 +83,7 @@ export default function ForecastingPage() {
   const [showAddForm, setShowAddForm] = useState(false);
 
   const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
+  const [dateRange, setDateRange] = useState({ start: 1, end: 6 });
 
   const forecastData = useMemo(() => {
     const data: { month: number; balance: number; income: number; expenses: number }[] = [];
@@ -111,6 +112,10 @@ export default function ForecastingPage() {
     setSelectedMonth(null);
   };
 
+  const handleDateRangeChange = (start: number, end: number) => {
+    setDateRange({ start, end });
+  };
+
   return (
     <div>
       <h1>Automated Cash Flow Forecasting</h1>
@@ -131,7 +136,7 @@ export default function ForecastingPage() {
         <input type="number" value={safetyThreshold} onChange={(e) => setSafetyThreshold(e.target.value)} />
       </div>
       <div>
-        <h2>Recurring Items:</h2>
+        <label>Recurring Items:</label>
         <ul>
           {recurringItems.map((item) => (
             <li key={item.id}>
@@ -143,23 +148,19 @@ export default function ForecastingPage() {
           <div>
             <label>Label:</label>
             <input type="text" value={newItem.label} onChange={(e) => setNewItem({ ...newItem, label: e.target.value })} />
-            <br />
             <label>Amount:</label>
             <input type="number" value={newItem.amount} onChange={(e) => setNewItem({ ...newItem, amount: e.target.value })} />
-            <br />
             <label>Type:</label>
             <select value={newItem.type} onChange={(e) => setNewItem({ ...newItem, type: e.target.value as "income" | "expense" })}>
               <option value="income">Income</option>
               <option value="expense">Expense</option>
             </select>
-            <br />
             <label>Frequency:</label>
             <select value={newItem.frequency} onChange={(e) => setNewItem({ ...newItem, frequency: e.target.value as RecurringItem["frequency"] })}>
               <option value="monthly">Monthly</option>
               <option value="quarterly">Quarterly</option>
               <option value="yearly">Yearly</option>
             </select>
-            <br />
             <button onClick={() => setRecurringItems([...recurringItems, { ...newItem, id: `r${recurringItems.length + 1}` }])}>Add</button>
           </div>
         ) : (
@@ -167,38 +168,35 @@ export default function ForecastingPage() {
         )}
       </div>
       <div>
-        <h2>Forecast:</h2>
-        <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={forecastData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="month" />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            <Line type="monotone" dataKey="balance" stroke="#8884d8" activeDot={{ r: 8 }} />
-            <Line type="monotone" dataKey="income" stroke="#82ca9d" />
-            <Line type="monotone" dataKey="expenses" stroke="#ff0000" />
-          </LineChart>
-        </ResponsiveContainer>
-        {selectedMonth !== null && (
-          <div>
-            <h3>Drill Down for Month {selectedMonth}:</h3>
-            <ul>
-              {recurringItems.map((item) => (
-                <li key={item.id}>
-                  {item.label} ({item.type}) - {getMonthlyEquivalent(item)}
-                </li>
-              ))}
-            </ul>
-            <button onClick={handleBack}>Back</button>
-          </div>
-        )}
-        {forecastData.map((data, index) => (
-          <button key={index} onClick={() => handleDrillDown(data.month)}>
-            Drill Down for Month {data.month}
-          </button>
-        ))}
+        <label>Date Range:</label>
+        <input type="number" value={dateRange.start} onChange={(e) => handleDateRangeChange(parseInt(e.target.value), dateRange.end)} />
+        <label>to</label>
+        <input type="number" value={dateRange.end} onChange={(e) => handleDateRangeChange(dateRange.start, parseInt(e.target.value))} />
       </div>
+      <ResponsiveContainer width="100%" height={300}>
+        <LineChart data={forecastData.slice(dateRange.start - 1, dateRange.end)}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="month" />
+          <YAxis />
+          <Tooltip />
+          <Legend />
+          <Line type="monotone" dataKey="balance" stroke="#8884d8" activeDot={{ r: 8 }} />
+          <Line type="monotone" dataKey="income" stroke="#82ca9d" />
+          <Line type="monotone" dataKey="expenses" stroke="#8884d8" />
+          {selectedMonth !== null && (
+            <ReferenceLine x={selectedMonth} stroke="red" />
+          )}
+        </LineChart>
+      </ResponsiveContainer>
+      {selectedMonth !== null && (
+        <div>
+          <h2>Drill Down for Month {selectedMonth}</h2>
+          <p>Balance: {forecastData[selectedMonth - 1].balance}</p>
+          <p>Income: {forecastData[selectedMonth - 1].income}</p>
+          <p>Expenses: {forecastData[selectedMonth - 1].expenses}</p>
+          <button onClick={handleBack}>Back</button>
+        </div>
+      )}
     </div>
   );
 }
