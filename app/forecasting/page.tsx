@@ -136,7 +136,7 @@ export default function ForecastingPage() {
           <p>Balance: {forecastData[selectedMonth - 1].balance}</p>
           <p>Income: {forecastData[selectedMonth - 1].income}</p>
           <p>Expenses: {forecastData[selectedMonth - 1].expenses}</p>
-          <button onClick={handleResetDrillDown}>Back to Overview</button>
+          <button onClick={handleResetDrillDown}>Reset Drill Down</button>
         </div>
       )}
       <button onClick={() => handleDrillDown(1)}>Drill Down Month 1</button>
