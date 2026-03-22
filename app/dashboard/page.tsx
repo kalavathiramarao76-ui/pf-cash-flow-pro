@@ -105,8 +105,10 @@ const mlModel = {
 function categorizeTransaction(transaction: Transaction): string {
   const keywords = mlModel[transaction.type];
   for (const category in keywords) {
-    if (keywords[category].some(keyword => transaction.description.toLowerCase().includes(keyword.toLowerCase()))) {
-      return category;
+    for (const keyword of keywords[category]) {
+      if (transaction.description.toLowerCase().includes(keyword.toLowerCase())) {
+        return category;
+      }
     }
   }
   return transaction.type === "income" ? "Other Income" : "Other Expense";
@@ -125,56 +127,58 @@ function App() {
     saveTransactions(transactions);
   }, [transactions]);
 
-  const handleAddTransaction = (transaction: Transaction) => {
-    setTransactions([...transactions, transaction]);
+  const handleAddTransaction = (newTransaction: Transaction) => {
+    const categorizedTransaction = { ...newTransaction, category: categorizeTransaction(newTransaction) };
+    setTransactions([...transactions, categorizedTransaction]);
   };
 
   const handleDeleteTransaction = (id: string) => {
-    setTransactions(transactions.filter(transaction => transaction.id !== id));
-  };
-
-  const handleCategorizeTransactions = () => {
-    setTransactions(transactions.map(transaction => ({ ...transaction, category: categorizeTransaction(transaction) })));
+    setTransactions(transactions.filter((transaction) => transaction.id !== id));
   };
 
   return (
     <div>
       <h1>Automated Cash Flow Forecasting</h1>
-      <button onClick={handleCategorizeTransactions}>Categorize Transactions</button>
-      <ul>
-        {transactions.map(transaction => (
-          <li key={transaction.id}>
-            <span>{transaction.description}</span>
-            <span>{transaction.amount}</span>
-            <span>{transaction.category}</span>
-            <button onClick={() => handleDeleteTransaction(transaction.id)}>Delete</button>
-          </li>
-        ))}
-      </ul>
-      <form onSubmit={event => {
-        event.preventDefault();
-        const transaction: Transaction = {
-          id: Math.random().toString(36).substr(2, 9),
-          description: event.target.description.value,
-          amount: parseFloat(event.target.amount.value),
-          type: event.target.type.value as TransactionType,
-          category: "",
-          date: new Date().toISOString().split("T")[0],
-          recurring: false,
-        };
-        handleAddTransaction(transaction);
-        event.target.description.value = "";
-        event.target.amount.value = "";
-        event.target.type.value = "";
-      }}>
-        <input type="text" name="description" placeholder="Description" />
-        <input type="number" name="amount" placeholder="Amount" />
-        <select name="type">
-          <option value="income">Income</option>
-          <option value="expense">Expense</option>
-        </select>
-        <button type="submit">Add Transaction</button>
-      </form>
+      <table>
+        <thead>
+          <tr>
+            <th>Description</th>
+            <th>Amount</th>
+            <th>Type</th>
+            <th>Category</th>
+            <th>Date</th>
+            <th>Recurring</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {transactions.map((transaction) => (
+            <tr key={transaction.id}>
+              <td>{transaction.description}</td>
+              <td>{transaction.amount}</td>
+              <td>{transaction.type}</td>
+              <td>{transaction.category}</td>
+              <td>{transaction.date}</td>
+              <td>{transaction.recurring ? "Yes" : "No"}</td>
+              <td>
+                <button onClick={() => handleDeleteTransaction(transaction.id)}>
+                  <Trash2 />
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <button onClick={() => handleAddTransaction({
+        id: Math.random().toString(),
+        description: "New Transaction",
+        amount: 0,
+        type: "income",
+        date: new Date().toISOString().split("T")[0],
+        recurring: false,
+      })}>
+        <Plus />
+      </button>
     </div>
   );
 }

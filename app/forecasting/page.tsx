@@ -132,7 +132,8 @@ export default function ForecastingPage() {
         <input type="number" value={safetyThreshold} onChange={(e) => setSafetyThreshold(e.target.value)} />
       </div>
       <div>
-        <button onClick={() => setShowAddForm(!showAddForm)}>Add Recurring Item</button>
+        <h2>Recurring Items:</h2>
+        <button onClick={() => setShowAddForm(true)}>Add New Item</button>
         {showAddForm && (
           <div>
             <label>Label:</label>
@@ -150,16 +151,19 @@ export default function ForecastingPage() {
               <option value="quarterly">Quarterly</option>
               <option value="yearly">Yearly</option>
             </select>
-            <button onClick={() => setRecurringItems([...recurringItems, { ...newItem, id: Math.random().toString(36).substr(2, 9) }])}>Add</button>
+            <button onClick={() => {
+              setRecurringItems([...recurringItems, { id: Math.random().toString(), ...newItem }]);
+              setShowAddForm(false);
+            }}>Add Item</button>
           </div>
         )}
-      </div>
-      <div>
-        <h2>Recurring Items:</h2>
         <ul>
           {recurringItems.map((item) => (
             <li key={item.id}>
-              {item.label} ({item.type}) - {item.amount} ({item.frequency})
+              <span>{item.label}</span>
+              <span>{item.amount}</span>
+              <span>{item.type}</span>
+              <span>{item.frequency}</span>
             </li>
           ))}
         </ul>
@@ -180,18 +184,16 @@ export default function ForecastingPage() {
         </ResponsiveContainer>
         {selectedMonth !== null && (
           <div>
-            <h3>Drill Down for Month {selectedMonth}:</h3>
+            <h3>Drill Down: Month {selectedMonth}</h3>
             <p>Balance: {forecastData[selectedMonth - 1].balance}</p>
             <p>Income: {forecastData[selectedMonth - 1].income}</p>
             <p>Expenses: {forecastData[selectedMonth - 1].expenses}</p>
-            <button onClick={handleResetDrillDown}>Reset Drill Down</button>
+            <button onClick={handleResetDrillDown}>Back to Forecast</button>
           </div>
         )}
-      </div>
-      <div>
-        <button onClick={() => handleDrillDown(1)}>Drill Down for Month 1</button>
-        <button onClick={() => handleDrillDown(2)}>Drill Down for Month 2</button>
-        <button onClick={() => handleDrillDown(3)}>Drill Down for Month 3</button>
+        <button onClick={() => handleDrillDown(1)}>Drill Down Month 1</button>
+        <button onClick={() => handleDrillDown(2)}>Drill Down Month 2</button>
+        <button onClick={() => handleDrillDown(3)}>Drill Down Month 3</button>
       </div>
     </div>
   );
