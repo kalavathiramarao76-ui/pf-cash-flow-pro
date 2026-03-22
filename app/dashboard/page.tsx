@@ -127,8 +127,8 @@ function App() {
     saveTransactions(transactions);
   }, [transactions]);
 
-  const handleAddTransaction = (newTransaction: Transaction) => {
-    const categorizedTransaction = { ...newTransaction, category: categorizeTransaction(newTransaction) };
+  const handleAddTransaction = (transaction: Transaction) => {
+    const categorizedTransaction = { ...transaction, category: categorizeTransaction(transaction) };
     setTransactions([...transactions, categorizedTransaction]);
   };
 
@@ -169,14 +169,7 @@ function App() {
           ))}
         </tbody>
       </table>
-      <button onClick={() => handleAddTransaction({
-        id: Math.random().toString(),
-        description: "New Transaction",
-        amount: 0,
-        type: "income",
-        date: new Date().toISOString().split("T")[0],
-        recurring: false,
-      })}>
+      <button onClick={() => handleAddTransaction({ id: Math.random().toString(), description: "New Transaction", amount: 0, type: "income", date: new Date().toISOString().split("T")[0], recurring: false })}>
         <Plus />
       </button>
     </div>
