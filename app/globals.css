@@ -7,6 +7,12 @@
   --foreground-rgb: 15, 23, 42;
   --background-rgb: 248, 250, 252;
   --max-width: 1200px;
+  --primary-color: #3498db;
+  --secondary-color: #f1c40f;
+  --accent-color: #e74c3c;
+  --font-family: 'Inter', system-ui, sans-serif;
+  --font-size: 16px;
+  --line-height: 1.6;
 }
 
 * {
@@ -22,12 +28,105 @@ html {
 body {
   color: rgb(var(--foreground-rgb));
   background: rgb(var(--background-rgb));
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: var(--font-family);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  line-height: 1.6;
-  font-size: 16px;
+  line-height: var(--line-height);
+  font-size: var(--font-size);
   text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: bold;
+  line-height: 1.2;
+  margin-bottom: 0.5rem;
+  color: var(--primary-color);
+}
+
+h1 {
+  font-size: 2.5rem;
+}
+
+h2 {
+  font-size: 2rem;
+}
+
+h3 {
+  font-size: 1.75rem;
+}
+
+h4 {
+  font-size: 1.5rem;
+}
+
+h5 {
+  font-size: 1.25rem;
+}
+
+h6 {
+  font-size: 1rem;
+}
+
+p,
+ul,
+ol {
+  margin-bottom: 1rem;
+  color: var(--foreground-rgb);
+}
+
+li {
+  margin-bottom: 0.5rem;
+}
+
+img[lazy] {
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+img[lazy].loaded {
+  opacity: 1;
+}
+
+.container {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 20px;
+  padding: 20px;
+  max-width: var(--max-width);
+  margin: 0 auto;
+  role: "main";
+  aria-label: "Main Content";
+  background: rgb(var(--background-rgb));
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.button {
+  background: var(--primary-color);
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  font-size: var(--font-size);
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.button:hover {
+  background: var(--secondary-color);
+}
+
+.link {
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+.link:hover {
+  color: var(--accent-color);
 }
 
 @layer utilities {
@@ -80,71 +179,6 @@ a {
 
 a:hover {
   text-decoration: underline;
-}
-
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  font-weight: bold;
-  line-height: 1.2;
-  margin-bottom: 0.5rem;
-}
-
-h1 {
-  font-size: 2.5rem;
-}
-
-h2 {
-  font-size: 2rem;
-}
-
-h3 {
-  font-size: 1.75rem;
-}
-
-h4 {
-  font-size: 1.5rem;
-}
-
-h5 {
-  font-size: 1.25rem;
-}
-
-h6 {
-  font-size: 1rem;
-}
-
-p,
-ul,
-ol {
-  margin-bottom: 1rem;
-}
-
-li {
-  margin-bottom: 0.5rem;
-}
-
-img[lazy] {
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-
-img[lazy].loaded {
-  opacity: 1;
-}
-
-.container {
-  display: grid;
-  grid-template-columns: repeat(12, 1fr);
-  gap: 20px;
-  padding: 20px;
-  max-width: var(--max-width);
-  margin: 0 auto;
-  role: "main";
-  aria-label: "Main Content";
 }
 
 @media (max-width: 480px) {
@@ -223,106 +257,4 @@ img[lazy].loaded {
   h6 {
     font-size: calc(1rem + 1.75vw);
   }
-
-  .container {
-    grid-template-columns: repeat(12, 1fr);
-    gap: 20px;
-    padding: 20px;
-  }
-}
-
-@media (max-width: 320px) {
-  body {
-    font-size: 12px;
-  }
-
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
-    font-size: calc(1rem + 1vw);
-  }
-
-  .container {
-    grid-template-columns: repeat(1, 1fr);
-    gap: 5px;
-    padding: 5px;
-  }
-}
-
-@media (max-width: 240px) {
-  body {
-    font-size: 10px;
-  }
-
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
-    font-size: calc(1rem + 0.5vw);
-  }
-
-  .container {
-    grid-template-columns: repeat(1, 1fr);
-    gap: 2px;
-    padding: 2px;
-  }
-}
-
-button, input, select, textarea {
-  font-family: inherit;
-  font-size: inherit;
-}
-
-button {
-  cursor: pointer;
-}
-
-button:disabled {
-  cursor: not-allowed;
-}
-
-label {
-  display: block;
-  margin-bottom: 0.5rem;
-}
-
-input[type="text"], input[type="email"], input[type="password"], select, textarea {
-  width: 100%;
-  padding: 0.5rem;
-  margin-bottom: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 0.25rem;
-}
-
-input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus, select:focus, textarea:focus {
-  outline: none;
-  border-color: #aaa;
-  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-}
-
-input[type="checkbox"], input[type="radio"] {
-  margin-right: 0.5rem;
-}
-
-input[type="checkbox"]:focus, input[type="radio"]:focus {
-  outline: none;
-  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-}
-
-[role="button"] {
-  cursor: pointer;
-}
-
-[aria-hidden="true"] {
-  display: none;
-}
-
-[aria-disabled="true"] {
-  cursor: not-allowed;
-  opacity: 0.5;
 }

@@ -103,19 +103,13 @@ const mlModel = {
 };
 
 function categorizeTransaction(transaction: Transaction): string {
-  const type = transaction.type;
-  const description = transaction.description.toLowerCase();
-  const categories = mlModel[type as keyof typeof mlModel];
-
-  for (const category in categories) {
-    for (const keyword of categories[category]) {
-      if (description.includes(keyword.toLowerCase())) {
-        return category;
-      }
+  const keywords = mlModel[transaction.type];
+  for (const category in keywords) {
+    if (keywords[category].some(keyword => transaction.description.toLowerCase().includes(keyword.toLowerCase()))) {
+      return category;
     }
   }
-
-  return type === "income" ? "Other Income" : "Other Expense";
+  return transaction.type === "income" ? "Other Income" : "Other Expense";
 }
 
 function App() {
@@ -132,50 +126,32 @@ function App() {
   }, [transactions]);
 
   const handleAddTransaction = (transaction: Transaction) => {
-    const categorizedTransaction = { ...transaction, category: categorizeTransaction(transaction) };
-    setTransactions([...transactions, categorizedTransaction]);
+    setTransactions([...transactions, transaction]);
   };
 
-  const handleRemoveTransaction = (id: string) => {
-    setTransactions(transactions.filter((transaction) => transaction.id !== id));
+  const handleDeleteTransaction = (id: string) => {
+    setTransactions(transactions.filter(transaction => transaction.id !== id));
+  };
+
+  const handleCategorizeTransactions = () => {
+    setTransactions(transactions.map(transaction => ({ ...transaction, category: categorizeTransaction(transaction) })));
   };
 
   return (
     <div>
       <h1>Automated Cash Flow Forecasting</h1>
-      <table>
-        <thead>
-          <tr>
-            <th>Description</th>
-            <th>Amount</th>
-            <th>Type</th>
-            <th>Category</th>
-            <th>Date</th>
-            <th>Recurring</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {transactions.map((transaction) => (
-            <tr key={transaction.id}>
-              <td>{transaction.description}</td>
-              <td>{transaction.amount}</td>
-              <td>{transaction.type}</td>
-              <td>{transaction.category}</td>
-              <td>{transaction.date}</td>
-              <td>{transaction.recurring ? "Yes" : "No"}</td>
-              <td>
-                <button onClick={() => handleRemoveTransaction(transaction.id)}>
-                  <Trash2 />
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <button onClick={() => handleAddTransaction({ id: Math.random().toString(), description: "New Transaction", amount: 0, type: "income", date: new Date().toISOString().split("T")[0], recurring: false })}>
-        <Plus />
-      </button>
+      <button onClick={handleCategorizeTransactions}>Categorize Transactions</button>
+      <ul>
+        {transactions.map(transaction => (
+          <li key={transaction.id}>
+            <span>{transaction.description}</span>
+            <span>{transaction.amount}</span>
+            <span>{transaction.category}</span>
+            <button onClick={() => handleDeleteTransaction(transaction.id)}>Delete</button>
+          </li>
+        ))}
+      </ul>
+      <button onClick={() => handleAddTransaction({ id: Math.random().toString(), description: "New Transaction", amount: 0, type: "income", category: "", date: new Date().toISOString().split("T")[0], recurring: false })}>Add Transaction</button>
     </div>
   );
 }
