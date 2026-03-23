@@ -119,23 +119,25 @@ function App() {
     if (transactions.length === 0) {
       setTransactions(SEED_TRANSACTIONS);
     }
-  }, []);
+  }, [transactions]);
 
   useEffect(() => {
     saveTransactions(transactions);
   }, [transactions]);
 
-  const addTransaction = (transaction: Transaction) => {
-    const categorizedTransaction = { ...transaction, category: categorizeTransaction(transaction) };
+  const handleAddTransaction = (newTransaction: Transaction) => {
+    const categorizedTransaction = { ...newTransaction, category: categorizeTransaction(newTransaction) };
     setTransactions([...transactions, categorizedTransaction]);
   };
 
-  const removeTransaction = (id: string) => {
+  const handleDeleteTransaction = (id: string) => {
     setTransactions(transactions.filter(transaction => transaction.id !== id));
   };
 
   return (
-    // existing JSX code
+    <div>
+      {/* Your existing UI components here */}
+    </div>
   );
 }
 

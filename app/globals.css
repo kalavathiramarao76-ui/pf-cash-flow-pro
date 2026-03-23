@@ -13,6 +13,7 @@
   --font-family: 'Inter', system-ui, sans-serif;
   --font-size: 16px;
   --line-height: 1.6;
+  --responsive-font-size: 1.2rem;
 }
 
 * {
@@ -30,6 +31,7 @@ body {
   font-family: var(--font-family);
   line-height: var(--line-height);
   font-size: var(--font-size);
+  padding: 20px;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -162,6 +164,21 @@ a:hover {
   text-decoration: underline;
 }
 
+@media (max-width: 768px) {
+  body {
+    font-size: var(--responsive-font-size);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-size: calc(1rem + 1.25vw);
+  }
+
+  .container {
+    grid-template-columns: repeat(12, 1fr);
+    padding: 10px;
+  }
+}
+
 @media (max-width: 480px) {
   body {
     font-size: 14px;
@@ -172,7 +189,7 @@ a:hover {
   }
 
   .container {
-    grid-template-columns: repeat(12, 1fr);
-    padding: 10px;
+    grid-template-columns: repeat(6, 1fr);
+    padding: 5px;
   }
 }
