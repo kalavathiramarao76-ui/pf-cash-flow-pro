@@ -6,6 +6,7 @@
 :root {
   --foreground-rgb: 15, 23, 42;
   --background-rgb: 248, 250, 252;
+  --max-width: 1200px;
 }
 
 * {
@@ -140,7 +141,7 @@ img[lazy].loaded {
   grid-template-columns: repeat(12, 1fr);
   gap: 20px;
   padding: 20px;
-  max-width: 1200px;
+  max-width: var(--max-width);
   margin: 0 auto;
 }
 
@@ -225,25 +226,5 @@ img[lazy].loaded {
     grid-template-columns: repeat(12, 1fr);
     gap: 20px;
     padding: 20px;
-  }
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 248, 250, 252;
-    --background-rgb: 15, 23, 42;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  * {
-    animation: none;
-    transition: none;
-  }
-}
-
-@media (min-width: 1200px) {
-  .container {
-    max-width: 80%;
   }
 }
