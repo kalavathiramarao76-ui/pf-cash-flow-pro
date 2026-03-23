@@ -102,7 +102,7 @@ const mlModel = {
   },
 };
 
-function categorizeTransaction(transaction: Omit<Transaction, 'category'>): string {
+function categorizeTransaction(transaction: Transaction): string {
   const keywords = mlModel[transaction.type];
   for (const category in keywords) {
     if (keywords[category].some(keyword => transaction.description.toLowerCase().includes(keyword.toLowerCase()))) {
@@ -125,16 +125,12 @@ function App() {
     saveTransactions(transactions);
   }, [transactions]);
 
-  const handleAddTransaction = (newTransaction: Omit<Transaction, 'id' | 'category'>) => {
-    const transaction: Transaction = {
-      id: Date.now().toString(),
-      category: categorizeTransaction(newTransaction),
-      ...newTransaction,
-    };
-    setTransactions([...transactions, transaction]);
+  const addTransaction = (transaction: Transaction) => {
+    const categorizedTransaction = { ...transaction, category: categorizeTransaction(transaction) };
+    setTransactions([...transactions, categorizedTransaction]);
   };
 
-  const handleDeleteTransaction = (id: string) => {
+  const removeTransaction = (id: string) => {
     setTransactions(transactions.filter(transaction => transaction.id !== id));
   };
 
