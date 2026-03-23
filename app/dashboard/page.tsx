@@ -105,8 +105,13 @@ const mlModel = {
 function categorizeTransaction(transaction: Transaction): string {
   const keywords = mlModel[transaction.type];
   for (const category in keywords) {
-    if (keywords[category].some(keyword => transaction.description.toLowerCase().includes(keyword.toLowerCase()))) {
-      return category;
+    if (keywords.hasOwnProperty(category)) {
+      const keywordList = keywords[category];
+      for (const keyword of keywordList) {
+        if (transaction.description.toLowerCase().includes(keyword.toLowerCase())) {
+          return category;
+        }
+      }
     }
   }
   return transaction.type === "income" ? "Other Income" : "Other Expense";
@@ -119,7 +124,7 @@ function App() {
     if (transactions.length === 0) {
       setTransactions(SEED_TRANSACTIONS);
     }
-  }, []);
+  }, [transactions]);
 
   useEffect(() => {
     saveTransactions(transactions);
@@ -131,7 +136,7 @@ function App() {
   };
 
   const handleDeleteTransaction = (id: string) => {
-    setTransactions(transactions.filter(transaction => transaction.id !== id));
+    setTransactions(transactions.filter((transaction) => transaction.id !== id));
   };
 
   return (
@@ -150,7 +155,7 @@ function App() {
           </tr>
         </thead>
         <tbody>
-          {transactions.map(transaction => (
+          {transactions.map((transaction) => (
             <tr key={transaction.id}>
               <td>{transaction.description}</td>
               <td>{transaction.amount}</td>
@@ -172,6 +177,7 @@ function App() {
         description: "New Transaction",
         amount: 0,
         type: "income",
+        category: "",
         date: new Date().toISOString().split("T")[0],
         recurring: false,
       })}>
