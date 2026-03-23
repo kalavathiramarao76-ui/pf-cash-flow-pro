@@ -105,13 +105,16 @@ const mlModel = {
 function categorizeTransaction(transaction: Transaction): string {
   const keywords = mlModel[transaction.type];
   for (const category in keywords) {
-    for (const keyword of keywords[category]) {
-      if (transaction.description.toLowerCase().includes(keyword.toLowerCase())) {
-        return category;
+    if (keywords.hasOwnProperty(category)) {
+      const keywordList = keywords[category];
+      for (const keyword of keywordList) {
+        if (transaction.description.toLowerCase().includes(keyword.toLowerCase())) {
+          return category;
+        }
       }
     }
   }
-  return transaction.type === "income" ? CATEGORIES_INCOME[0] : CATEGORIES_EXPENSE[0];
+  return transaction.type === "income" ? "Other Income" : "Other Expense";
 }
 
 function App() {
@@ -121,18 +124,18 @@ function App() {
     if (transactions.length === 0) {
       setTransactions(SEED_TRANSACTIONS);
     }
-  }, []);
+  }, [transactions]);
 
   useEffect(() => {
     saveTransactions(transactions);
   }, [transactions]);
 
-  const handleAddTransaction = (transaction: Transaction) => {
-    const categorizedTransaction = { ...transaction, category: categorizeTransaction(transaction) };
-    setTransactions([...transactions, categorizedTransaction]);
+  const handleAddTransaction = (newTransaction: Transaction) => {
+    newTransaction.category = categorizeTransaction(newTransaction);
+    setTransactions([...transactions, newTransaction]);
   };
 
-  const handleRemoveTransaction = (id: string) => {
+  const handleDeleteTransaction = (id: string) => {
     setTransactions(transactions.filter((transaction) => transaction.id !== id));
   };
 
@@ -161,7 +164,7 @@ function App() {
               <td>{transaction.date}</td>
               <td>{transaction.recurring ? "Yes" : "No"}</td>
               <td>
-                <button onClick={() => handleRemoveTransaction(transaction.id)}>
+                <button onClick={() => handleDeleteTransaction(transaction.id)}>
                   <Trash2 />
                 </button>
               </td>
@@ -169,7 +172,15 @@ function App() {
           ))}
         </tbody>
       </table>
-      <button onClick={() => handleAddTransaction({ id: Math.random().toString(), description: "New Transaction", amount: 0, type: "income", category: "", date: new Date().toISOString().split("T")[0], recurring: false })}>
+      <button onClick={() => handleAddTransaction({
+        id: Math.random().toString(36).substr(2, 9),
+        description: "New Transaction",
+        amount: 0,
+        type: "income",
+        category: "",
+        date: new Date().toISOString().split("T")[0],
+        recurring: false,
+      })}>
         <Plus />
       </button>
     </div>
