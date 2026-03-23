@@ -108,40 +108,56 @@ export default function ForecastingPage() {
     setSelectedMonth(month);
   };
 
-  const handleResetDrillDown = () => {
-    setSelectedMonth(null);
+  const handleMouseOver = (data: any, index: number) => {
+    console.log(`Mouse over: ${data.month}`);
+  };
+
+  const handleMouseOut = (data: any, index: number) => {
+    console.log(`Mouse out: ${data.month}`);
+  };
+
+  const handleClick = (data: any, index: number) => {
+    console.log(`Clicked: ${data.month}`);
   };
 
   return (
     <div>
-      <h1>Automated Cash Flow Forecasting</h1>
       <ResponsiveContainer width="100%" height={300}>
-        <LineChart data={forecastData}>
+        <LineChart data={forecastData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="month" />
           <YAxis />
           <Tooltip />
           <Legend />
-          <Line type="monotone" dataKey="balance" stroke="#8884d8" activeDot={{ r: 8 }} />
-          <Line type="monotone" dataKey="income" stroke="#82ca9d" />
-          <Line type="monotone" dataKey="expenses" stroke="#f44336" />
-          {selectedMonth !== null && (
-            <ReferenceLine x={selectedMonth} stroke="red" />
-          )}
+          <Line
+            type="monotone"
+            dataKey="balance"
+            stroke="#8884d8"
+            activeDot={{ r: 8 }}
+            onMouseOver={handleMouseOver}
+            onMouseOut={handleMouseOut}
+            onClick={handleClick}
+          />
+          <Line
+            type="monotone"
+            dataKey="income"
+            stroke="#82ca9d"
+            activeDot={{ r: 8 }}
+            onMouseOver={handleMouseOver}
+            onMouseOut={handleMouseOut}
+            onClick={handleClick}
+          />
+          <Line
+            type="monotone"
+            dataKey="expenses"
+            stroke="#ff0000"
+            activeDot={{ r: 8 }}
+            onMouseOver={handleMouseOver}
+            onMouseOut={handleMouseOut}
+            onClick={handleClick}
+          />
         </LineChart>
       </ResponsiveContainer>
-      {selectedMonth !== null && (
-        <div>
-          <h2>Drill Down: Month {selectedMonth}</h2>
-          <p>Balance: {forecastData[selectedMonth - 1].balance}</p>
-          <p>Income: {forecastData[selectedMonth - 1].income}</p>
-          <p>Expenses: {forecastData[selectedMonth - 1].expenses}</p>
-          <button onClick={handleResetDrillDown}>Reset Drill Down</button>
-        </div>
-      )}
-      <button onClick={() => handleDrillDown(1)}>Drill Down Month 1</button>
-      <button onClick={() => handleDrillDown(2)}>Drill Down Month 2</button>
-      <button onClick={() => handleDrillDown(3)}>Drill Down Month 3</button>
     </div>
   );
 }
