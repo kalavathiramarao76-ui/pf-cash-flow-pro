@@ -108,51 +108,91 @@ export default function ForecastingPage() {
     setSelectedMonth(month);
   };
 
-  const handleDateRangeChange = (start: number, end: number) => {
-    setDateRange({ start, end });
+  const handleResetDrillDown = () => {
+    setSelectedMonth(null);
   };
-
-  const filteredForecastData = useMemo(() => {
-    if (selectedMonth !== null) {
-      return forecastData.filter((data) => data.month === selectedMonth);
-    } else if (dateRange.start !== 1 || dateRange.end !== 6) {
-      return forecastData.filter((data) => data.month >= dateRange.start && data.month <= dateRange.end);
-    } else {
-      return forecastData;
-    }
-  }, [forecastData, selectedMonth, dateRange]);
 
   return (
     <div>
       <h1>Automated Cash Flow Forecasting</h1>
-      <ResponsiveContainer width="100%" height={400}>
-        <LineChart data={filteredForecastData}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="month" />
-          <YAxis />
-          <Tooltip />
-          <Legend />
-          <Line type="monotone" dataKey="balance" stroke="#8884d8" activeDot={{ r: 8 }} />
-          <Line type="monotone" dataKey="income" stroke="#82ca9d" />
-          <Line type="monotone" dataKey="expenses" stroke="#ff0000" />
-        </LineChart>
-      </ResponsiveContainer>
       <div>
-        <button onClick={() => handleDrillDown(1)}>Drill Down to Month 1</button>
-        <button onClick={() => handleDrillDown(2)}>Drill Down to Month 2</button>
-        <button onClick={() => handleDrillDown(3)}>Drill Down to Month 3</button>
-        <button onClick={() => handleDateRangeChange(1, 3)}>Date Range: 1-3</button>
-        <button onClick={() => handleDateRangeChange(4, 6)}>Date Range: 4-6</button>
+        <label>Current Balance:</label>
+        <input type="number" value={currentBalance} onChange={(e) => setCurrentBalance(e.target.value)} />
       </div>
       <div>
-        {filteredForecastData.map((data) => (
-          <div key={data.month}>
-            <h2>Month {data.month}</h2>
-            <p>Balance: {data.balance}</p>
-            <p>Income: {data.income}</p>
-            <p>Expenses: {data.expenses}</p>
+        <label>Horizon:</label>
+        <select value={horizon} onChange={(e) => setHorizon(parseInt(e.target.value) as 3 | 6 | 12)}>
+          <option value="3">3 months</option>
+          <option value="6">6 months</option>
+          <option value="12">12 months</option>
+        </select>
+      </div>
+      <div>
+        <label>Safety Threshold:</label>
+        <input type="number" value={safetyThreshold} onChange={(e) => setSafetyThreshold(e.target.value)} />
+      </div>
+      <div>
+        <h2>Recurring Items:</h2>
+        <ul>
+          {recurringItems.map((item) => (
+            <li key={item.id}>
+              {item.label} ({item.type}) - {item.amount} ({item.frequency})
+            </li>
+          ))}
+        </ul>
+        {showAddForm ? (
+          <div>
+            <label>Label:</label>
+            <input type="text" value={newItem.label} onChange={(e) => setNewItem({ ...newItem, label: e.target.value })} />
+            <br />
+            <label>Amount:</label>
+            <input type="number" value={newItem.amount} onChange={(e) => setNewItem({ ...newItem, amount: e.target.value })} />
+            <br />
+            <label>Type:</label>
+            <select value={newItem.type} onChange={(e) => setNewItem({ ...newItem, type: e.target.value as "income" | "expense" })}>
+              <option value="income">Income</option>
+              <option value="expense">Expense</option>
+            </select>
+            <br />
+            <label>Frequency:</label>
+            <select value={newItem.frequency} onChange={(e) => setNewItem({ ...newItem, frequency: e.target.value as RecurringItem["frequency"] })}>
+              <option value="monthly">Monthly</option>
+              <option value="quarterly">Quarterly</option>
+              <option value="yearly">Yearly</option>
+            </select>
+            <br />
+            <button onClick={() => setRecurringItems([...recurringItems, { ...newItem, id: Math.random().toString(36).substr(2, 9) }])}>Add</button>
           </div>
-        ))}
+        ) : (
+          <button onClick={() => setShowAddForm(true)}>Add Recurring Item</button>
+        )}
+      </div>
+      <div>
+        <h2>Forecast:</h2>
+        <ResponsiveContainer width="100%" height={300}>
+          <LineChart data={forecastData}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="month" />
+            <YAxis />
+            <Tooltip />
+            <Legend />
+            <Line type="monotone" dataKey="balance" stroke="#8884d8" activeDot={{ r: 8 }} />
+            <Line type="monotone" dataKey="income" stroke="#82ca9d" />
+            <Line type="monotone" dataKey="expenses" stroke="#f44336" />
+          </LineChart>
+        </ResponsiveContainer>
+        {selectedMonth !== null && (
+          <div>
+            <h3>Drill Down: Month {selectedMonth}</h3>
+            <p>Balance: {forecastData[selectedMonth - 1].balance}</p>
+            <p>Income: {forecastData[selectedMonth - 1].income}</p>
+            <p>Expenses: {forecastData[selectedMonth - 1].expenses}</p>
+            <button onClick={handleResetDrillDown}>Back to Forecast</button>
+          </div>
+        )}
+        <button onClick={(e) => handleDrillDown(parseInt(e.currentTarget.value))} value={1}>Drill Down Month 1</button>
+        <button onClick={(e) => handleDrillDown(parseInt(e.currentTarget.value))} value={2}>Drill Down Month 2</button>
+        <button onClick={(e) => handleDrillDown(parseInt(e.currentTarget.value))} value={3}>Drill Down Month 3</button>
       </div>
     </div>
   );
