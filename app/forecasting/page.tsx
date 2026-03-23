@@ -108,8 +108,8 @@ export default function ForecastingPage() {
     setSelectedMonth(month);
   };
 
-  const handleDateRangeChange = (start: number, end: number) => {
-    setDateRange({ start, end });
+  const handleResetDrillDown = () => {
+    setSelectedMonth(null);
   };
 
   return (
@@ -132,7 +132,7 @@ export default function ForecastingPage() {
         <input type="number" value={safetyThreshold} onChange={(e) => setSafetyThreshold(e.target.value)} />
       </div>
       <div>
-        <h2>Recurring Items:</h2>
+        <h2>Recurring Items</h2>
         <ul>
           {recurringItems.map((item) => (
             <li key={item.id}>
@@ -172,7 +172,7 @@ export default function ForecastingPage() {
         )}
       </div>
       <div>
-        <h2>Forecast:</h2>
+        <h2>Forecast</h2>
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={forecastData}>
             <CartesianGrid strokeDasharray="3 3" />
@@ -182,24 +182,16 @@ export default function ForecastingPage() {
             <Legend />
             <Line type="monotone" dataKey="balance" stroke="#8884d8" />
             <Line type="monotone" dataKey="income" stroke="#82ca9d" />
-            <Line type="monotone" dataKey="expenses" stroke="#f44336" />
+            <Line type="monotone" dataKey="expenses" stroke="#ff0000" />
           </LineChart>
         </ResponsiveContainer>
-        <div>
-          <label>Selected Month:</label>
-          <select value={selectedMonth} onChange={(e) => handleDrillDown(parseInt(e.target.value))}>
-            {forecastData.map((data) => (
-              <option key={data.month} value={data.month}>{data.month}</option>
-            ))}
-          </select>
-        </div>
         {selectedMonth !== null && (
           <div>
-            <h3>Drill Down:</h3>
-            <p>Month: {selectedMonth}</p>
-            <p>Balance: {forecastData.find((data) => data.month === selectedMonth)?.balance}</p>
-            <p>Income: {forecastData.find((data) => data.month === selectedMonth)?.income}</p>
-            <p>Expenses: {forecastData.find((data) => data.month === selectedMonth)?.expenses}</p>
+            <h3>Drill Down: Month {selectedMonth}</h3>
+            <p>Balance: {forecastData[selectedMonth - 1].balance}</p>
+            <p>Income: {forecastData[selectedMonth - 1].income}</p>
+            <p>Expenses: {forecastData[selectedMonth - 1].expenses}</p>
+            <button onClick={handleResetDrillDown}>Reset Drill Down</button>
           </div>
         )}
       </div>

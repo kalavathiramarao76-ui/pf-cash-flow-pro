@@ -196,9 +196,9 @@ a:hover {
   }
 
   .container {
-    grid-template-columns: repeat(12, 1fr);
-    gap: 10px;
+    grid-template-columns: repeat(1, 1fr);
     padding: 10px;
+    gap: 10px;
   }
 }
 
@@ -217,9 +217,9 @@ a:hover {
   }
 
   .container {
-    grid-template-columns: repeat(12, 1fr);
-    gap: 15px;
+    grid-template-columns: repeat(2, 1fr);
     padding: 15px;
+    gap: 15px;
   }
 }
 
@@ -238,9 +238,16 @@ a:hover {
   }
 
   .container {
-    grid-template-columns: repeat(12, 1fr);
-    gap: 20px;
+    grid-template-columns: repeat(3, 1fr);
     padding: 20px;
+    gap: 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none;
+    transition: none;
   }
 }
 
@@ -248,12 +255,5 @@ a:hover {
   :root {
     --foreground-rgb: 248, 250, 252;
     --background-rgb: 15, 23, 42;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  * {
-    transition: none;
-    animation: none;
   }
 }

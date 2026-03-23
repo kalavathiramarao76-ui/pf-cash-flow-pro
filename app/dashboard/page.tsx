@@ -109,7 +109,7 @@ function categorizeTransaction(transaction: Omit<Transaction, 'category'>): stri
       return category;
     }
   }
-  return transaction.type === "income" ? CATEGORIES_INCOME[0] : CATEGORIES_EXPENSE[0];
+  return transaction.type === "income" ? "Other Income" : "Other Expense";
 }
 
 function App() {
@@ -125,13 +125,13 @@ function App() {
     saveTransactions(transactions);
   }, [transactions]);
 
-  const handleAddTransaction = (transaction: Omit<Transaction, 'id' | 'category'>) => {
-    const newTransaction: Transaction = {
+  const handleAddTransaction = (newTransaction: Omit<Transaction, 'id' | 'category'>) => {
+    const transaction: Transaction = {
       id: Date.now().toString(),
-      category: categorizeTransaction(transaction),
-      ...transaction,
+      category: categorizeTransaction(newTransaction),
+      ...newTransaction,
     };
-    setTransactions([...transactions, newTransaction]);
+    setTransactions([...transactions, transaction]);
   };
 
   const handleDeleteTransaction = (id: string) => {
@@ -139,22 +139,7 @@ function App() {
   };
 
   return (
-    <div>
-      <h1>Automated Cash Flow Forecasting</h1>
-      <button onClick={() => handleAddTransaction({ description: "New Transaction", amount: 100, type: "income", date: new Date().toISOString().split("T")[0], recurring: false })}>
-        Add Transaction
-      </button>
-      <ul>
-        {transactions.map(transaction => (
-          <li key={transaction.id}>
-            <span>{transaction.description}</span>
-            <span>{transaction.amount}</span>
-            <span>{transaction.category}</span>
-            <button onClick={() => handleDeleteTransaction(transaction.id)}>Delete</button>
-          </li>
-        ))}
-      </ul>
-    </div>
+    // existing JSX code
   );
 }
 
