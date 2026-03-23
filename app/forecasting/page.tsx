@@ -128,10 +128,10 @@ export default function ForecastingPage() {
       </div>
       <div>
         <label>Horizon:</label>
-        <select value={horizon} onChange={(e) => setHorizon(parseInt(e.target.value) as 3 | 6 | 12)}>
-          <option value="3">3 months</option>
-          <option value="6">6 months</option>
-          <option value="12">12 months</option>
+        <select value={horizon} onChange={(e) => setHorizon(e.target.value as 3 | 6 | 12)}>
+          <option value={3}>3 months</option>
+          <option value={6}>6 months</option>
+          <option value={12}>12 months</option>
         </select>
       </div>
       <div>
@@ -164,7 +164,7 @@ export default function ForecastingPage() {
               <option value="quarterly">Quarterly</option>
               <option value="yearly">Yearly</option>
             </select>
-            <button onClick={() => setRecurringItems([...recurringItems, { ...newItem, id: Math.random().toString(36).substr(2, 9) }])}>Add</button>
+            <button onClick={() => setRecurringItems([...recurringItems, { ...newItem, id: `r${recurringItems.length + 1}` }])}>Add</button>
           </div>
         ) : (
           <button onClick={() => setShowAddForm(true)}>Add Recurring Item</button>
@@ -184,7 +184,7 @@ export default function ForecastingPage() {
           <Legend />
           <Line type="monotone" dataKey="balance" stroke="#8884d8" activeDot={{ r: 8 }} />
           <Line type="monotone" dataKey="income" stroke="#82ca9d" />
-          <Line type="monotone" dataKey="expenses" stroke="#8884d8" />
+          <Line type="monotone" dataKey="expenses" stroke="#ff0000" />
           {selectedMonth && (
             <ReferenceLine x={selectedMonth} stroke="red" />
           )}
@@ -192,7 +192,7 @@ export default function ForecastingPage() {
       </ResponsiveContainer>
       {selectedMonth && (
         <div>
-          <h2>Drill-down for month {selectedMonth}</h2>
+          <h2>Drill Down: Month {selectedMonth}</h2>
           <p>Balance: {filteredForecastData.find((data) => data.month === selectedMonth)?.balance}</p>
           <p>Income: {filteredForecastData.find((data) => data.month === selectedMonth)?.income}</p>
           <p>Expenses: {filteredForecastData.find((data) => data.month === selectedMonth)?.expenses}</p>
