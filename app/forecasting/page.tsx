@@ -108,14 +108,71 @@ export default function ForecastingPage() {
     setSelectedMonth(month);
   };
 
-  const handleResetDrillDown = () => {
-    setSelectedMonth(null);
+  const handleDateRangeChange = (start: number, end: number) => {
+    setDateRange({ start, end });
   };
 
   return (
     <div>
       <h1>Automated Cash Flow Forecasting</h1>
       <div>
+        <label>Current Balance:</label>
+        <input type="number" value={currentBalance} onChange={(e) => setCurrentBalance(e.target.value)} />
+      </div>
+      <div>
+        <label>Horizon:</label>
+        <select value={horizon} onChange={(e) => setHorizon(parseInt(e.target.value) as 3 | 6 | 12)}>
+          <option value="3">3 months</option>
+          <option value="6">6 months</option>
+          <option value="12">12 months</option>
+        </select>
+      </div>
+      <div>
+        <label>Safety Threshold:</label>
+        <input type="number" value={safetyThreshold} onChange={(e) => setSafetyThreshold(e.target.value)} />
+      </div>
+      <div>
+        <h2>Recurring Items:</h2>
+        <ul>
+          {recurringItems.map((item) => (
+            <li key={item.id}>
+              {item.label} ({item.type}) - {item.amount} ({item.frequency})
+            </li>
+          ))}
+        </ul>
+        {showAddForm ? (
+          <div>
+            <label>Label:</label>
+            <input type="text" value={newItem.label} onChange={(e) => setNewItem({ ...newItem, label: e.target.value })} />
+            <br />
+            <label>Amount:</label>
+            <input type="number" value={newItem.amount} onChange={(e) => setNewItem({ ...newItem, amount: e.target.value })} />
+            <br />
+            <label>Type:</label>
+            <select value={newItem.type} onChange={(e) => setNewItem({ ...newItem, type: e.target.value as "income" | "expense" })}>
+              <option value="income">Income</option>
+              <option value="expense">Expense</option>
+            </select>
+            <br />
+            <label>Frequency:</label>
+            <select value={newItem.frequency} onChange={(e) => setNewItem({ ...newItem, frequency: e.target.value as RecurringItem["frequency"] })}>
+              <option value="monthly">Monthly</option>
+              <option value="quarterly">Quarterly</option>
+              <option value="yearly">Yearly</option>
+            </select>
+            <br />
+            <button onClick={() => {
+              setRecurringItems([...recurringItems, { id: Math.random().toString(), ...newItem }]);
+              setNewItem({ label: "", amount: "", type: "income", frequency: "monthly" });
+              setShowAddForm(false);
+            }}>Add</button>
+          </div>
+        ) : (
+          <button onClick={() => setShowAddForm(true)}>Add Recurring Item</button>
+        )}
+      </div>
+      <div>
+        <h2>Forecast:</h2>
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={forecastData}>
             <CartesianGrid strokeDasharray="3 3" />
@@ -128,18 +185,23 @@ export default function ForecastingPage() {
             <Line type="monotone" dataKey="expenses" stroke="#f44336" />
           </LineChart>
         </ResponsiveContainer>
+        <div>
+          <label>Selected Month:</label>
+          <select value={selectedMonth} onChange={(e) => handleDrillDown(parseInt(e.target.value))}>
+            {forecastData.map((data) => (
+              <option key={data.month} value={data.month}>{data.month}</option>
+            ))}
+          </select>
+        </div>
         {selectedMonth !== null && (
           <div>
-            <h2>Drill-down for Month {selectedMonth}</h2>
-            <p>Balance: {forecastData[selectedMonth - 1].balance}</p>
-            <p>Income: {forecastData[selectedMonth - 1].income}</p>
-            <p>Expenses: {forecastData[selectedMonth - 1].expenses}</p>
-            <button onClick={handleResetDrillDown}>Back to Overview</button>
+            <h3>Drill Down:</h3>
+            <p>Month: {selectedMonth}</p>
+            <p>Balance: {forecastData.find((data) => data.month === selectedMonth)?.balance}</p>
+            <p>Income: {forecastData.find((data) => data.month === selectedMonth)?.income}</p>
+            <p>Expenses: {forecastData.find((data) => data.month === selectedMonth)?.expenses}</p>
           </div>
         )}
-        <button onClick={() => handleDrillDown(1)}>Drill-down for Month 1</button>
-        <button onClick={() => handleDrillDown(2)}>Drill-down for Month 2</button>
-        <button onClick={() => handleDrillDown(3)}>Drill-down for Month 3</button>
       </div>
     </div>
   );
