@@ -185,13 +185,14 @@ export default function ForecastingPage() {
           <Line type="monotone" dataKey="balance" stroke="#8884d8" activeDot={{ r: 8 }} />
           <Line type="monotone" dataKey="income" stroke="#82ca9d" />
           <Line type="monotone" dataKey="expenses" stroke="#8884d8" />
-          <ReferenceLine y={0} stroke="#000" />
-          <Brush dataKey="month" height={30} stroke="#8884d8" />
+          {selectedMonth && (
+            <ReferenceLine x={selectedMonth} stroke="red" />
+          )}
         </LineChart>
       </ResponsiveContainer>
-      {selectedMonth !== null && (
+      {selectedMonth && (
         <div>
-          <h2>Drill Down: Month {selectedMonth}</h2>
+          <h2>Drill-down for month {selectedMonth}</h2>
           <p>Balance: {filteredForecastData.find((data) => data.month === selectedMonth)?.balance}</p>
           <p>Income: {filteredForecastData.find((data) => data.month === selectedMonth)?.income}</p>
           <p>Expenses: {filteredForecastData.find((data) => data.month === selectedMonth)?.expenses}</p>
