@@ -108,16 +108,9 @@ export default function ForecastingPage() {
     setSelectedMonth(month);
   };
 
-  const handleDateRangeChange = (start: number, end: number) => {
-    setDateRange({ start, end });
+  const handleResetDrillDown = () => {
+    setSelectedMonth(null);
   };
-
-  const filteredForecastData = useMemo(() => {
-    if (dateRange.start && dateRange.end) {
-      return forecastData.filter((data) => data.month >= dateRange.start && data.month <= dateRange.end);
-    }
-    return forecastData;
-  }, [forecastData, dateRange]);
 
   return (
     <div>
@@ -139,22 +132,7 @@ export default function ForecastingPage() {
         <input type="number" value={safetyThreshold} onChange={(e) => setSafetyThreshold(e.target.value)} />
       </div>
       <div>
-        <label>Date Range:</label>
-        <input
-          type="number"
-          value={dateRange.start}
-          onChange={(e) => handleDateRangeChange(parseInt(e.target.value), dateRange.end)}
-          placeholder="Start"
-        />
-        <input
-          type="number"
-          value={dateRange.end}
-          onChange={(e) => handleDateRangeChange(dateRange.start, parseInt(e.target.value))}
-          placeholder="End"
-        />
-      </div>
-      <div>
-        <button onClick={() => setShowAddForm(!showAddForm)}>Add New Recurring Item</button>
+        <button onClick={() => setShowAddForm(!showAddForm)}>Add Recurring Item</button>
         {showAddForm && (
           <div>
             <label>Label:</label>
@@ -167,17 +145,12 @@ export default function ForecastingPage() {
               <option value="expense">Expense</option>
             </select>
             <label>Frequency:</label>
-            <select
-              value={newItem.frequency}
-              onChange={(e) => setNewItem({ ...newItem, frequency: e.target.value as RecurringItem["frequency"] })}
-            >
+            <select value={newItem.frequency} onChange={(e) => setNewItem({ ...newItem, frequency: e.target.value as RecurringItem["frequency"] })}>
               <option value="monthly">Monthly</option>
               <option value="quarterly">Quarterly</option>
               <option value="yearly">Yearly</option>
             </select>
-            <button onClick={() => setRecurringItems([...recurringItems, { ...newItem, id: Math.random().toString(36).substr(2, 9) }])}>
-              Add
-            </button>
+            <button onClick={() => setRecurringItems([...recurringItems, { ...newItem, id: Math.random().toString(36).substr(2, 9) }])}>Add</button>
           </div>
         )}
       </div>
@@ -194,7 +167,7 @@ export default function ForecastingPage() {
       <div>
         <h2>Forecast:</h2>
         <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={filteredForecastData}>
+          <LineChart data={forecastData}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="month" />
             <YAxis />
@@ -205,15 +178,18 @@ export default function ForecastingPage() {
             <Line type="monotone" dataKey="expenses" stroke="#8884d8" />
           </LineChart>
         </ResponsiveContainer>
-        {selectedMonth && (
+        {selectedMonth !== null && (
           <div>
-            <h3>Drill Down:</h3>
-            <p>Month: {selectedMonth}</p>
-            <p>Balance: {forecastData.find((data) => data.month === selectedMonth)?.balance}</p>
-            <p>Income: {forecastData.find((data) => data.month === selectedMonth)?.income}</p>
-            <p>Expenses: {forecastData.find((data) => data.month === selectedMonth)?.expenses}</p>
+            <h3>Drill Down for Month {selectedMonth}:</h3>
+            <p>Balance: {forecastData[selectedMonth - 1].balance}</p>
+            <p>Income: {forecastData[selectedMonth - 1].income}</p>
+            <p>Expenses: {forecastData[selectedMonth - 1].expenses}</p>
+            <button onClick={handleResetDrillDown}>Reset Drill Down</button>
           </div>
         )}
+        <button onClick={() => handleDrillDown(1)}>Drill Down for Month 1</button>
+        <button onClick={() => handleDrillDown(2)}>Drill Down for Month 2</button>
+        <button onClick={() => handleDrillDown(3)}>Drill Down for Month 3</button>
       </div>
     </div>
   );
