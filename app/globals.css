@@ -206,7 +206,6 @@ a:hover {
 @media (prefers-reduced-motion: reduce) {
   * {
     transition: none;
-    animation: none;
   }
 }
 
@@ -214,11 +213,5 @@ a:hover {
   :root {
     --foreground-rgb: 248, 250, 252;
     --background-rgb: 15, 23, 42;
-  }
-}
-
-@media (min-width: 1200px) {
-  .container {
-    max-width: 90%;
   }
 }
