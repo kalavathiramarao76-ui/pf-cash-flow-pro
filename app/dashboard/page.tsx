@@ -102,55 +102,34 @@ const mlModel: MlModel = {
     "Utilities": ["Utilities"],
     "Travel": ["Travel"],
     "Equipment": ["Equipment"],
-    "Professional Services": ["Professional Services"],
+    "Professional Services": ["Professional", "Services"],
     "Other Expense": ["Other"],
   },
 };
 
-// Train the machine learning model
-function trainMlModel(transactions: Transaction[]): MlModel {
-  const trainedModel: MlModel = {
-    income: {},
-    expense: {},
-  };
-
-  transactions.forEach((transaction) => {
-    if (transaction.type === "income") {
-      if (!trainedModel.income[transaction.category]) {
-        trainedModel.income[transaction.category] = [];
-      }
-      trainedModel.income[transaction.category].push(...transaction.description.split(" "));
-    } else if (transaction.type === "expense") {
-      if (!trainedModel.expense[transaction.category]) {
-        trainedModel.expense[transaction.category] = [];
-      }
-      trainedModel.expense[transaction.category].push(...transaction.description.split(" "));
-    }
-  });
-
-  return trainedModel;
-}
-
-// Use the trained machine learning model to categorize transactions
-function categorizeTransaction(transaction: Transaction, trainedModel: MlModel): string {
+function categorizeTransaction(transaction: Transaction): string {
+  const keywords = transaction.description.toLowerCase().split(" ");
   if (transaction.type === "income") {
-    for (const category in trainedModel.income) {
-      if (trainedModel.income[category].some((keyword) => transaction.description.includes(keyword))) {
-        return category;
+    for (const category in mlModel.income) {
+      for (const keyword of mlModel.income[category]) {
+        if (keywords.includes(keyword.toLowerCase())) {
+          return category;
+        }
       }
     }
-  } else if (transaction.type === "expense") {
-    for (const category in trainedModel.expense) {
-      if (trainedModel.expense[category].some((keyword) => transaction.description.includes(keyword))) {
-        return category;
+  } else {
+    for (const category in mlModel.expense) {
+      for (const keyword of mlModel.expense[category]) {
+        if (keywords.includes(keyword.toLowerCase())) {
+          return category;
+        }
       }
     }
   }
-
-  return "Unknown";
+  return transaction.type === "income" ? "Other Income" : "Other Expense";
 }
 
-function App() {
+function DashboardPage() {
   const [transactions, setTransactions] = useState<Transaction[]>(getStoredTransactions());
 
   useEffect(() => {
@@ -163,31 +142,32 @@ function App() {
     saveTransactions(transactions);
   }, [transactions]);
 
-  const trainedModel = trainMlModel(transactions);
-
-  const handleAddTransaction = (transaction: Transaction) => {
-    const categorizedTransaction = { ...transaction, category: categorizeTransaction(transaction, trainedModel) };
+  const handleAddTransaction = (newTransaction: Transaction) => {
+    const categorizedTransaction = { ...newTransaction, category: categorizeTransaction(newTransaction) };
     setTransactions([...transactions, categorizedTransaction]);
   };
 
-  const handleRemoveTransaction = (id: string) => {
+  const handleDeleteTransaction = (id: string) => {
     setTransactions(transactions.filter((transaction) => transaction.id !== id));
   };
 
   return (
     <div>
       <h1>Automated Cash Flow Forecasting</h1>
-      <button onClick={() => handleAddTransaction({ id: "new", description: "New Transaction", amount: 100, type: "income", category: "", date: new Date().toISOString().split("T")[0], recurring: false })}>
+      <button onClick={() => handleAddTransaction({ id: Math.random().toString(), description: "New Transaction", amount: 0, type: "income", date: new Date().toISOString().split("T")[0], recurring: false })}>
+        <Plus />
         Add Transaction
       </button>
       <ul>
         {transactions.map((transaction) => (
           <li key={transaction.id}>
-            <span>{transaction.description}</span>
-            <span>{transaction.amount}</span>
-            <span>{transaction.type}</span>
-            <span>{transaction.category}</span>
-            <button onClick={() => handleRemoveTransaction(transaction.id)}>Remove</button>
+            <span>
+              {transaction.description} ({transaction.type}) - {transaction.amount} - {transaction.category}
+            </span>
+            <button onClick={() => handleDeleteTransaction(transaction.id)}>
+              <Trash2 />
+              Delete
+            </button>
           </li>
         ))}
       </ul>
@@ -195,4 +175,4 @@ function App() {
   );
 }
 
-export default App;
+export default DashboardPage;
