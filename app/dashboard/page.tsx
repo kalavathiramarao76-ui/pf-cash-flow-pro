@@ -107,9 +107,9 @@ const mlModel: MlModel = {
   },
 };
 
-function categorizeTransaction(transaction: Omit<Transaction, 'category'>): string {
-  const keywords = transaction.description.toLowerCase().split(' ');
-  if (transaction.type === 'income') {
+function categorizeTransaction(transaction: Transaction): string {
+  const keywords = transaction.description.toLowerCase().split(" ");
+  if (transaction.type === "income") {
     for (const category in mlModel.income) {
       for (const keyword of mlModel.income[category]) {
         if (keywords.includes(keyword.toLowerCase())) {
@@ -126,10 +126,10 @@ function categorizeTransaction(transaction: Omit<Transaction, 'category'>): stri
       }
     }
   }
-  return transaction.type === 'income' ? 'Other Income' : 'Other Expense';
+  return transaction.type === "income" ? "Other Income" : "Other Expense";
 }
 
-function App() {
+function DashboardPage() {
   const [transactions, setTransactions] = useState<Transaction[]>(getStoredTransactions());
 
   useEffect(() => {
@@ -142,32 +142,32 @@ function App() {
     saveTransactions(transactions);
   }, [transactions]);
 
-  const addTransaction = (transaction: Omit<Transaction, 'id' | 'category'>) => {
-    const newTransaction: Transaction = {
-      id: Date.now().toString(),
-      category: categorizeTransaction(transaction),
-      ...transaction,
-    };
-    setTransactions([...transactions, newTransaction]);
+  const handleAddTransaction = (newTransaction: Transaction) => {
+    const categorizedTransaction = { ...newTransaction, category: categorizeTransaction(newTransaction) };
+    setTransactions([...transactions, categorizedTransaction]);
   };
 
-  const removeTransaction = (id: string) => {
+  const handleDeleteTransaction = (id: string) => {
     setTransactions(transactions.filter((transaction) => transaction.id !== id));
   };
 
   return (
     <div>
       <h1>Automated Cash Flow Forecasting</h1>
-      <button onClick={() => addTransaction({ description: 'Test Transaction', amount: 100, type: 'income', date: new Date().toISOString().split('T')[0], recurring: false })}>
+      <button onClick={() => handleAddTransaction({ id: Date.now().toString(), description: "New Transaction", amount: 0, type: "income", date: new Date().toISOString().split("T")[0], recurring: false })}>
+        <Plus />
         Add Transaction
       </button>
       <ul>
         {transactions.map((transaction) => (
           <li key={transaction.id}>
-            <span>{transaction.description}</span>
-            <span>{transaction.amount}</span>
-            <span>{transaction.category}</span>
-            <button onClick={() => removeTransaction(transaction.id)}>Remove</button>
+            <span>
+              {transaction.description} ({transaction.type}) - {transaction.amount}
+            </span>
+            <button onClick={() => handleDeleteTransaction(transaction.id)}>
+              <Trash2 />
+              Delete
+            </button>
           </li>
         ))}
       </ul>
@@ -175,4 +175,4 @@ function App() {
   );
 }
 
-export default App;
+export default DashboardPage;
