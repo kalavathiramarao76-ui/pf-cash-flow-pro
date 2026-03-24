@@ -79,7 +79,12 @@ const SEED_TRANSACTIONS: Transaction[] = [
 ];
 
 // Machine learning model for transaction categorization
-const mlModel = {
+interface MlModel {
+  income: { [key: string]: string[] };
+  expense: { [key: string]: string[] };
+}
+
+const mlModel: MlModel = {
   income: {
     "Freelance / Contract": ["Client", "Freelance"],
     "Product Sales": ["Product", "Sales"],
@@ -102,16 +107,47 @@ const mlModel = {
   },
 };
 
-function categorizeTransaction(transaction: Transaction): string {
-  const keywords = mlModel[transaction.type];
-  for (const category in keywords) {
-    for (const keyword of keywords[category]) {
-      if (transaction.description.toLowerCase().includes(keyword.toLowerCase())) {
+// Train the machine learning model
+function trainMlModel(transactions: Transaction[]): MlModel {
+  const trainedModel: MlModel = {
+    income: {},
+    expense: {},
+  };
+
+  transactions.forEach((transaction) => {
+    if (transaction.type === "income") {
+      if (!trainedModel.income[transaction.category]) {
+        trainedModel.income[transaction.category] = [];
+      }
+      trainedModel.income[transaction.category].push(...transaction.description.split(" "));
+    } else if (transaction.type === "expense") {
+      if (!trainedModel.expense[transaction.category]) {
+        trainedModel.expense[transaction.category] = [];
+      }
+      trainedModel.expense[transaction.category].push(...transaction.description.split(" "));
+    }
+  });
+
+  return trainedModel;
+}
+
+// Use the trained machine learning model to categorize transactions
+function categorizeTransaction(transaction: Transaction, trainedModel: MlModel): string {
+  if (transaction.type === "income") {
+    for (const category in trainedModel.income) {
+      if (trainedModel.income[category].some((keyword) => transaction.description.includes(keyword))) {
+        return category;
+      }
+    }
+  } else if (transaction.type === "expense") {
+    for (const category in trainedModel.expense) {
+      if (trainedModel.expense[category].some((keyword) => transaction.description.includes(keyword))) {
         return category;
       }
     }
   }
-  return transaction.type === "income" ? "Other Income" : "Other Expense";
+
+  return "Unknown";
 }
 
 function App() {
@@ -121,25 +157,27 @@ function App() {
     if (transactions.length === 0) {
       setTransactions(SEED_TRANSACTIONS);
     }
-  }, []);
+  }, [transactions]);
 
   useEffect(() => {
     saveTransactions(transactions);
   }, [transactions]);
 
-  const handleAddTransaction = (newTransaction: Transaction) => {
-    const categorizedTransaction = { ...newTransaction, category: categorizeTransaction(newTransaction) };
+  const trainedModel = trainMlModel(transactions);
+
+  const handleAddTransaction = (transaction: Transaction) => {
+    const categorizedTransaction = { ...transaction, category: categorizeTransaction(transaction, trainedModel) };
     setTransactions([...transactions, categorizedTransaction]);
   };
 
-  const handleDeleteTransaction = (id: string) => {
+  const handleRemoveTransaction = (id: string) => {
     setTransactions(transactions.filter((transaction) => transaction.id !== id));
   };
 
   return (
     <div>
       <h1>Automated Cash Flow Forecasting</h1>
-      <button onClick={() => handleAddTransaction({ id: "new", description: "New Transaction", amount: 0, type: "income", date: new Date().toISOString().split("T")[0], recurring: false })}>
+      <button onClick={() => handleAddTransaction({ id: "new", description: "New Transaction", amount: 100, type: "income", category: "", date: new Date().toISOString().split("T")[0], recurring: false })}>
         Add Transaction
       </button>
       <ul>
@@ -149,7 +187,7 @@ function App() {
             <span>{transaction.amount}</span>
             <span>{transaction.type}</span>
             <span>{transaction.category}</span>
-            <button onClick={() => handleDeleteTransaction(transaction.id)}>Delete</button>
+            <button onClick={() => handleRemoveTransaction(transaction.id)}>Remove</button>
           </li>
         ))}
       </ul>

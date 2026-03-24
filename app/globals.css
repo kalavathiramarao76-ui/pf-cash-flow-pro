@@ -173,6 +173,72 @@ a:hover {
 
 @media (max-width: 768px) {
   body {
+    font-size: calc(var(--font-size) * 0.9);
+    padding: 10px;
+  }
+  .container {
+    padding: 10px;
+    gap: 10px;
+  }
+  h1 {
+    font-size: calc(var(--header-font-size) * 0.8);
+  }
+  h2 {
+    font-size: calc(var(--subheader-font-size) * 0.8);
+  }
+  h3 {
+    font-size: calc(var(--subheader-font-size) * 0.6);
+  }
+  h4 {
+    font-size: calc(var(--subheader-font-size) * 0.5);
+  }
+  h5 {
+    font-size: calc(var(--subheader-font-size) * 0.4);
+  }
+  h6 {
+    font-size: calc(var(--subheader-font-size) * 0.3);
+  }
+}
+
+@media (max-width: 480px) {
+  body {
     font-size: calc(var(--font-size) * 0.8);
+    padding: 5px;
+  }
+  .container {
+    padding: 5px;
+    gap: 5px;
+  }
+  h1 {
+    font-size: calc(var(--header-font-size) * 0.6);
+  }
+  h2 {
+    font-size: calc(var(--subheader-font-size) * 0.6);
+  }
+  h3 {
+    font-size: calc(var(--subheader-font-size) * 0.4);
+  }
+  h4 {
+    font-size: calc(var(--subheader-font-size) * 0.3);
+  }
+  h5 {
+    font-size: calc(var(--subheader-font-size) * 0.2);
+  }
+  h6 {
+    font-size: calc(var(--subheader-font-size) * 0.1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none;
+    animation: none;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 248, 250, 252;
+    --background-rgb: 15, 23, 42;
   }
 }

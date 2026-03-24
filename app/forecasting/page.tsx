@@ -108,46 +108,40 @@ export default function ForecastingPage() {
     setSelectedMonth(month);
   };
 
-  const handleDateRangeChange = (start: number, end: number) => {
-    setDateRange({ start, end });
+  const handleResetDrillDown = () => {
+    setSelectedMonth(null);
   };
-
-  const filteredForecastData = useMemo(() => {
-    if (selectedMonth !== null) {
-      return forecastData.filter((data) => data.month === selectedMonth);
-    } else if (dateRange.start !== 1 || dateRange.end !== 6) {
-      return forecastData.filter((data) => data.month >= dateRange.start && data.month <= dateRange.end);
-    } else {
-      return forecastData;
-    }
-  }, [forecastData, selectedMonth, dateRange]);
 
   return (
     <div>
       <h1>Automated Cash Flow Forecasting</h1>
-      <LineChart width={800} height={400} data={filteredForecastData}>
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="month" />
-        <YAxis />
-        <Tooltip />
-        <Legend />
-        <Line type="monotone" dataKey="balance" stroke="#8884d8" activeDot={{ r: 8 }} />
-        <Line type="monotone" dataKey="income" stroke="#82ca9d" />
-        <Line type="monotone" dataKey="expenses" stroke="#ff0000" />
-      </LineChart>
-      <div>
-        <button onClick={() => handleDateRangeChange(1, 3)}>1-3 months</button>
-        <button onClick={() => handleDateRangeChange(4, 6)}>4-6 months</button>
-        <button onClick={() => handleDateRangeChange(7, 12)}>7-12 months</button>
-      </div>
+      <ResponsiveContainer width="100%" height={400}>
+        <LineChart data={forecastData}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="month" />
+          <YAxis />
+          <Tooltip />
+          <Legend />
+          <Line type="monotone" dataKey="balance" stroke="#8884d8" activeDot={{ r: 8 }} />
+          <Line type="monotone" dataKey="income" stroke="#82ca9d" />
+          <Line type="monotone" dataKey="expenses" stroke="#ff0000" />
+          {selectedMonth !== null && (
+            <ReferenceLine x={selectedMonth} stroke="red" />
+          )}
+        </LineChart>
+      </ResponsiveContainer>
       {selectedMonth !== null && (
         <div>
-          <h2>Drill-down for month {selectedMonth}</h2>
-          <p>Balance: {filteredForecastData[0].balance}</p>
-          <p>Income: {filteredForecastData[0].income}</p>
-          <p>Expenses: {filteredForecastData[0].expenses}</p>
+          <h2>Drill Down: Month {selectedMonth}</h2>
+          <p>Balance: {forecastData[selectedMonth - 1].balance}</p>
+          <p>Income: {forecastData[selectedMonth - 1].income}</p>
+          <p>Expenses: {forecastData[selectedMonth - 1].expenses}</p>
+          <button onClick={handleResetDrillDown}>Reset Drill Down</button>
         </div>
       )}
+      <button onClick={() => handleDrillDown(1)}>Drill Down Month 1</button>
+      <button onClick={() => handleDrillDown(2)}>Drill Down Month 2</button>
+      <button onClick={() => handleDrillDown(3)}>Drill Down Month 3</button>
     </div>
   );
 }
