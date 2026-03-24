@@ -129,7 +129,7 @@ function categorizeTransaction(transaction: Transaction): string {
   return transaction.type === "income" ? "Other Income" : "Other Expense";
 }
 
-function DashboardPage() {
+function App() {
   const [transactions, setTransactions] = useState<Transaction[]>(getStoredTransactions());
 
   useEffect(() => {
@@ -142,8 +142,8 @@ function DashboardPage() {
     saveTransactions(transactions);
   }, [transactions]);
 
-  const handleAddTransaction = (newTransaction: Transaction) => {
-    const categorizedTransaction = { ...newTransaction, category: categorizeTransaction(newTransaction) };
+  const handleAddTransaction = (transaction: Transaction) => {
+    const categorizedTransaction = { ...transaction, category: categorizeTransaction(transaction) };
     setTransactions([...transactions, categorizedTransaction]);
   };
 
@@ -154,20 +154,16 @@ function DashboardPage() {
   return (
     <div>
       <h1>Automated Cash Flow Forecasting</h1>
-      <button onClick={() => handleAddTransaction({ id: Date.now().toString(), description: "New Transaction", amount: 0, type: "income", date: new Date().toISOString().split("T")[0], recurring: false })}>
-        <Plus />
+      <button onClick={() => handleAddTransaction({ id: Math.random().toString(), description: "New Transaction", amount: 0, type: "income", date: new Date().toISOString().split("T")[0], recurring: false })}>
         Add Transaction
       </button>
       <ul>
         {transactions.map((transaction) => (
           <li key={transaction.id}>
-            <span>
-              {transaction.description} ({transaction.type}) - {transaction.amount}
-            </span>
-            <button onClick={() => handleDeleteTransaction(transaction.id)}>
-              <Trash2 />
-              Delete
-            </button>
+            <span>{transaction.description}</span>
+            <span>{transaction.amount}</span>
+            <span>{transaction.category}</span>
+            <button onClick={() => handleDeleteTransaction(transaction.id)}>Delete</button>
           </li>
         ))}
       </ul>
@@ -175,4 +171,4 @@ function DashboardPage() {
   );
 }
 
-export default DashboardPage;
+export default App;
