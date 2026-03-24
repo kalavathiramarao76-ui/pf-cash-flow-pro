@@ -108,52 +108,46 @@ export default function ForecastingPage() {
     setSelectedMonth(month);
   };
 
-  const handleResetDrillDown = () => {
-    setSelectedMonth(null);
+  const handleDateRangeChange = (start: number, end: number) => {
+    setDateRange({ start, end });
   };
+
+  const filteredForecastData = useMemo(() => {
+    if (selectedMonth !== null) {
+      return forecastData.filter((data) => data.month === selectedMonth);
+    } else if (dateRange.start !== 1 || dateRange.end !== 6) {
+      return forecastData.filter((data) => data.month >= dateRange.start && data.month <= dateRange.end);
+    } else {
+      return forecastData;
+    }
+  }, [forecastData, selectedMonth, dateRange]);
 
   return (
     <div>
       <h1>Automated Cash Flow Forecasting</h1>
-      <ResponsiveContainer width="100%" height={300}>
-        <LineChart data={forecastData}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="month" />
-          <YAxis />
-          <Tooltip />
-          <Legend />
-          <Line type="monotone" dataKey="balance" stroke="#8884d8" />
-          <Line type="monotone" dataKey="income" stroke="#82ca9d" />
-          <Line type="monotone" dataKey="expenses" stroke="#f44336" />
-        </LineChart>
-      </ResponsiveContainer>
+      <LineChart width={800} height={400} data={filteredForecastData}>
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="month" />
+        <YAxis />
+        <Tooltip />
+        <Legend />
+        <Line type="monotone" dataKey="balance" stroke="#8884d8" activeDot={{ r: 8 }} />
+        <Line type="monotone" dataKey="income" stroke="#82ca9d" />
+        <Line type="monotone" dataKey="expenses" stroke="#ff0000" />
+      </LineChart>
+      <div>
+        <button onClick={() => handleDateRangeChange(1, 3)}>1-3 months</button>
+        <button onClick={() => handleDateRangeChange(4, 6)}>4-6 months</button>
+        <button onClick={() => handleDateRangeChange(7, 12)}>7-12 months</button>
+      </div>
       {selectedMonth !== null && (
         <div>
-          <h2>Drill Down: Month {selectedMonth}</h2>
-          <table>
-            <thead>
-              <tr>
-                <th>Recurring Item</th>
-                <th>Type</th>
-                <th>Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              {recurringItems.map((item) => (
-                <tr key={item.id}>
-                  <td>{item.label}</td>
-                  <td>{item.type}</td>
-                  <td>{getMonthlyEquivalent(item)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <button onClick={handleResetDrillDown}>Back to Overview</button>
+          <h2>Drill-down for month {selectedMonth}</h2>
+          <p>Balance: {filteredForecastData[0].balance}</p>
+          <p>Income: {filteredForecastData[0].income}</p>
+          <p>Expenses: {filteredForecastData[0].expenses}</p>
         </div>
       )}
-      <button onClick={() => handleDrillDown(1)}>Drill Down to Month 1</button>
-      <button onClick={() => handleDrillDown(2)}>Drill Down to Month 2</button>
-      <button onClick={() => handleDrillDown(3)}>Drill Down to Month 3</button>
     </div>
   );
 }
