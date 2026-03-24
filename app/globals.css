@@ -173,58 +173,6 @@ a:hover {
 
 @media (max-width: 768px) {
   body {
-    font-size: calc(var(--font-size) * 0.9);
-  }
-  h1 {
-    font-size: calc(var(--header-font-size) * 0.8);
-  }
-  h2 {
-    font-size: calc(var(--subheader-font-size) * 0.8);
-  }
-  h3 {
-    font-size: calc(var(--subheader-font-size) * 0.7);
-  }
-  h4 {
-    font-size: calc(var(--subheader-font-size) * 0.6);
-  }
-  h5 {
-    font-size: calc(var(--subheader-font-size) * 0.5);
-  }
-  h6 {
-    font-size: calc(var(--subheader-font-size) * 0.4);
-  }
-  .container {
-    grid-template-columns: repeat(6, 1fr);
-    gap: 10px;
-    padding: 10px;
-  }
-}
-
-@media (max-width: 480px) {
-  body {
     font-size: calc(var(--font-size) * 0.8);
-  }
-  h1 {
-    font-size: calc(var(--header-font-size) * 0.7);
-  }
-  h2 {
-    font-size: calc(var(--subheader-font-size) * 0.7);
-  }
-  h3 {
-    font-size: calc(var(--subheader-font-size) * 0.6);
-  }
-  h4 {
-    font-size: calc(var(--subheader-font-size) * 0.5);
-  }
-  h5 {
-    font-size: calc(var(--subheader-font-size) * 0.4);
-  }
-  h6 {
-    font-size: calc(var(--subheader-font-size) * 0.3);
-  }
-  .container {
-    grid-template-columns: repeat(1, 1fr);
-    gap: 5px;
-    padding: 5px;
   }
 }

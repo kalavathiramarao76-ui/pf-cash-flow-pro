@@ -139,6 +139,29 @@ export default function ForecastingPage() {
         <input type="number" value={safetyThreshold} onChange={(e) => setSafetyThreshold(e.target.value)} />
       </div>
       <div>
+        <button onClick={() => setShowAddForm(!showAddForm)}>Add Recurring Item</button>
+        {showAddForm && (
+          <div>
+            <label>Label:</label>
+            <input type="text" value={newItem.label} onChange={(e) => setNewItem({ ...newItem, label: e.target.value })} />
+            <label>Amount:</label>
+            <input type="number" value={newItem.amount} onChange={(e) => setNewItem({ ...newItem, amount: e.target.value })} />
+            <label>Type:</label>
+            <select value={newItem.type} onChange={(e) => setNewItem({ ...newItem, type: e.target.value as "income" | "expense" })}>
+              <option value="income">Income</option>
+              <option value="expense">Expense</option>
+            </select>
+            <label>Frequency:</label>
+            <select value={newItem.frequency} onChange={(e) => setNewItem({ ...newItem, frequency: e.target.value as RecurringItem["frequency"] })}>
+              <option value="monthly">Monthly</option>
+              <option value="quarterly">Quarterly</option>
+              <option value="yearly">Yearly</option>
+            </select>
+            <button onClick={() => setRecurringItems([...recurringItems, newItem])}>Add</button>
+          </div>
+        )}
+      </div>
+      <div>
         <h2>Recurring Items:</h2>
         <ul>
           {recurringItems.map((item) => (
@@ -147,32 +170,6 @@ export default function ForecastingPage() {
             </li>
           ))}
         </ul>
-        {showAddForm ? (
-          <div>
-            <label>Label:</label>
-            <input type="text" value={newItem.label} onChange={(e) => setNewItem({ ...newItem, label: e.target.value })} />
-            <br />
-            <label>Amount:</label>
-            <input type="number" value={newItem.amount} onChange={(e) => setNewItem({ ...newItem, amount: e.target.value })} />
-            <br />
-            <label>Type:</label>
-            <select value={newItem.type} onChange={(e) => setNewItem({ ...newItem, type: e.target.value as "income" | "expense" })}>
-              <option value="income">Income</option>
-              <option value="expense">Expense</option>
-            </select>
-            <br />
-            <label>Frequency:</label>
-            <select value={newItem.frequency} onChange={(e) => setNewItem({ ...newItem, frequency: e.target.value as RecurringItem["frequency"] })}>
-              <option value="monthly">Monthly</option>
-              <option value="quarterly">Quarterly</option>
-              <option value="yearly">Yearly</option>
-            </select>
-            <br />
-            <button onClick={() => setRecurringItems([...recurringItems, { ...newItem, id: `r${recurringItems.length + 1}` }])}>Add</button>
-          </div>
-        ) : (
-          <button onClick={() => setShowAddForm(true)}>Add Recurring Item</button>
-        )}
       </div>
       <div>
         <h2>Forecast:</h2>
@@ -182,16 +179,16 @@ export default function ForecastingPage() {
           <YAxis />
           <Tooltip />
           <Legend />
-          <Line type="monotone" dataKey="balance" stroke="#8884d8" activeDot={{ r: 8 }} />
+          <Line type="monotone" dataKey="balance" stroke="#8884d8" />
           <Line type="monotone" dataKey="income" stroke="#82ca9d" />
-          <Line type="monotone" dataKey="expenses" stroke="#ff0000" />
+          <Line type="monotone" dataKey="expenses" stroke="#8884d8" />
         </LineChart>
         <div>
           <label>Date Range:</label>
           <input type="number" value={dateRange.start} onChange={(e) => handleDateRangeChange(parseInt(e.target.value), dateRange.end)} />
           <input type="number" value={dateRange.end} onChange={(e) => handleDateRangeChange(dateRange.start, parseInt(e.target.value))} />
         </div>
-        {selectedMonth !== null && (
+        {selectedMonth && (
           <div>
             <h3>Drill Down:</h3>
             <p>Month: {selectedMonth}</p>
@@ -200,7 +197,6 @@ export default function ForecastingPage() {
             <p>Expenses: {forecastData.find((data) => data.month === selectedMonth)?.expenses}</p>
           </div>
         )}
-        <button onClick={() => handleDrillDown(1)}>Drill Down</button>
       </div>
     </div>
   );
