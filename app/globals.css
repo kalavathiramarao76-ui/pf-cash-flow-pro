@@ -173,7 +173,7 @@ a:hover {
 
 @media (max-width: 768px) {
   body {
-    font-size: calc(var(--font-size) * 0.8);
+    font-size: calc(var(--font-size) * 0.9);
   }
   .container {
     grid-template-columns: repeat(6, 1fr);
@@ -189,7 +189,7 @@ a:hover {
 
 @media (max-width: 480px) {
   body {
-    font-size: calc(var(--font-size) * 0.6);
+    font-size: calc(var(--font-size) * 0.8);
   }
   .container {
     grid-template-columns: repeat(4, 1fr);
@@ -200,5 +200,25 @@ a:hover {
   }
   h2 {
     font-size: calc(var(--subheader-font-size) * 0.6);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none;
+    animation: none;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 248, 250, 252;
+    --background-rgb: 15, 23, 42;
+  }
+}
+
+@media (min-width: 1200px) {
+  .container {
+    max-width: var(--max-width);
   }
 }

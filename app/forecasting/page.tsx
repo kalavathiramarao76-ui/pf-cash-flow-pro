@@ -115,7 +115,7 @@ export default function ForecastingPage() {
   return (
     <div>
       <h1>Automated Cash Flow Forecasting</h1>
-      <ResponsiveContainer width="100%" height={400}>
+      <ResponsiveContainer width="100%" height={300}>
         <LineChart data={forecastData}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="month" />
@@ -130,24 +130,9 @@ export default function ForecastingPage() {
       {selectedMonth !== null && (
         <div>
           <h2>Drill Down: Month {selectedMonth}</h2>
-          <table>
-            <thead>
-              <tr>
-                <th>Recurring Item</th>
-                <th>Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              {recurringItems.map((item) => (
-                <tr key={item.id}>
-                  <td>{item.label}</td>
-                  <td>
-                    {getMonthlyEquivalent(item)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <p>Balance: {forecastData[selectedMonth - 1].balance}</p>
+          <p>Income: {forecastData[selectedMonth - 1].income}</p>
+          <p>Expenses: {forecastData[selectedMonth - 1].expenses}</p>
           <button onClick={handleResetDrillDown}>Back to Overview</button>
         </div>
       )}
