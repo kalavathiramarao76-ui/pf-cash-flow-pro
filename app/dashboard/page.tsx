@@ -125,8 +125,8 @@ function App() {
     saveTransactions(transactions);
   }, [transactions]);
 
-  const handleAddTransaction = (newTransaction: Transaction) => {
-    const categorizedTransaction = { ...newTransaction, category: categorizeTransaction(newTransaction) };
+  const handleAddTransaction = (transaction: Transaction) => {
+    const categorizedTransaction = { ...transaction, category: categorizeTransaction(transaction) };
     setTransactions([...transactions, categorizedTransaction]);
   };
 
@@ -140,11 +140,11 @@ function App() {
       <table>
         <thead>
           <tr>
-            <th>Date</th>
             <th>Description</th>
             <th>Amount</th>
             <th>Type</th>
             <th>Category</th>
+            <th>Date</th>
             <th>Recurring</th>
             <th>Actions</th>
           </tr>
@@ -152,20 +152,32 @@ function App() {
         <tbody>
           {transactions.map(transaction => (
             <tr key={transaction.id}>
-              <td>{transaction.date}</td>
               <td>{transaction.description}</td>
               <td>{transaction.amount}</td>
               <td>{transaction.type}</td>
               <td>{transaction.category}</td>
+              <td>{transaction.date}</td>
               <td>{transaction.recurring ? "Yes" : "No"}</td>
               <td>
-                <button onClick={() => handleDeleteTransaction(transaction.id)}>Delete</button>
+                <button onClick={() => handleDeleteTransaction(transaction.id)}>
+                  <Trash2 />
+                </button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
-      <button onClick={() => handleAddTransaction({ id: Math.random().toString(), description: "New Transaction", amount: 0, type: "income", date: new Date().toISOString().split("T")[0], recurring: false })}>Add Transaction</button>
+      <button onClick={() => handleAddTransaction({
+        id: Math.random().toString(36).substr(2, 9),
+        description: "New Transaction",
+        amount: 0,
+        type: "income",
+        category: "",
+        date: new Date().toISOString().split("T")[0],
+        recurring: false,
+      })}>
+        <Plus />
+      </button>
     </div>
   );
 }
