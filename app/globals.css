@@ -171,7 +171,6 @@ img {
   body {
     font-size: var(--mobile-font-size);
     line-height: var(--mobile-line-height);
-    padding: 10px;
   }
 
   h1 {
@@ -187,25 +186,11 @@ img {
     gap: 10px;
     padding: 10px;
   }
-
-  .button {
-    padding: 5px 10px;
-  }
 }
 
 @media (max-width: 480px) {
   body {
-    font-size: 12px;
-    line-height: 1.2;
-    padding: 5px;
-  }
-
-  h1 {
-    font-size: 1.5rem;
-  }
-
-  h2 {
-    font-size: 1.2rem;
+    padding: 10px;
   }
 
   .container {
@@ -213,8 +198,17 @@ img {
     gap: 5px;
     padding: 5px;
   }
+}
 
-  .button {
-    padding: 2px 5px;
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 248, 250, 252;
+    --background-rgb: 15, 23, 42;
   }
 }

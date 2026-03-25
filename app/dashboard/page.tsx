@@ -142,12 +142,16 @@ function Page() {
     saveTransactions(transactions);
   }, [transactions]);
 
-  const handleAddTransaction = (newTransaction: Omit<Transaction, 'id' | 'category'>) => {
-    const transaction: Transaction = {
-      id: Date.now().toString(),
-      category: categorizeTransaction(newTransaction),
-      ...newTransaction,
+  const handleAddTransaction = () => {
+    const newTransaction: Omit<Transaction, 'id' | 'category'> = {
+      description: 'New Transaction',
+      amount: 0,
+      type: 'income',
+      date: new Date().toISOString().split('T')[0],
+      recurring: false,
     };
+    const category = categorizeTransaction(newTransaction);
+    const transaction: Transaction = { ...newTransaction, id: Date.now().toString(), category };
     setTransactions([...transactions, transaction]);
   };
 
@@ -158,17 +162,20 @@ function Page() {
   return (
     <div>
       <h1>Automated Cash Flow Forecasting</h1>
-      <button onClick={() => handleAddTransaction({ description: 'New Transaction', amount: 100, type: 'income', date: new Date().toISOString().split('T')[0], recurring: false })}>
+      <button onClick={handleAddTransaction}>
+        <Plus />
         Add Transaction
       </button>
       <ul>
         {transactions.map((transaction) => (
           <li key={transaction.id}>
-            <span>{transaction.description}</span>
-            <span>{transaction.amount}</span>
-            <span>{transaction.type}</span>
-            <span>{transaction.category}</span>
-            <button onClick={() => handleDeleteTransaction(transaction.id)}>Delete</button>
+            <span>
+              {transaction.description} ({transaction.type}) - {transaction.amount}
+            </span>
+            <button onClick={() => handleDeleteTransaction(transaction.id)}>
+              <Trash2 />
+              Delete
+            </button>
           </li>
         ))}
       </ul>
