@@ -112,13 +112,6 @@ export default function ForecastingPage() {
     setDateRange({ start, end });
   };
 
-  const filteredForecastData = useMemo(() => {
-    if (dateRange.start && dateRange.end) {
-      return forecastData.filter((data) => data.month >= dateRange.start && data.month <= dateRange.end);
-    }
-    return forecastData;
-  }, [forecastData, dateRange]);
-
   return (
     <div>
       <h1>Automated Cash Flow Forecasting</h1>
@@ -139,15 +132,9 @@ export default function ForecastingPage() {
         <input type="number" value={safetyThreshold} onChange={(e) => setSafetyThreshold(e.target.value)} />
       </div>
       <div>
-        <label>Recurring Items:</label>
-        <ul>
-          {recurringItems.map((item) => (
-            <li key={item.id}>
-              {item.label} ({item.type}) - {item.amount} ({item.frequency})
-            </li>
-          ))}
-        </ul>
-        {showAddForm ? (
+        <h2>Recurring Items</h2>
+        <button onClick={() => setShowAddForm(!showAddForm)}>Add New Item</button>
+        {showAddForm && (
           <div>
             <label>Label:</label>
             <input type="text" value={newItem.label} onChange={(e) => setNewItem({ ...newItem, label: e.target.value })} />
@@ -164,38 +151,48 @@ export default function ForecastingPage() {
               <option value="quarterly">Quarterly</option>
               <option value="yearly">Yearly</option>
             </select>
-            <button onClick={() => setRecurringItems([...recurringItems, { ...newItem, id: Math.random().toString(36).substr(2, 9) }])}>Add</button>
+            <button onClick={() => setRecurringItems([...recurringItems, { ...newItem, id: Math.random().toString(36).substr(2, 9) }])}>Add Item</button>
           </div>
-        ) : (
-          <button onClick={() => setShowAddForm(true)}>Add Recurring Item</button>
         )}
+        <ul>
+          {recurringItems.map((item) => (
+            <li key={item.id}>
+              <span>{item.label}</span>
+              <span>{item.amount}</span>
+              <span>{item.type}</span>
+              <span>{item.frequency}</span>
+            </li>
+          ))}
+        </ul>
       </div>
       <div>
-        <label>Date Range:</label>
-        <input type="number" value={dateRange.start} onChange={(e) => handleDateRangeChange(parseInt(e.target.value), dateRange.end)} placeholder="Start" />
-        <input type="number" value={dateRange.end} onChange={(e) => handleDateRangeChange(dateRange.start, parseInt(e.target.value))} placeholder="End" />
-      </div>
-      <ResponsiveContainer width="100%" height={300}>
-        <LineChart data={filteredForecastData}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="month" />
-          <YAxis />
-          <Tooltip />
-          <Legend />
-          <Line type="monotone" dataKey="balance" stroke="#8884d8" activeDot={{ r: 8 }} />
-          <Line type="monotone" dataKey="income" stroke="#82ca9d" />
-          <Line type="monotone" dataKey="expenses" stroke="#8884d8" />
-          <Brush dataKey="month" height={30} stroke="#8884d8" />
-        </LineChart>
-      </ResponsiveContainer>
-      {selectedMonth !== null && (
+        <h2>Forecast</h2>
+        <ResponsiveContainer width="100%" height={300}>
+          <LineChart data={forecastData}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="month" />
+            <YAxis />
+            <Tooltip />
+            <Legend />
+            <Line type="monotone" dataKey="balance" stroke="#8884d8" activeDot={{ r: 8 }} />
+            <Line type="monotone" dataKey="income" stroke="#82ca9d" />
+            <Line type="monotone" dataKey="expenses" stroke="#8884d8" />
+          </LineChart>
+        </ResponsiveContainer>
         <div>
-          <h2>Drill Down: Month {selectedMonth}</h2>
-          <p>Balance: {filteredForecastData.find((data) => data.month === selectedMonth)?.balance}</p>
-          <p>Income: {filteredForecastData.find((data) => data.month === selectedMonth)?.income}</p>
-          <p>Expenses: {filteredForecastData.find((data) => data.month === selectedMonth)?.expenses}</p>
+          <label>Date Range:</label>
+          <input type="number" value={dateRange.start} onChange={(e) => handleDateRangeChange(parseInt(e.target.value), dateRange.end)} />
+          <input type="number" value={dateRange.end} onChange={(e) => handleDateRangeChange(dateRange.start, parseInt(e.target.value))} />
         </div>
-      )}
+        {selectedMonth !== null && (
+          <div>
+            <h3>Drill Down: Month {selectedMonth}</h3>
+            <p>Balance: {forecastData[selectedMonth - 1].balance}</p>
+            <p>Income: {forecastData[selectedMonth - 1].income}</p>
+            <p>Expenses: {forecastData[selectedMonth - 1].expenses}</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
