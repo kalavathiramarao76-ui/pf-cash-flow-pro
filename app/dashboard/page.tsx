@@ -136,38 +136,60 @@ function App() {
     if (transactions.length === 0) {
       setTransactions(SEED_TRANSACTIONS);
     }
-  }, []);
+  }, [transactions]);
 
   useEffect(() => {
     saveTransactions(transactions);
   }, [transactions]);
 
-  const handleAddTransaction = (newTransaction: Transaction) => {
-    const categorizedTransaction = { ...newTransaction, category: categorizeTransaction(newTransaction) };
-    setTransactions([...transactions, categorizedTransaction]);
+  const handleAddTransaction = (transaction: Transaction) => {
+    setTransactions([...transactions, transaction]);
   };
 
   const handleDeleteTransaction = (id: string) => {
     setTransactions(transactions.filter((transaction) => transaction.id !== id));
   };
 
+  const handleCategorizeTransaction = (transaction: Transaction) => {
+    const categorizedTransaction = { ...transaction, category: categorizeTransaction(transaction) };
+    setTransactions(transactions.map((t) => t.id === transaction.id ? categorizedTransaction : t));
+  };
+
   return (
     <div>
       <h1>Automated Cash Flow Forecasting</h1>
-      <button onClick={() => handleAddTransaction({ id: Date.now().toString(), description: "New Transaction", amount: 0, type: "income", date: new Date().toISOString().split("T")[0], recurring: false })}>
+      <table>
+        <thead>
+          <tr>
+            <th>Description</th>
+            <th>Amount</th>
+            <th>Type</th>
+            <th>Category</th>
+            <th>Date</th>
+            <th>Recurring</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {transactions.map((transaction) => (
+            <tr key={transaction.id}>
+              <td>{transaction.description}</td>
+              <td>{transaction.amount}</td>
+              <td>{transaction.type}</td>
+              <td>{transaction.category}</td>
+              <td>{transaction.date}</td>
+              <td>{transaction.recurring ? "Yes" : "No"}</td>
+              <td>
+                <button onClick={() => handleCategorizeTransaction(transaction)}>Categorize</button>
+                <button onClick={() => handleDeleteTransaction(transaction.id)}>Delete</button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <button onClick={() => handleAddTransaction({ id: Math.random().toString(), description: "", amount: 0, type: "income", category: "", date: new Date().toISOString().split("T")[0], recurring: false })}>
         Add Transaction
       </button>
-      <ul>
-        {transactions.map((transaction) => (
-          <li key={transaction.id}>
-            <span>{transaction.description}</span>
-            <span>{transaction.amount}</span>
-            <span>{transaction.type}</span>
-            <span>{transaction.category}</span>
-            <button onClick={() => handleDeleteTransaction(transaction.id)}>Delete</button>
-          </li>
-        ))}
-      </ul>
     </div>
   );
 }

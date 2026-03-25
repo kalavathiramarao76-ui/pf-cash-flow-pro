@@ -142,15 +142,7 @@ export default function ForecastingPage() {
         <input type="number" value={safetyThreshold} onChange={(e) => setSafetyThreshold(e.target.value)} />
       </div>
       <div>
-        <label>Recurring Items:</label>
-        <ul>
-          {recurringItems.map((item) => (
-            <li key={item.id}>
-              {item.label} ({item.type}) - {item.amount} ({item.frequency})
-            </li>
-          ))}
-        </ul>
-        <button onClick={() => setShowAddForm(true)}>Add New Item</button>
+        <button onClick={() => setShowAddForm(!showAddForm)}>Add Recurring Item</button>
         {showAddForm && (
           <div>
             <label>Label:</label>
@@ -173,31 +165,40 @@ export default function ForecastingPage() {
         )}
       </div>
       <div>
-        <label>Date Range:</label>
-        <input type="number" value={dateRange.start} onChange={(e) => handleDateRangeChange(parseInt(e.target.value), dateRange.end)} />
-        <label>to</label>
-        <input type="number" value={dateRange.end} onChange={(e) => handleDateRangeChange(dateRange.start, parseInt(e.target.value))} />
+        <h2>Recurring Items:</h2>
+        <ul>
+          {recurringItems.map((item) => (
+            <li key={item.id}>
+              {item.label} ({item.type}) - {item.amount} ({item.frequency})
+            </li>
+          ))}
+        </ul>
       </div>
-      <ResponsiveContainer width="100%" height={300}>
-        <LineChart data={filteredForecastData}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="month" />
-          <YAxis />
-          <Tooltip />
-          <Legend />
-          <Line type="monotone" dataKey="balance" stroke="#8884d8" activeDot={{ r: 8 }} />
-          <Line type="monotone" dataKey="income" stroke="#82ca9d" />
-          <Line type="monotone" dataKey="expenses" stroke="#8884d8" />
-          <Brush dataKey="month" height={30} />
-        </LineChart>
-      </ResponsiveContainer>
-      <ul>
-        {filteredForecastData.map((data) => (
-          <li key={data.month} onClick={() => handleDrillDown(data.month)}>
-            Month {data.month}: Balance - {data.balance}, Income - {data.income}, Expenses - {data.expenses}
-          </li>
-        ))}
-      </ul>
+      <div>
+        <h2>Forecast:</h2>
+        <ResponsiveContainer width="100%" height={300}>
+          <LineChart data={filteredForecastData}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="month" />
+            <YAxis />
+            <Tooltip />
+            <Legend />
+            <Line type="monotone" dataKey="balance" stroke="#8884d8" activeDot={{ r: 8 }} />
+            <Line type="monotone" dataKey="income" stroke="#82ca9d" />
+            <Line type="monotone" dataKey="expenses" stroke="#ff0000" />
+          </LineChart>
+        </ResponsiveContainer>
+        <div>
+          <button onClick={() => handleDrillDown(1)}>Drill Down to Month 1</button>
+          <button onClick={() => handleDrillDown(2)}>Drill Down to Month 2</button>
+          <button onClick={() => handleDrillDown(3)}>Drill Down to Month 3</button>
+        </div>
+        <div>
+          <label>Date Range:</label>
+          <input type="number" value={dateRange.start} onChange={(e) => handleDateRangeChange(parseInt(e.target.value), dateRange.end)} />
+          <input type="number" value={dateRange.end} onChange={(e) => handleDateRangeChange(dateRange.start, parseInt(e.target.value))} />
+        </div>
+      </div>
     </div>
   );
 }
