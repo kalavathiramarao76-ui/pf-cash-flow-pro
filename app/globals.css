@@ -18,6 +18,10 @@
   --header-font-size: 2.5rem;
   --subheader-font-size: 2rem;
   --content-font-size: 1rem;
+  --mobile-font-size: 14px;
+  --mobile-line-height: 1.4;
+  --mobile-header-font-size: 2rem;
+  --mobile-subheader-font-size: 1.5rem;
 }
 
 * {
@@ -174,32 +178,35 @@ a:hover {
 
 @media (max-width: 768px) {
   body {
-    font-size: calc(var(--font-size) * 0.9);
-  }
-  .container {
-    grid-template-columns: repeat(6, 1fr);
+    font-size: var(--mobile-font-size);
+    line-height: var(--mobile-line-height);
     padding: 10px;
   }
   h1 {
-    font-size: calc(var(--header-font-size) * 0.8);
+    font-size: var(--mobile-header-font-size);
   }
   h2 {
-    font-size: calc(var(--subheader-font-size) * 0.8);
+    font-size: var(--mobile-subheader-font-size);
   }
-}
-
-@media (max-width: 480px) {
-  body {
-    font-size: calc(var(--font-size) * 0.8);
+  h3 {
+    font-size: calc(var(--mobile-subheader-font-size) * 0.8);
+  }
+  h4 {
+    font-size: calc(var(--mobile-subheader-font-size) * 0.7);
+  }
+  h5 {
+    font-size: calc(var(--mobile-subheader-font-size) * 0.6);
+  }
+  h6 {
+    font-size: calc(var(--mobile-subheader-font-size) * 0.5);
   }
   .container {
-    grid-template-columns: repeat(4, 1fr);
-    padding: 5px;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 10px;
+    padding: 10px;
   }
-  h1 {
-    font-size: calc(var(--header-font-size) * 0.6);
-  }
-  h2 {
-    font-size: calc(var(--subheader-font-size) * 0.6);
+  .button {
+    padding: 5px 10px;
+    font-size: 0.8rem;
   }
 }
