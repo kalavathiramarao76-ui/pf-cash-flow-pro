@@ -115,33 +115,45 @@ export default function ForecastingPage() {
   return (
     <div>
       <h1>Automated Cash Flow Forecasting</h1>
-      <ResponsiveContainer width="100%" height={400}>
-        <LineChart data={forecastData}>
+      <div>
+        <LineChart width={800} height={400} data={forecastData}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="month" />
           <YAxis />
           <Tooltip />
           <Legend />
-          <Line type="monotone" dataKey="balance" stroke="#8884d8" />
+          <Line type="monotone" dataKey="balance" stroke="#8884d8" activeDot={{ r: 8 }} />
           <Line type="monotone" dataKey="income" stroke="#82ca9d" />
           <Line type="monotone" dataKey="expenses" stroke="#ff0000" />
-          {selectedMonth !== null && (
-            <ReferenceLine x={selectedMonth} stroke="black" />
-          )}
         </LineChart>
-      </ResponsiveContainer>
-      {selectedMonth !== null && (
-        <div>
-          <h2>Drill Down: Month {selectedMonth}</h2>
-          <p>Balance: {forecastData[selectedMonth - 1].balance}</p>
-          <p>Income: {forecastData[selectedMonth - 1].income}</p>
-          <p>Expenses: {forecastData[selectedMonth - 1].expenses}</p>
-          <button onClick={handleResetDrillDown}>Reset Drill Down</button>
-        </div>
-      )}
-      <button onClick={() => handleDrillDown(1)}>Drill Down Month 1</button>
-      <button onClick={() => handleDrillDown(2)}>Drill Down Month 2</button>
-      <button onClick={() => handleDrillDown(3)}>Drill Down Month 3</button>
+        {selectedMonth !== null && (
+          <div>
+            <h2>Drill Down: Month {selectedMonth}</h2>
+            <table>
+              <thead>
+                <tr>
+                  <th>Recurring Item</th>
+                  <th>Amount</th>
+                  <th>Type</th>
+                </tr>
+              </thead>
+              <tbody>
+                {recurringItems.map((item) => (
+                  <tr key={item.id}>
+                    <td>{item.label}</td>
+                    <td>{getMonthlyEquivalent(item)}</td>
+                    <td>{item.type}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <button onClick={handleResetDrillDown}>Back to Overview</button>
+          </div>
+        )}
+        <button onClick={() => handleDrillDown(1)}>Drill Down Month 1</button>
+        <button onClick={() => handleDrillDown(2)}>Drill Down Month 2</button>
+        <button onClick={() => handleDrillDown(3)}>Drill Down Month 3</button>
+      </div>
     </div>
   );
 }
