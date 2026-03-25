@@ -42,6 +42,7 @@ body {
   padding: 20px;
   transition: font-size 0.3s ease;
   overflow-x: hidden;
+  font-size: calc(1rem + 0.5vw);
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -165,4 +166,77 @@ img {
   height: auto;
   object-fit: contain;
   loading: lazy;
+}
+
+@media (max-width: 768px) {
+  body {
+    font-size: calc(1rem + 0.2vw);
+  }
+  h1 {
+    font-size: calc(var(--header-font-size) * 0.8);
+  }
+  h2 {
+    font-size: calc(var(--subheader-font-size) * 0.8);
+  }
+  .container {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    font-size: var(--mobile-font-size);
+  }
+  h1 {
+    font-size: var(--mobile-header-font-size);
+  }
+  h2 {
+    font-size: var(--mobile-subheader-font-size);
+  }
+  .container {
+    grid-template-columns: repeat(3, 1fr);
+    padding: 10px;
+  }
+}
+
+/* Accessibility features */
+* {
+  outline: none;
+}
+
+*:focus {
+  outline: 2px solid var(--primary-color);
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.link:visited {
+  color: var(--secondary-color);
+}
+
+/* Screen reader only */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.sr-only:focus {
+  clip: auto;
+  height: auto;
+  margin: 0;
+  overflow: visible;
+  position: static;
+  white-space: normal;
+  width: auto;
+  z-index: 1000;
 }
