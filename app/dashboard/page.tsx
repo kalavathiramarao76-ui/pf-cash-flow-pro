@@ -107,9 +107,9 @@ const mlModel: MlModel = {
   },
 };
 
-function categorizeTransaction(transaction: Transaction): string {
-  const keywords = transaction.description.toLowerCase().split(" ");
-  if (transaction.type === "income") {
+function categorizeTransaction(transaction: Omit<Transaction, 'category'>): string {
+  const keywords = transaction.description.toLowerCase().split(' ');
+  if (transaction.type === 'income') {
     for (const category in mlModel.income) {
       for (const keyword of mlModel.income[category]) {
         if (keywords.includes(keyword.toLowerCase())) {
@@ -126,7 +126,7 @@ function categorizeTransaction(transaction: Transaction): string {
       }
     }
   }
-  return transaction.type === "income" ? "Other Income" : "Other Expense";
+  return transaction.type === 'income' ? 'Other Income' : 'Other Expense';
 }
 
 function Page() {
@@ -136,21 +136,17 @@ function Page() {
     if (transactions.length === 0) {
       setTransactions(SEED_TRANSACTIONS);
     }
-  }, []);
+  }, [transactions]);
 
   useEffect(() => {
     saveTransactions(transactions);
   }, [transactions]);
 
-  const handleAddTransaction = () => {
+  const handleAddTransaction = (transaction: Omit<Transaction, 'id' | 'category'>) => {
     const newTransaction: Transaction = {
       id: Date.now().toString(),
-      description: "",
-      amount: 0,
-      type: "income",
-      category: "",
-      date: new Date().toISOString().split("T")[0],
-      recurring: false,
+      category: categorizeTransaction(transaction),
+      ...transaction,
     };
     setTransactions([...transactions, newTransaction]);
   };
@@ -159,48 +155,20 @@ function Page() {
     setTransactions(transactions.filter((transaction) => transaction.id !== id));
   };
 
-  const handleUpdateTransaction = (id: string, updatedTransaction: Transaction) => {
-    setTransactions(transactions.map((transaction) => transaction.id === id ? updatedTransaction : transaction));
-  };
-
-  const handleCategorizeTransaction = (id: string) => {
-    const transaction = transactions.find((t) => t.id === id);
-    if (transaction) {
-      const category = categorizeTransaction(transaction);
-      handleUpdateTransaction(id, { ...transaction, category });
-    }
-  };
-
   return (
     <div>
       <h1>Automated Cash Flow Forecasting</h1>
-      <button onClick={handleAddTransaction}>
-        <Plus />
+      <button onClick={() => handleAddTransaction({ description: 'Test Transaction', amount: 100, type: 'income', date: new Date().toISOString().split('T')[0], recurring: false })}>
         Add Transaction
       </button>
       <ul>
         {transactions.map((transaction) => (
           <li key={transaction.id}>
-            <span>
-              {transaction.description} ({transaction.type})
-            </span>
-            <span>
-              {transaction.amount}
-            </span>
-            <span>
-              {transaction.category}
-            </span>
-            <span>
-              {transaction.date}
-            </span>
-            <button onClick={() => handleDeleteTransaction(transaction.id)}>
-              <Trash2 />
-              Delete
-            </button>
-            <button onClick={() => handleCategorizeTransaction(transaction.id)}>
-              <Tag />
-              Categorize
-            </button>
+            <span>{transaction.description}</span>
+            <span>{transaction.amount}</span>
+            <span>{transaction.type}</span>
+            <span>{transaction.category}</span>
+            <button onClick={() => handleDeleteTransaction(transaction.id)}>Delete</button>
           </li>
         ))}
       </ul>
