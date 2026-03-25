@@ -108,33 +108,67 @@ export default function ForecastingPage() {
     setSelectedMonth(month);
   };
 
-  const handleBrushChange = (range: { start: number; end: number }) => {
-    setDateRange(range);
+  const handleDateRangeChange = (start: number, end: number) => {
+    setDateRange({ start, end });
   };
+
+  const filteredForecastData = useMemo(() => {
+    if (selectedMonth !== null) {
+      return forecastData.filter((data) => data.month === selectedMonth);
+    } else if (dateRange.start !== 1 || dateRange.end !== 6) {
+      return forecastData.filter((data) => data.month >= dateRange.start && data.month <= dateRange.end);
+    } else {
+      return forecastData;
+    }
+  }, [forecastData, selectedMonth, dateRange]);
 
   return (
     <div>
       <h1>Automated Cash Flow Forecasting</h1>
-      <ResponsiveContainer width="100%" height={400}>
-        <AreaChart data={forecastData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+      <ResponsiveContainer width="100%" height={300}>
+        <LineChart data={forecastData}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="month" />
           <YAxis />
           <Tooltip />
-          <Area type="monotone" dataKey="balance" stroke="#8884d8" fill="#8884d8" />
-          <Area type="monotone" dataKey="income" stroke="#82ca9d" fill="#82ca9d" />
-          <Area type="monotone" dataKey="expenses" stroke="#ff0000" fill="#ff0000" />
-          <Brush dataKey="month" onChange={handleBrushChange} />
-        </AreaChart>
+          <Legend />
+          <Line type="monotone" dataKey="balance" stroke="#8884d8" />
+          <Line type="monotone" dataKey="income" stroke="#82ca9d" />
+          <Line type="monotone" dataKey="expenses" stroke="#ff0000" />
+        </LineChart>
       </ResponsiveContainer>
-      {selectedMonth !== null && (
-        <div>
-          <h2>Drill-down for month {selectedMonth}</h2>
-          <p>Balance: {forecastData[selectedMonth - 1].balance}</p>
-          <p>Income: {forecastData[selectedMonth - 1].income}</p>
-          <p>Expenses: {forecastData[selectedMonth - 1].expenses}</p>
-        </div>
-      )}
+      <div>
+        <button onClick={() => handleDrillDown(1)}>Drill Down to Month 1</button>
+        <button onClick={() => handleDrillDown(2)}>Drill Down to Month 2</button>
+        <button onClick={() => handleDrillDown(3)}>Drill Down to Month 3</button>
+      </div>
+      <div>
+        <label>Start Month:</label>
+        <input type="number" value={dateRange.start} onChange={(e) => handleDateRangeChange(parseInt(e.target.value), dateRange.end)} />
+        <label>End Month:</label>
+        <input type="number" value={dateRange.end} onChange={(e) => handleDateRangeChange(dateRange.start, parseInt(e.target.value))} />
+      </div>
+      <h2>Filtered Forecast Data</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Month</th>
+            <th>Balance</th>
+            <th>Income</th>
+            <th>Expenses</th>
+          </tr>
+        </thead>
+        <tbody>
+          {filteredForecastData.map((data) => (
+            <tr key={data.month}>
+              <td>{data.month}</td>
+              <td>{data.balance}</td>
+              <td>{data.income}</td>
+              <td>{data.expenses}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
