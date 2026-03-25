@@ -37,6 +37,7 @@ body {
   font-size: var(--font-size);
   padding: 20px;
   transition: font-size 0.3s ease;
+  overflow-x: hidden;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -174,73 +175,31 @@ a:hover {
 @media (max-width: 768px) {
   body {
     font-size: calc(var(--font-size) * 0.9);
-    padding: 10px;
   }
-
   .container {
     grid-template-columns: repeat(6, 1fr);
-    gap: 10px;
     padding: 10px;
   }
-
   h1 {
     font-size: calc(var(--header-font-size) * 0.8);
   }
-
   h2 {
     font-size: calc(var(--subheader-font-size) * 0.8);
-  }
-
-  h3 {
-    font-size: calc(var(--subheader-font-size) * 0.7);
-  }
-
-  h4 {
-    font-size: calc(var(--subheader-font-size) * 0.6);
-  }
-
-  h5 {
-    font-size: calc(var(--subheader-font-size) * 0.5);
-  }
-
-  h6 {
-    font-size: calc(var(--subheader-font-size) * 0.4);
   }
 }
 
 @media (max-width: 480px) {
   body {
     font-size: calc(var(--font-size) * 0.8);
-    padding: 5px;
   }
-
   .container {
     grid-template-columns: repeat(4, 1fr);
-    gap: 5px;
     padding: 5px;
   }
-
   h1 {
     font-size: calc(var(--header-font-size) * 0.6);
   }
-
   h2 {
     font-size: calc(var(--subheader-font-size) * 0.6);
-  }
-
-  h3 {
-    font-size: calc(var(--subheader-font-size) * 0.5);
-  }
-
-  h4 {
-    font-size: calc(var(--subheader-font-size) * 0.4);
-  }
-
-  h5 {
-    font-size: calc(var(--subheader-font-size) * 0.3);
-  }
-
-  h6 {
-    font-size: calc(var(--subheader-font-size) * 0.2);
   }
 }
