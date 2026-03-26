@@ -100,80 +100,85 @@ class AdvancedMlModel {
     return model;
   }
 
-  public predict(transaction: Transaction): string {
-    if (transaction.type === "income") {
-      const category = Object.keys(this.incomeModel).find((key) => {
-        return this.incomeModel[key].includes(transaction.description);
-      });
-      return category || "Unknown";
+  public predict(description: string, type: TransactionType): string {
+    if (type === "income") {
+      const category = this.predictIncome(description);
+      return category;
     } else {
-      const category = Object.keys(this.expenseModel).find((key) => {
-        return this.expenseModel[key].includes(transaction.description);
-      });
-      return category || "Unknown";
+      const category = this.predictExpense(description);
+      return category;
     }
   }
 
-  public train(transactions: Transaction[]): void {
-    transactions.forEach((transaction) => {
-      if (transaction.type === "income") {
-        const category = this.incomeModel[transaction.category];
-        if (category) {
-          category.push(transaction.description);
-        }
-      } else {
-        const category = this.expenseModel[transaction.category];
-        if (category) {
-          category.push(transaction.description);
-        }
+  private predictIncome(description: string): string {
+    const keywords: { [key: string]: string[] } = {
+      "Freelance / Contract": ["client", "project", "freelance"],
+      "Product Sales": ["product", "sale", "item"],
+      "Consulting": ["consulting", "advice", "expert"],
+      "Rental Income": ["rental", "property", "lease"],
+      "Investment": ["investment", "stock", "bond"],
+      "Salary": ["salary", "wage", "pay"],
+      "Other Income": ["other", "income", "misc"],
+    };
+    let bestMatch: string | null = null;
+    let bestMatchCount: number = 0;
+    Object.keys(keywords).forEach((category) => {
+      const keywordCount: number = keywords[category].filter((keyword) => description.toLowerCase().includes(keyword)).length;
+      if (keywordCount > bestMatchCount) {
+        bestMatch = category;
+        bestMatchCount = keywordCount;
       }
     });
+    return bestMatch || "Other Income";
+  }
+
+  private predictExpense(description: string): string {
+    const keywords: { [key: string]: string[] } = {
+      "Rent / Office": ["rent", "office", "lease"],
+      "Software & Tools": ["software", "tool", "app"],
+      "Marketing": ["marketing", "ad", "promotion"],
+      "Payroll": ["payroll", "salary", "wage"],
+      "Utilities": ["utility", "bill", "electricity"],
+      "Travel": ["travel", "trip", "hotel"],
+      "Equipment": ["equipment", "hardware", "machine"],
+      "Professional Services": ["service", "consulting", "advice"],
+      "Other Expense": ["other", "expense", "misc"],
+    };
+    let bestMatch: string | null = null;
+    let bestMatchCount: number = 0;
+    Object.keys(keywords).forEach((category) => {
+      const keywordCount: number = keywords[category].filter((keyword) => description.toLowerCase().includes(keyword)).length;
+      if (keywordCount > bestMatchCount) {
+        bestMatch = category;
+        bestMatchCount = keywordCount;
+      }
+    });
+    return bestMatch || "Other Expense";
   }
 }
 
 function App() {
   const [transactions, setTransactions] = useState<Transaction[]>(getStoredTransactions());
-  const [newTransaction, setNewTransaction] = useState<Transaction>({
-    id: "",
-    description: "",
-    amount: 0,
-    type: "income",
-    category: "",
-    date: "",
-    recurring: false,
-  });
-  const [mlModel, setMlModel] = useState<AdvancedMlModel>(new AdvancedMlModel());
+  const [newTransaction, setNewTransaction] = useState({ description: "", amount: 0, type: "income", category: "", date: "", recurring: false });
+  const [mlModel, setMlModel] = useState(new AdvancedMlModel());
 
   useEffect(() => {
-    saveTransactions(transactions);
+    if (transactions.length === 0) {
+      setTransactions(SEED_TRANSACTIONS);
+    }
   }, [transactions]);
 
   const handleAddTransaction = () => {
-    if (newTransaction.id && newTransaction.description && newTransaction.amount && newTransaction.category && newTransaction.date) {
-      const updatedTransactions = [...transactions, newTransaction];
-      setTransactions(updatedTransactions);
-      setNewTransaction({
-        id: "",
-        description: "",
-        amount: 0,
-        type: "income",
-        category: "",
-        date: "",
-        recurring: false,
-      });
-      mlModel.train(updatedTransactions);
-    }
+    const predictedCategory = mlModel.predict(newTransaction.description, newTransaction.type as TransactionType);
+    setNewTransaction({ ...newTransaction, category: predictedCategory });
+    setTransactions([...transactions, { ...newTransaction, id: Math.random().toString(36).substr(2, 9) }]);
+    setNewTransaction({ description: "", amount: 0, type: "income", category: "", date: "", recurring: false });
+    saveTransactions(transactions);
   };
 
   const handleDeleteTransaction = (id: string) => {
-    const updatedTransactions = transactions.filter((transaction) => transaction.id !== id);
-    setTransactions(updatedTransactions);
-    mlModel.train(updatedTransactions);
-  };
-
-  const handlePredictCategory = (transaction: Transaction) => {
-    const predictedCategory = mlModel.predict(transaction);
-    console.log(predictedCategory);
+    setTransactions(transactions.filter((transaction) => transaction.id !== id));
+    saveTransactions(transactions);
   };
 
   return (
@@ -182,7 +187,6 @@ function App() {
       <table>
         <thead>
           <tr>
-            <th>ID</th>
             <th>Description</th>
             <th>Amount</th>
             <th>Type</th>
@@ -195,7 +199,6 @@ function App() {
         <tbody>
           {transactions.map((transaction) => (
             <tr key={transaction.id}>
-              <td>{transaction.id}</td>
               <td>{transaction.description}</td>
               <td>{transaction.amount}</td>
               <td>{transaction.type}</td>
@@ -203,8 +206,9 @@ function App() {
               <td>{transaction.date}</td>
               <td>{transaction.recurring ? "Yes" : "No"}</td>
               <td>
-                <button onClick={() => handleDeleteTransaction(transaction.id)}>Delete</button>
-                <button onClick={() => handlePredictCategory(transaction)}>Predict Category</button>
+                <button onClick={() => handleDeleteTransaction(transaction.id)}>
+                  <Trash2 />
+                </button>
               </td>
             </tr>
           ))}
@@ -212,16 +216,12 @@ function App() {
       </table>
       <form>
         <label>
-          ID:
-          <input type="text" value={newTransaction.id} onChange={(e) => setNewTransaction({ ...newTransaction, id: e.target.value })} />
-        </label>
-        <label>
           Description:
           <input type="text" value={newTransaction.description} onChange={(e) => setNewTransaction({ ...newTransaction, description: e.target.value })} />
         </label>
         <label>
           Amount:
-          <input type="number" value={newTransaction.amount} onChange={(e) => setNewTransaction({ ...newTransaction, amount: Number(e.target.value) })} />
+          <input type="number" value={newTransaction.amount} onChange={(e) => setNewTransaction({ ...newTransaction, amount: parseFloat(e.target.value) })} />
         </label>
         <label>
           Type:
@@ -231,10 +231,6 @@ function App() {
           </select>
         </label>
         <label>
-          Category:
-          <input type="text" value={newTransaction.category} onChange={(e) => setNewTransaction({ ...newTransaction, category: e.target.value })} />
-        </label>
-        <label>
           Date:
           <input type="date" value={newTransaction.date} onChange={(e) => setNewTransaction({ ...newTransaction, date: e.target.value })} />
         </label>
@@ -242,7 +238,9 @@ function App() {
           Recurring:
           <input type="checkbox" checked={newTransaction.recurring} onChange={(e) => setNewTransaction({ ...newTransaction, recurring: e.target.checked })} />
         </label>
-        <button type="button" onClick={handleAddTransaction}>Add Transaction</button>
+        <button type="button" onClick={handleAddTransaction}>
+          <Plus />
+        </button>
       </form>
     </div>
   );
