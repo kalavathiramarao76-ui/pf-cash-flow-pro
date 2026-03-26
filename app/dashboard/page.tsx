@@ -136,14 +136,23 @@ function DashboardPage() {
     if (transactions.length === 0) {
       setTransactions(SEED_TRANSACTIONS);
     }
-  }, [transactions]);
+  }, []);
 
   useEffect(() => {
     saveTransactions(transactions);
   }, [transactions]);
 
-  const handleAddTransaction = (transaction: Transaction) => {
-    setTransactions([...transactions, transaction]);
+  const handleAddTransaction = () => {
+    const newTransaction: Transaction = {
+      id: Date.now().toString(),
+      description: "",
+      amount: 0,
+      type: "income",
+      category: "",
+      date: new Date().toISOString().split("T")[0],
+      recurring: false,
+    };
+    setTransactions([...transactions, newTransaction]);
   };
 
   const handleDeleteTransaction = (id: string) => {
@@ -154,29 +163,48 @@ function DashboardPage() {
     setTransactions(transactions.map((transaction) => transaction.id === id ? updatedTransaction : transaction));
   };
 
-  const handleCategorizeTransactions = () => {
-    setTransactions(transactions.map((transaction) => ({ ...transaction, category: categorizeTransaction(transaction) })));
-  };
-
   return (
     <div>
       <h1>Automated Cash Flow Forecasting</h1>
-      <button onClick={handleCategorizeTransactions}>Categorize Transactions</button>
-      <ul>
-        {transactions.map((transaction) => (
-          <li key={transaction.id}>
-            <span>{transaction.description}</span>
-            <span>{transaction.amount}</span>
-            <span>{transaction.type}</span>
-            <span>{transaction.category}</span>
-            <span>{transaction.date}</span>
-            <span>{transaction.recurring ? "Recurring" : "Non-Recurring"}</span>
-            <button onClick={() => handleDeleteTransaction(transaction.id)}>Delete</button>
-            <button onClick={() => handleUpdateTransaction(transaction.id, { ...transaction, category: categorizeTransaction(transaction) })}>Update</button>
-          </li>
-        ))}
-      </ul>
-      <button onClick={() => handleAddTransaction({ id: Math.random().toString(), description: "New Transaction", amount: 0, type: "income", category: "", date: new Date().toISOString().split("T")[0], recurring: false })}>Add Transaction</button>
+      <button onClick={handleAddTransaction}>
+        <Plus />
+        Add Transaction
+      </button>
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Description</th>
+            <th>Amount</th>
+            <th>Type</th>
+            <th>Category</th>
+            <th>Recurring</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {transactions.map((transaction) => (
+            <tr key={transaction.id}>
+              <td>{transaction.date}</td>
+              <td>{transaction.description}</td>
+              <td>{transaction.amount}</td>
+              <td>{transaction.type}</td>
+              <td>{categorizeTransaction(transaction)}</td>
+              <td>{transaction.recurring ? "Yes" : "No"}</td>
+              <td>
+                <button onClick={() => handleDeleteTransaction(transaction.id)}>
+                  <Trash2 />
+                  Delete
+                </button>
+                <button onClick={() => handleUpdateTransaction(transaction.id, { ...transaction, category: categorizeTransaction(transaction) })}>
+                  <RefreshCw />
+                  Update
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
