@@ -176,10 +176,11 @@ img {
   h2 {
     font-size: var(--mobile-subheader-font-size);
   }
-  .container {
-    grid-template-columns: repeat(6, 1fr);
-    gap: 10px;
-    padding: 10px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  * {
+    transition: all 0.3s ease;
   }
 }
 
