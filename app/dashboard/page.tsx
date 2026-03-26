@@ -78,13 +78,11 @@ const SEED_TRANSACTIONS: Transaction[] = [
   { id: "s6", description: "Freelance — Design Project", amount: 1600, type: "income", category: "Freelance / Contract", date: new Date(Date.now() - 7 * 86400000).toISOString().split("T")[0], recurring: false },
 ];
 
-// Machine learning model for transaction categorization
 interface MlModel {
   income: { [key: string]: string[] };
   expense: { [key: string]: string[] };
 }
 
-// Advanced machine learning model using Natural Language Processing (NLP) techniques
 class AdvancedMlModel {
   private incomeModel: any;
   private expenseModel: any;
@@ -95,89 +93,119 @@ class AdvancedMlModel {
   }
 
   private trainModel(categories: string[]): any {
-    const model = {};
+    const model: any = {};
     categories.forEach((category) => {
-      model[category] = this.generateTrainingData(category);
+      model[category] = [];
     });
     return model;
   }
 
-  private generateTrainingData(category: string): string[] {
-    const trainingData = [];
-    for (let i = 0; i < 100; i++) {
-      const description = this.generateRandomDescription(category);
-      trainingData.push(description);
-    }
-    return trainingData;
-  }
-
-  private generateRandomDescription(category: string): string {
-    const words = category.split(" ");
-    const description = words[Math.floor(Math.random() * words.length)];
-    return description;
-  }
-
   public categorizeTransaction(transaction: Transaction): string {
-    const description = transaction.description;
-    const type = transaction.type;
-    if (type === "income") {
-      return this.categorizeIncome(description, this.incomeModel);
+    const keywords = transaction.description.toLowerCase().split(" ");
+    let category = "";
+
+    if (transaction.type === "income") {
+      for (const keyword of keywords) {
+        for (const incomeCategory in this.incomeModel) {
+          if (incomeCategory.toLowerCase().includes(keyword)) {
+            category = incomeCategory;
+            break;
+          }
+        }
+      }
     } else {
-      return this.categorizeExpense(description, this.expenseModel);
+      for (const keyword of keywords) {
+        for (const expenseCategory in this.expenseModel) {
+          if (expenseCategory.toLowerCase().includes(keyword)) {
+            category = expenseCategory;
+            break;
+          }
+        }
+      }
     }
-  }
 
-  private categorizeIncome(description: string, model: any): string {
-    const categories = Object.keys(model);
-    let bestMatch = "";
-    let bestScore = 0;
-    categories.forEach((category) => {
-      const score = this.calculateScore(description, model[category]);
-      if (score > bestScore) {
-        bestMatch = category;
-        bestScore = score;
-      }
-    });
-    return bestMatch;
-  }
-
-  private categorizeExpense(description: string, model: any): string {
-    const categories = Object.keys(model);
-    let bestMatch = "";
-    let bestScore = 0;
-    categories.forEach((category) => {
-      const score = this.calculateScore(description, model[category]);
-      if (score > bestScore) {
-        bestMatch = category;
-        bestScore = score;
-      }
-    });
-    return bestMatch;
-  }
-
-  private calculateScore(description: string, trainingData: string[]): number {
-    let score = 0;
-    trainingData.forEach((data) => {
-      if (description.includes(data)) {
-        score++;
-      }
-    });
-    return score;
+    return category;
   }
 }
 
 const mlModel = new AdvancedMlModel();
 
-// Example usage:
-const transaction: Transaction = {
-  id: "t1",
-  description: "Client — Acme Corp (Retainer)",
-  amount: 4500,
-  type: "income",
-  category: "",
-  date: new Date().toISOString().split("T")[0],
-  recurring: true,
-};
+function App() {
+  const [transactions, setTransactions] = useState<Transaction[]>(getStoredTransactions());
 
-const category = mlModel.categorizeTransaction(transaction);
-console.log(category);
+  useEffect(() => {
+    if (transactions.length === 0) {
+      setTransactions(SEED_TRANSACTIONS);
+    }
+  }, [transactions]);
+
+  const handleAddTransaction = (transaction: Transaction) => {
+    const newTransactions = [...transactions, transaction];
+    setTransactions(newTransactions);
+    saveTransactions(newTransactions);
+  };
+
+  const handleDeleteTransaction = (id: string) => {
+    const newTransactions = transactions.filter((transaction) => transaction.id !== id);
+    setTransactions(newTransactions);
+    saveTransactions(newTransactions);
+  };
+
+  const handleCategorizeTransaction = (transaction: Transaction) => {
+    const category = mlModel.categorizeTransaction(transaction);
+    const newTransactions = transactions.map((t) => {
+      if (t.id === transaction.id) {
+        return { ...t, category };
+      }
+      return t;
+    });
+    setTransactions(newTransactions);
+    saveTransactions(newTransactions);
+  };
+
+  return (
+    <div>
+      <h1>Automated Cash Flow Forecasting</h1>
+      <table>
+        <thead>
+          <tr>
+            <th>Description</th>
+            <th>Amount</th>
+            <th>Type</th>
+            <th>Category</th>
+            <th>Date</th>
+            <th>Recurring</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {transactions.map((transaction) => (
+            <tr key={transaction.id}>
+              <td>{transaction.description}</td>
+              <td>{transaction.amount}</td>
+              <td>{transaction.type}</td>
+              <td>{transaction.category}</td>
+              <td>{transaction.date}</td>
+              <td>{transaction.recurring ? "Yes" : "No"}</td>
+              <td>
+                <button onClick={() => handleDeleteTransaction(transaction.id)}>Delete</button>
+                <button onClick={() => handleCategorizeTransaction(transaction)}>Categorize</button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <button onClick={() => handleAddTransaction({
+        id: Math.random().toString(),
+        description: "New Transaction",
+        amount: 0,
+        type: "income",
+        category: "",
+        date: new Date().toISOString().split("T")[0],
+        recurring: false,
+      })}>Add Transaction</button>
+    </div>
+  );
+}
+
+export default App;

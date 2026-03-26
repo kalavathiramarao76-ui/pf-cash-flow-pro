@@ -108,16 +108,9 @@ export default function ForecastingPage() {
     setSelectedMonth(month);
   };
 
-  const handleDateRangeChange = (start: number, end: number) => {
-    setDateRange({ start, end });
+  const handleResetDrillDown = () => {
+    setSelectedMonth(null);
   };
-
-  const filteredForecastData = useMemo(() => {
-    if (selectedMonth === null) {
-      return forecastData;
-    }
-    return forecastData.filter((item) => item.month === selectedMonth);
-  }, [forecastData, selectedMonth]);
 
   return (
     <div>
@@ -132,47 +125,23 @@ export default function ForecastingPage() {
           <Line type="monotone" dataKey="balance" stroke="#8884d8" activeDot={{ r: 8 }} />
           <Line type="monotone" dataKey="income" stroke="#82ca9d" />
           <Line type="monotone" dataKey="expenses" stroke="#ff0000" />
+          {selectedMonth !== null && (
+            <ReferenceLine x={selectedMonth} stroke="red" label="Drill Down" />
+          )}
         </LineChart>
       </ResponsiveContainer>
-      <div>
-        <button onClick={() => handleDrillDown(1)}>Drill Down to Month 1</button>
-        <button onClick={() => handleDrillDown(2)}>Drill Down to Month 2</button>
-        <button onClick={() => handleDrillDown(3)}>Drill Down to Month 3</button>
-      </div>
-      <div>
-        <label>Selected Month: {selectedMonth}</label>
-        <label>Filtered Forecast Data:</label>
-        <ul>
-          {filteredForecastData.map((item) => (
-            <li key={item.month}>
-              Month: {item.month}, Balance: {item.balance}, Income: {item.income}, Expenses: {item.expenses}
-            </li>
-          ))}
-        </ul>
-      </div>
-      <div>
-        <label>Date Range:</label>
-        <input
-          type="number"
-          value={dateRange.start}
-          onChange={(e) => handleDateRangeChange(parseInt(e.target.value), dateRange.end)}
-        />
-        <input
-          type="number"
-          value={dateRange.end}
-          onChange={(e) => handleDateRangeChange(dateRange.start, parseInt(e.target.value))}
-        />
-        <label>Forecast Data for Date Range:</label>
-        <ul>
-          {forecastData
-            .filter((item) => item.month >= dateRange.start && item.month <= dateRange.end)
-            .map((item) => (
-              <li key={item.month}>
-                Month: {item.month}, Balance: {item.balance}, Income: {item.income}, Expenses: {item.expenses}
-              </li>
-            ))}
-        </ul>
-      </div>
+      {selectedMonth !== null && (
+        <div>
+          <h2>Drill Down: Month {selectedMonth}</h2>
+          <p>Balance: {forecastData[selectedMonth - 1].balance}</p>
+          <p>Income: {forecastData[selectedMonth - 1].income}</p>
+          <p>Expenses: {forecastData[selectedMonth - 1].expenses}</p>
+          <button onClick={handleResetDrillDown}>Reset Drill Down</button>
+        </div>
+      )}
+      <button onClick={() => handleDrillDown(1)}>Drill Down Month 1</button>
+      <button onClick={() => handleDrillDown(2)}>Drill Down Month 2</button>
+      <button onClick={() => handleDrillDown(3)}>Drill Down Month 3</button>
     </div>
   );
 }

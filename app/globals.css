@@ -103,6 +103,7 @@ img[lazy].loaded {
   border-radius: 10px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   transition: grid-template-columns 0.3s ease;
+  will-change: transform, opacity;
 }
 
 .button {
@@ -163,13 +164,13 @@ img {
   display: block;
   width: 100%;
   height: auto;
+  image-rendering: high-quality;
 }
 
 @media (max-width: 768px) {
   body {
     font-size: var(--mobile-font-size);
     line-height: var(--mobile-line-height);
-    padding: 10px;
   }
 
   h1 {
@@ -181,40 +182,8 @@ img {
   }
 
   .container {
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 10px;
     padding: 10px;
-  }
-
-  .button {
-    padding: 5px 10px;
-    font-size: 0.8rem;
-  }
-}
-
-@media (max-width: 480px) {
-  body {
-    font-size: 12px;
-    line-height: 1.2;
-    padding: 5px;
-  }
-
-  h1 {
-    font-size: 1.5rem;
-  }
-
-  h2 {
-    font-size: 1.2rem;
-  }
-
-  .container {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 5px;
-    padding: 5px;
-  }
-
-  .button {
-    padding: 2px 5px;
-    font-size: 0.6rem;
   }
 }
