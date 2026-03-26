@@ -142,7 +142,7 @@ function Page() {
     saveTransactions(transactions);
   }, [transactions]);
 
-  const addTransaction = (transaction: Omit<Transaction, 'id' | 'category'>) => {
+  const handleAddTransaction = (transaction: Omit<Transaction, 'id' | 'category'>) => {
     const newTransaction: Transaction = {
       id: Date.now().toString(),
       category: categorizeTransaction(transaction),
@@ -151,24 +151,24 @@ function Page() {
     setTransactions([...transactions, newTransaction]);
   };
 
-  const deleteTransaction = (id: string) => {
-    setTransactions(transactions.filter(transaction => transaction.id !== id));
+  const handleDeleteTransaction = (id: string) => {
+    setTransactions(transactions.filter((transaction) => transaction.id !== id));
   };
 
   return (
     <div>
       <h1>Automated Cash Flow Forecasting</h1>
-      <button onClick={() => addTransaction({ description: 'New Transaction', amount: 100, type: 'income', date: new Date().toISOString().split('T')[0], recurring: false })}>
+      <button onClick={() => handleAddTransaction({ description: 'Test Transaction', amount: 100, type: 'income', date: new Date().toISOString().split('T')[0], recurring: false })}>
         Add Transaction
       </button>
       <ul>
-        {transactions.map(transaction => (
+        {transactions.map((transaction) => (
           <li key={transaction.id}>
             <span>{transaction.description}</span>
             <span>{transaction.amount}</span>
             <span>{transaction.type}</span>
             <span>{transaction.category}</span>
-            <button onClick={() => deleteTransaction(transaction.id)}>Delete</button>
+            <button onClick={() => handleDeleteTransaction(transaction.id)}>Delete</button>
           </li>
         ))}
       </ul>
