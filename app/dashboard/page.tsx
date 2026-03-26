@@ -160,7 +160,17 @@ function DashboardPage() {
   };
 
   const handleUpdateTransaction = (id: string, updatedTransaction: Transaction) => {
-    setTransactions(transactions.map((transaction) => transaction.id === id ? updatedTransaction : transaction));
+    setTransactions(transactions.map((transaction) => (transaction.id === id ? updatedTransaction : transaction)));
+  };
+
+  const handleCategorizeTransaction = (id: string) => {
+    const updatedTransactions = transactions.map((transaction) => {
+      if (transaction.id === id) {
+        return { ...transaction, category: categorizeTransaction(transaction) };
+      }
+      return transaction;
+    });
+    setTransactions(updatedTransactions);
   };
 
   return (
@@ -173,11 +183,11 @@ function DashboardPage() {
       <table>
         <thead>
           <tr>
-            <th>Date</th>
             <th>Description</th>
             <th>Amount</th>
             <th>Type</th>
             <th>Category</th>
+            <th>Date</th>
             <th>Recurring</th>
             <th>Actions</th>
           </tr>
@@ -185,20 +195,20 @@ function DashboardPage() {
         <tbody>
           {transactions.map((transaction) => (
             <tr key={transaction.id}>
-              <td>{transaction.date}</td>
               <td>{transaction.description}</td>
               <td>{transaction.amount}</td>
               <td>{transaction.type}</td>
-              <td>{categorizeTransaction(transaction)}</td>
+              <td>{transaction.category}</td>
+              <td>{transaction.date}</td>
               <td>{transaction.recurring ? "Yes" : "No"}</td>
               <td>
                 <button onClick={() => handleDeleteTransaction(transaction.id)}>
                   <Trash2 />
                   Delete
                 </button>
-                <button onClick={() => handleUpdateTransaction(transaction.id, { ...transaction, category: categorizeTransaction(transaction) })}>
-                  <RefreshCw />
-                  Update
+                <button onClick={() => handleCategorizeTransaction(transaction.id)}>
+                  <Tag />
+                  Categorize
                 </button>
               </td>
             </tr>
