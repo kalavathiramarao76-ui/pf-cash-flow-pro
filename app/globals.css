@@ -185,6 +185,5 @@ img {
 @media (prefers-reduced-motion: reduce) {
   * {
     transition: none;
-    animation: none;
   }
 }
