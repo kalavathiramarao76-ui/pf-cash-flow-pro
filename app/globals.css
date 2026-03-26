@@ -164,7 +164,7 @@ img {
   display: block;
   width: 100%;
   height: auto;
-  image-rendering: high-quality;
+  object-fit: cover;
 }
 
 @media (max-width: 768px) {
@@ -182,8 +182,29 @@ img {
   }
 
   .container {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(6, 1fr);
     gap: 10px;
     padding: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    font-size: 12px;
+    line-height: 1.2;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+  }
+
+  h2 {
+    font-size: 1.2rem;
+  }
+
+  .container {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
+    padding: 5px;
   }
 }

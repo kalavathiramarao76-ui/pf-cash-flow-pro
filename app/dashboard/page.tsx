@@ -100,67 +100,80 @@ class AdvancedMlModel {
     return model;
   }
 
-  public categorizeTransaction(transaction: Transaction): string {
-    const keywords = transaction.description.toLowerCase().split(" ");
-    let category = "";
-
+  public predict(transaction: Transaction): string {
     if (transaction.type === "income") {
-      for (const keyword of keywords) {
-        for (const incomeCategory in this.incomeModel) {
-          if (incomeCategory.toLowerCase().includes(keyword)) {
-            category = incomeCategory;
-            break;
-          }
-        }
-      }
+      const category = Object.keys(this.incomeModel).find((key) => {
+        return this.incomeModel[key].includes(transaction.description);
+      });
+      return category || "Unknown";
     } else {
-      for (const keyword of keywords) {
-        for (const expenseCategory in this.expenseModel) {
-          if (expenseCategory.toLowerCase().includes(keyword)) {
-            category = expenseCategory;
-            break;
-          }
+      const category = Object.keys(this.expenseModel).find((key) => {
+        return this.expenseModel[key].includes(transaction.description);
+      });
+      return category || "Unknown";
+    }
+  }
+
+  public train(transactions: Transaction[]): void {
+    transactions.forEach((transaction) => {
+      if (transaction.type === "income") {
+        const category = this.incomeModel[transaction.category];
+        if (category) {
+          category.push(transaction.description);
+        }
+      } else {
+        const category = this.expenseModel[transaction.category];
+        if (category) {
+          category.push(transaction.description);
         }
       }
-    }
-
-    return category;
+    });
   }
 }
 
-const mlModel = new AdvancedMlModel();
-
 function App() {
   const [transactions, setTransactions] = useState<Transaction[]>(getStoredTransactions());
+  const [newTransaction, setNewTransaction] = useState<Transaction>({
+    id: "",
+    description: "",
+    amount: 0,
+    type: "income",
+    category: "",
+    date: "",
+    recurring: false,
+  });
+  const [mlModel, setMlModel] = useState<AdvancedMlModel>(new AdvancedMlModel());
 
   useEffect(() => {
-    if (transactions.length === 0) {
-      setTransactions(SEED_TRANSACTIONS);
-    }
+    saveTransactions(transactions);
   }, [transactions]);
 
-  const handleAddTransaction = (transaction: Transaction) => {
-    const newTransactions = [...transactions, transaction];
-    setTransactions(newTransactions);
-    saveTransactions(newTransactions);
+  const handleAddTransaction = () => {
+    if (newTransaction.id && newTransaction.description && newTransaction.amount && newTransaction.category && newTransaction.date) {
+      const updatedTransactions = [...transactions, newTransaction];
+      setTransactions(updatedTransactions);
+      setNewTransaction({
+        id: "",
+        description: "",
+        amount: 0,
+        type: "income",
+        category: "",
+        date: "",
+        recurring: false,
+      });
+      mlModel.train(updatedTransactions);
+    }
   };
 
   const handleDeleteTransaction = (id: string) => {
-    const newTransactions = transactions.filter((transaction) => transaction.id !== id);
-    setTransactions(newTransactions);
-    saveTransactions(newTransactions);
+    const updatedTransactions = transactions.filter((transaction) => transaction.id !== id);
+    setTransactions(updatedTransactions);
+    mlModel.train(updatedTransactions);
   };
 
-  const handleCategorizeTransaction = (transaction: Transaction) => {
-    const category = mlModel.categorizeTransaction(transaction);
-    const newTransactions = transactions.map((t) => {
-      if (t.id === transaction.id) {
-        return { ...t, category };
-      }
-      return t;
-    });
-    setTransactions(newTransactions);
-    saveTransactions(newTransactions);
+  const handlePredictCategory = (transaction: Transaction) => {
+    const predictedCategory = mlModel.predict(transaction);
+    console.log(predictedCategory);
   };
 
   return (
@@ -169,6 +182,7 @@ function App() {
       <table>
         <thead>
           <tr>
+            <th>ID</th>
             <th>Description</th>
             <th>Amount</th>
             <th>Type</th>
@@ -181,6 +195,7 @@ function App() {
         <tbody>
           {transactions.map((transaction) => (
             <tr key={transaction.id}>
+              <td>{transaction.id}</td>
               <td>{transaction.description}</td>
               <td>{transaction.amount}</td>
               <td>{transaction.type}</td>
@@ -189,21 +204,46 @@ function App() {
               <td>{transaction.recurring ? "Yes" : "No"}</td>
               <td>
                 <button onClick={() => handleDeleteTransaction(transaction.id)}>Delete</button>
-                <button onClick={() => handleCategorizeTransaction(transaction)}>Categorize</button>
+                <button onClick={() => handlePredictCategory(transaction)}>Predict Category</button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
-      <button onClick={() => handleAddTransaction({
-        id: Math.random().toString(),
-        description: "New Transaction",
-        amount: 0,
-        type: "income",
-        category: "",
-        date: new Date().toISOString().split("T")[0],
-        recurring: false,
-      })}>Add Transaction</button>
+      <form>
+        <label>
+          ID:
+          <input type="text" value={newTransaction.id} onChange={(e) => setNewTransaction({ ...newTransaction, id: e.target.value })} />
+        </label>
+        <label>
+          Description:
+          <input type="text" value={newTransaction.description} onChange={(e) => setNewTransaction({ ...newTransaction, description: e.target.value })} />
+        </label>
+        <label>
+          Amount:
+          <input type="number" value={newTransaction.amount} onChange={(e) => setNewTransaction({ ...newTransaction, amount: Number(e.target.value) })} />
+        </label>
+        <label>
+          Type:
+          <select value={newTransaction.type} onChange={(e) => setNewTransaction({ ...newTransaction, type: e.target.value as TransactionType })}>
+            <option value="income">Income</option>
+            <option value="expense">Expense</option>
+          </select>
+        </label>
+        <label>
+          Category:
+          <input type="text" value={newTransaction.category} onChange={(e) => setNewTransaction({ ...newTransaction, category: e.target.value })} />
+        </label>
+        <label>
+          Date:
+          <input type="date" value={newTransaction.date} onChange={(e) => setNewTransaction({ ...newTransaction, date: e.target.value })} />
+        </label>
+        <label>
+          Recurring:
+          <input type="checkbox" checked={newTransaction.recurring} onChange={(e) => setNewTransaction({ ...newTransaction, recurring: e.target.checked })} />
+        </label>
+        <button type="button" onClick={handleAddTransaction}>Add Transaction</button>
+      </form>
     </div>
   );
 }
