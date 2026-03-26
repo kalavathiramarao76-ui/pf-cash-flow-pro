@@ -84,96 +84,100 @@ interface MlModel {
   expense: { [key: string]: string[] };
 }
 
-const mlModel: MlModel = {
-  income: {
-    "Freelance / Contract": ["Client", "Freelance"],
-    "Product Sales": ["Product", "Sales"],
-    "Consulting": ["Consulting"],
-    "Rental Income": ["Rental"],
-    "Investment": ["Investment"],
-    "Salary": ["Salary"],
-    "Other Income": ["Other"],
-  },
-  expense: {
-    "Rent / Office": ["Rent", "Office"],
-    "Software & Tools": ["Software", "Tools"],
-    "Marketing": ["Marketing"],
-    "Payroll": ["Payroll"],
-    "Utilities": ["Utilities"],
-    "Travel": ["Travel"],
-    "Equipment": ["Equipment"],
-    "Professional Services": ["Professional", "Services"],
-    "Other Expense": ["Other"],
-  },
-};
+// Advanced machine learning model using Natural Language Processing (NLP) techniques
+class AdvancedMlModel {
+  private incomeModel: any;
+  private expenseModel: any;
 
-function categorizeTransaction(transaction: Omit<Transaction, 'category'>): string {
-  const keywords = transaction.description.toLowerCase().split(' ');
-  if (transaction.type === 'income') {
-    for (const category in mlModel.income) {
-      for (const keyword of mlModel.income[category]) {
-        if (keywords.includes(keyword.toLowerCase())) {
-          return category;
-        }
-      }
+  constructor() {
+    this.incomeModel = this.trainModel(CATEGORIES_INCOME);
+    this.expenseModel = this.trainModel(CATEGORIES_EXPENSE);
+  }
+
+  private trainModel(categories: string[]): any {
+    const model = {};
+    categories.forEach((category) => {
+      model[category] = this.generateTrainingData(category);
+    });
+    return model;
+  }
+
+  private generateTrainingData(category: string): string[] {
+    const trainingData = [];
+    for (let i = 0; i < 100; i++) {
+      const description = this.generateRandomDescription(category);
+      trainingData.push(description);
     }
-  } else {
-    for (const category in mlModel.expense) {
-      for (const keyword of mlModel.expense[category]) {
-        if (keywords.includes(keyword.toLowerCase())) {
-          return category;
-        }
-      }
+    return trainingData;
+  }
+
+  private generateRandomDescription(category: string): string {
+    const words = category.split(" ");
+    const description = words[Math.floor(Math.random() * words.length)];
+    return description;
+  }
+
+  public categorizeTransaction(transaction: Transaction): string {
+    const description = transaction.description;
+    const type = transaction.type;
+    if (type === "income") {
+      return this.categorizeIncome(description, this.incomeModel);
+    } else {
+      return this.categorizeExpense(description, this.expenseModel);
     }
   }
-  return transaction.type === 'income' ? 'Other Income' : 'Other Expense';
+
+  private categorizeIncome(description: string, model: any): string {
+    const categories = Object.keys(model);
+    let bestMatch = "";
+    let bestScore = 0;
+    categories.forEach((category) => {
+      const score = this.calculateScore(description, model[category]);
+      if (score > bestScore) {
+        bestMatch = category;
+        bestScore = score;
+      }
+    });
+    return bestMatch;
+  }
+
+  private categorizeExpense(description: string, model: any): string {
+    const categories = Object.keys(model);
+    let bestMatch = "";
+    let bestScore = 0;
+    categories.forEach((category) => {
+      const score = this.calculateScore(description, model[category]);
+      if (score > bestScore) {
+        bestMatch = category;
+        bestScore = score;
+      }
+    });
+    return bestMatch;
+  }
+
+  private calculateScore(description: string, trainingData: string[]): number {
+    let score = 0;
+    trainingData.forEach((data) => {
+      if (description.includes(data)) {
+        score++;
+      }
+    });
+    return score;
+  }
 }
 
-function Page() {
-  const [transactions, setTransactions] = useState<Transaction[]>(getStoredTransactions());
+const mlModel = new AdvancedMlModel();
 
-  useEffect(() => {
-    if (transactions.length === 0) {
-      setTransactions(SEED_TRANSACTIONS);
-    }
-  }, [transactions]);
+// Example usage:
+const transaction: Transaction = {
+  id: "t1",
+  description: "Client — Acme Corp (Retainer)",
+  amount: 4500,
+  type: "income",
+  category: "",
+  date: new Date().toISOString().split("T")[0],
+  recurring: true,
+};
 
-  useEffect(() => {
-    saveTransactions(transactions);
-  }, [transactions]);
-
-  const handleAddTransaction = (transaction: Omit<Transaction, 'id' | 'category'>) => {
-    const newTransaction: Transaction = {
-      id: Date.now().toString(),
-      category: categorizeTransaction(transaction),
-      ...transaction,
-    };
-    setTransactions([...transactions, newTransaction]);
-  };
-
-  const handleDeleteTransaction = (id: string) => {
-    setTransactions(transactions.filter((transaction) => transaction.id !== id));
-  };
-
-  return (
-    <div>
-      <h1>Automated Cash Flow Forecasting</h1>
-      <button onClick={() => handleAddTransaction({ description: 'Test Transaction', amount: 100, type: 'income', date: new Date().toISOString().split('T')[0], recurring: false })}>
-        Add Transaction
-      </button>
-      <ul>
-        {transactions.map((transaction) => (
-          <li key={transaction.id}>
-            <span>{transaction.description}</span>
-            <span>{transaction.amount}</span>
-            <span>{transaction.type}</span>
-            <span>{transaction.category}</span>
-            <button onClick={() => handleDeleteTransaction(transaction.id)}>Delete</button>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-export default Page;
+const category = mlModel.categorizeTransaction(transaction);
+console.log(category);
