@@ -100,147 +100,82 @@ class AdvancedMlModel {
     return model;
   }
 
-  public predict(description: string, type: TransactionType): string {
-    if (type === "income") {
-      const category = this.predictIncome(description);
-      return category;
-    } else {
-      const category = this.predictExpense(description);
-      return category;
-    }
-  }
-
-  private predictIncome(description: string): string {
-    const keywords: { [key: string]: string[] } = {
-      "Freelance / Contract": ["client", "project", "freelance"],
-      "Product Sales": ["product", "sale", "item"],
-      "Consulting": ["consulting", "advice", "expert"],
-      "Rental Income": ["rental", "property", "lease"],
-      "Investment": ["investment", "stock", "bond"],
-      "Salary": ["salary", "wage", "pay"],
-      "Other Income": ["other", "income", "misc"],
-    };
-    let bestMatch: string | null = null;
-    let bestMatchCount: number = 0;
-    Object.keys(keywords).forEach((category) => {
-      const keywordCount: number = keywords[category].filter((keyword) => description.toLowerCase().includes(keyword)).length;
-      if (keywordCount > bestMatchCount) {
-        bestMatch = category;
-        bestMatchCount = keywordCount;
+  public predict(transactions: Transaction[]): { income: number, expense: number } {
+    let income = 0;
+    let expense = 0;
+    transactions.forEach((transaction) => {
+      if (transaction.type === "income") {
+        income += transaction.amount;
+      } else {
+        expense += transaction.amount;
       }
     });
-    return bestMatch || "Other Income";
-  }
-
-  private predictExpense(description: string): string {
-    const keywords: { [key: string]: string[] } = {
-      "Rent / Office": ["rent", "office", "lease"],
-      "Software & Tools": ["software", "tool", "app"],
-      "Marketing": ["marketing", "ad", "promotion"],
-      "Payroll": ["payroll", "salary", "wage"],
-      "Utilities": ["utility", "bill", "electricity"],
-      "Travel": ["travel", "trip", "hotel"],
-      "Equipment": ["equipment", "hardware", "machine"],
-      "Professional Services": ["service", "consulting", "advice"],
-      "Other Expense": ["other", "expense", "misc"],
-    };
-    let bestMatch: string | null = null;
-    let bestMatchCount: number = 0;
-    Object.keys(keywords).forEach((category) => {
-      const keywordCount: number = keywords[category].filter((keyword) => description.toLowerCase().includes(keyword)).length;
-      if (keywordCount > bestMatchCount) {
-        bestMatch = category;
-        bestMatchCount = keywordCount;
-      }
-    });
-    return bestMatch || "Other Expense";
+    return { income, expense };
   }
 }
 
 function App() {
   const [transactions, setTransactions] = useState<Transaction[]>(getStoredTransactions());
-  const [newTransaction, setNewTransaction] = useState({ description: "", amount: 0, type: "income", category: "", date: "", recurring: false });
-  const [mlModel, setMlModel] = useState(new AdvancedMlModel());
+  const [mlModel, setMlModel] = useState<AdvancedMlModel>(new AdvancedMlModel());
 
   useEffect(() => {
-    if (transactions.length === 0) {
-      setTransactions(SEED_TRANSACTIONS);
-    }
+    saveTransactions(transactions);
   }, [transactions]);
 
-  const handleAddTransaction = () => {
-    const predictedCategory = mlModel.predict(newTransaction.description, newTransaction.type as TransactionType);
-    setNewTransaction({ ...newTransaction, category: predictedCategory });
-    setTransactions([...transactions, { ...newTransaction, id: Math.random().toString(36).substr(2, 9) }]);
-    setNewTransaction({ description: "", amount: 0, type: "income", category: "", date: "", recurring: false });
-    saveTransactions(transactions);
+  const handleAddTransaction = (transaction: Transaction) => {
+    setTransactions([...transactions, transaction]);
   };
 
-  const handleDeleteTransaction = (id: string) => {
+  const handleRemoveTransaction = (id: string) => {
     setTransactions(transactions.filter((transaction) => transaction.id !== id));
-    saveTransactions(transactions);
+  };
+
+  const handlePredict = () => {
+    const prediction = mlModel.predict(transactions);
+    console.log(`Predicted income: ${prediction.income}, Predicted expense: ${prediction.expense}`);
   };
 
   return (
     <div>
       <h1>Automated Cash Flow Forecasting</h1>
-      <table>
-        <thead>
-          <tr>
-            <th>Description</th>
-            <th>Amount</th>
-            <th>Type</th>
-            <th>Category</th>
-            <th>Date</th>
-            <th>Recurring</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {transactions.map((transaction) => (
-            <tr key={transaction.id}>
-              <td>{transaction.description}</td>
-              <td>{transaction.amount}</td>
-              <td>{transaction.type}</td>
-              <td>{transaction.category}</td>
-              <td>{transaction.date}</td>
-              <td>{transaction.recurring ? "Yes" : "No"}</td>
-              <td>
-                <button onClick={() => handleDeleteTransaction(transaction.id)}>
-                  <Trash2 />
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <button onClick={handlePredict}>Predict</button>
+      <ul>
+        {transactions.map((transaction) => (
+          <li key={transaction.id}>
+            <span>{transaction.description}</span>
+            <span>{transaction.amount}</span>
+            <span>{transaction.type}</span>
+            <span>{transaction.category}</span>
+            <span>{transaction.date}</span>
+            <button onClick={() => handleRemoveTransaction(transaction.id)}>Remove</button>
+          </li>
+        ))}
+      </ul>
       <form>
-        <label>
-          Description:
-          <input type="text" value={newTransaction.description} onChange={(e) => setNewTransaction({ ...newTransaction, description: e.target.value })} />
-        </label>
-        <label>
-          Amount:
-          <input type="number" value={newTransaction.amount} onChange={(e) => setNewTransaction({ ...newTransaction, amount: parseFloat(e.target.value) })} />
-        </label>
-        <label>
-          Type:
-          <select value={newTransaction.type} onChange={(e) => setNewTransaction({ ...newTransaction, type: e.target.value as TransactionType })}>
-            <option value="income">Income</option>
-            <option value="expense">Expense</option>
-          </select>
-        </label>
-        <label>
-          Date:
-          <input type="date" value={newTransaction.date} onChange={(e) => setNewTransaction({ ...newTransaction, date: e.target.value })} />
-        </label>
-        <label>
-          Recurring:
-          <input type="checkbox" checked={newTransaction.recurring} onChange={(e) => setNewTransaction({ ...newTransaction, recurring: e.target.checked })} />
-        </label>
-        <button type="button" onClick={handleAddTransaction}>
-          <Plus />
-        </button>
+        <input type="text" placeholder="Description" />
+        <input type="number" placeholder="Amount" />
+        <select>
+          <option value="income">Income</option>
+          <option value="expense">Expense</option>
+        </select>
+        <select>
+          {CATEGORIES_INCOME.map((category) => (
+            <option key={category} value={category}>{category}</option>
+          ))}
+          {CATEGORIES_EXPENSE.map((category) => (
+            <option key={category} value={category}>{category}</option>
+          ))}
+        </select>
+        <input type="date" placeholder="Date" />
+        <button onClick={(e) => {
+          e.preventDefault();
+          const description = (document.querySelector('input[type="text"]') as HTMLInputElement).value;
+          const amount = parseFloat((document.querySelector('input[type="number"]') as HTMLInputElement).value);
+          const type = (document.querySelector('select') as HTMLSelectElement).value;
+          const category = (document.querySelectorAll('select')[1] as HTMLSelectElement).value;
+          const date = (document.querySelector('input[type="date"]') as HTMLInputElement).value;
+          handleAddTransaction({ id: Math.random().toString(), description, amount, type, category, date, recurring: false });
+        }}>Add Transaction</button>
       </form>
     </div>
   );

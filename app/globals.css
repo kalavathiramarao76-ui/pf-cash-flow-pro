@@ -164,8 +164,7 @@ img {
   display: block;
   width: 100%;
   height: auto;
-  image-rendering: high-quality;
-  image-orientation: from-image;
+  object-fit: cover;
 }
 
 @media (max-width: 768px) {
