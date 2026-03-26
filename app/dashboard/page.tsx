@@ -109,9 +109,7 @@ const mlModel: MlModel = {
 
 function categorizeTransaction(transaction: Omit<Transaction, 'category'>): string {
   const keywords = transaction.description.toLowerCase().split(' ');
-  const type = transaction.type;
-
-  if (type === 'income') {
+  if (transaction.type === 'income') {
     for (const category in mlModel.income) {
       for (const keyword of mlModel.income[category]) {
         if (keywords.includes(keyword.toLowerCase())) {
@@ -128,11 +126,10 @@ function categorizeTransaction(transaction: Omit<Transaction, 'category'>): stri
       }
     }
   }
-
-  return type === 'income' ? 'Other Income' : 'Other Expense';
+  return transaction.type === 'income' ? 'Other Income' : 'Other Expense';
 }
 
-function DashboardPage() {
+function Page() {
   const [transactions, setTransactions] = useState<Transaction[]>(getStoredTransactions());
 
   useEffect(() => {
@@ -145,7 +142,7 @@ function DashboardPage() {
     saveTransactions(transactions);
   }, [transactions]);
 
-  const handleAddTransaction = (transaction: Omit<Transaction, 'id' | 'category'>) => {
+  const addTransaction = (transaction: Omit<Transaction, 'id' | 'category'>) => {
     const newTransaction: Transaction = {
       id: Date.now().toString(),
       category: categorizeTransaction(transaction),
@@ -154,13 +151,29 @@ function DashboardPage() {
     setTransactions([...transactions, newTransaction]);
   };
 
-  const handleDeleteTransaction = (id: string) => {
-    setTransactions(transactions.filter((transaction) => transaction.id !== id));
+  const deleteTransaction = (id: string) => {
+    setTransactions(transactions.filter(transaction => transaction.id !== id));
   };
 
   return (
-    // existing JSX code
+    <div>
+      <h1>Automated Cash Flow Forecasting</h1>
+      <button onClick={() => addTransaction({ description: 'New Transaction', amount: 100, type: 'income', date: new Date().toISOString().split('T')[0], recurring: false })}>
+        Add Transaction
+      </button>
+      <ul>
+        {transactions.map(transaction => (
+          <li key={transaction.id}>
+            <span>{transaction.description}</span>
+            <span>{transaction.amount}</span>
+            <span>{transaction.type}</span>
+            <span>{transaction.category}</span>
+            <button onClick={() => deleteTransaction(transaction.id)}>Delete</button>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
 
-export default DashboardPage;
+export default Page;

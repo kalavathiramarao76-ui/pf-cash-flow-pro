@@ -169,62 +169,52 @@ img {
   body {
     font-size: var(--mobile-font-size);
     line-height: var(--mobile-line-height);
+    padding: 10px;
   }
-  
+
   h1 {
     font-size: var(--mobile-header-font-size);
   }
-  
+
   h2 {
     font-size: var(--mobile-subheader-font-size);
   }
+
+  .container {
+    grid-template-columns: repeat(6, 1fr);
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .button {
+    padding: 5px 10px;
+    font-size: 0.8rem;
+  }
 }
 
-/* Optimizations for better page load times and responsiveness */
-body {
-  will-change: transform;
-}
+@media (max-width: 480px) {
+  body {
+    font-size: 12px;
+    line-height: 1.2;
+    padding: 5px;
+  }
 
-.container {
-  will-change: transform, opacity;
-}
+  h1 {
+    font-size: 1.5rem;
+  }
 
-.button {
-  will-change: background;
-}
+  h2 {
+    font-size: 1.2rem;
+  }
 
-img {
-  will-change: opacity;
-}
+  .container {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
+    padding: 5px;
+  }
 
-/* Critical CSS for above-the-fold content */
-body > * {
-  visibility: hidden;
-}
-
-body > .container {
-  visibility: visible;
-}
-
-/* Lazy loading images */
-img[lazy] {
-  content-visibility: auto;
-}
-
-/* Responsive images */
-img {
-  max-width: 100%;
-  height: auto;
-}
-
-/* Prevent layout shifts */
-* {
-  transition: none;
-}
-
-/* Optimize font loading */
-@font-face {
-  font-family: 'Inter';
-  src: url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
-  font-display: swap;
+  .button {
+    padding: 2px 5px;
+    font-size: 0.6rem;
+  }
 }
