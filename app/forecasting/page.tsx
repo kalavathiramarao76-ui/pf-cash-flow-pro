@@ -117,7 +117,11 @@ export default function ForecastingPage() {
       <h1>Automated Cash Flow Forecasting</h1>
       <div>
         <label>Current Balance:</label>
-        <input type="number" value={currentBalance} onChange={(e) => setCurrentBalance(e.target.value)} />
+        <input
+          type="number"
+          value={currentBalance}
+          onChange={(e) => setCurrentBalance(e.target.value)}
+        />
       </div>
       <div>
         <label>Horizon:</label>
@@ -129,7 +133,11 @@ export default function ForecastingPage() {
       </div>
       <div>
         <label>Safety Threshold:</label>
-        <input type="number" value={safetyThreshold} onChange={(e) => setSafetyThreshold(e.target.value)} />
+        <input
+          type="number"
+          value={safetyThreshold}
+          onChange={(e) => setSafetyThreshold(e.target.value)}
+        />
       </div>
       <div>
         <h2>Recurring Items:</h2>
@@ -143,25 +151,37 @@ export default function ForecastingPage() {
         {showAddForm ? (
           <div>
             <label>Label:</label>
-            <input type="text" value={newItem.label} onChange={(e) => setNewItem({ ...newItem, label: e.target.value })} />
-            <br />
+            <input
+              type="text"
+              value={newItem.label}
+              onChange={(e) => setNewItem({ ...newItem, label: e.target.value })}
+            />
             <label>Amount:</label>
-            <input type="number" value={newItem.amount} onChange={(e) => setNewItem({ ...newItem, amount: e.target.value })} />
-            <br />
+            <input
+              type="number"
+              value={newItem.amount}
+              onChange={(e) => setNewItem({ ...newItem, amount: e.target.value })}
+            />
             <label>Type:</label>
-            <select value={newItem.type} onChange={(e) => setNewItem({ ...newItem, type: e.target.value as "income" | "expense" })}>
+            <select
+              value={newItem.type}
+              onChange={(e) => setNewItem({ ...newItem, type: e.target.value as "income" | "expense" })}
+            >
               <option value="income">Income</option>
               <option value="expense">Expense</option>
             </select>
-            <br />
             <label>Frequency:</label>
-            <select value={newItem.frequency} onChange={(e) => setNewItem({ ...newItem, frequency: e.target.value as RecurringItem["frequency"] })}>
+            <select
+              value={newItem.frequency}
+              onChange={(e) =>
+                setNewItem({ ...newItem, frequency: e.target.value as RecurringItem["frequency"] })
+              }
+            >
               <option value="monthly">Monthly</option>
               <option value="quarterly">Quarterly</option>
               <option value="yearly">Yearly</option>
             </select>
-            <br />
-            <button onClick={() => setRecurringItems([...recurringItems, { ...newItem, id: `r${recurringItems.length + 1}` }])}>Add</button>
+            <button onClick={() => setRecurringItems([...recurringItems, newItem])}>Add</button>
           </div>
         ) : (
           <button onClick={() => setShowAddForm(true)}>Add Recurring Item</button>
@@ -176,9 +196,9 @@ export default function ForecastingPage() {
             <YAxis />
             <Tooltip />
             <Legend />
-            <Line type="monotone" dataKey="balance" stroke="#8884d8" />
+            <Line type="monotone" dataKey="balance" stroke="#8884d8" activeDot={{ r: 8 }} />
             <Line type="monotone" dataKey="income" stroke="#82ca9d" />
-            <Line type="monotone" dataKey="expenses" stroke="#f44336" />
+            <Line type="monotone" dataKey="expenses" stroke="#8884d8" />
           </LineChart>
         </ResponsiveContainer>
         {selectedMonth !== null && (
@@ -187,9 +207,12 @@ export default function ForecastingPage() {
             <p>Balance: {forecastData[selectedMonth - 1].balance}</p>
             <p>Income: {forecastData[selectedMonth - 1].income}</p>
             <p>Expenses: {forecastData[selectedMonth - 1].expenses}</p>
-            <button onClick={handleResetDrillDown}>Back to Forecast</button>
+            <button onClick={handleResetDrillDown}>Reset Drill Down</button>
           </div>
         )}
+        <button onClick={(e) => handleDrillDown(1)}>Drill Down Month 1</button>
+        <button onClick={(e) => handleDrillDown(2)}>Drill Down Month 2</button>
+        <button onClick={(e) => handleDrillDown(3)}>Drill Down Month 3</button>
       </div>
     </div>
   );

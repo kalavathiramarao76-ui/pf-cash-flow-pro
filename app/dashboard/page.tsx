@@ -129,7 +129,7 @@ function categorizeTransaction(transaction: Transaction): string {
   return transaction.type === "income" ? "Other Income" : "Other Expense";
 }
 
-function App() {
+function DashboardPage() {
   const [transactions, setTransactions] = useState<Transaction[]>(getStoredTransactions());
 
   useEffect(() => {
@@ -142,60 +142,43 @@ function App() {
     saveTransactions(transactions);
   }, [transactions]);
 
-  const handleAddTransaction = (newTransaction: Transaction) => {
-    const categorizedTransaction = { ...newTransaction, category: categorizeTransaction(newTransaction) };
-    setTransactions([...transactions, categorizedTransaction]);
+  const handleAddTransaction = (transaction: Transaction) => {
+    setTransactions([...transactions, transaction]);
   };
 
   const handleDeleteTransaction = (id: string) => {
     setTransactions(transactions.filter((transaction) => transaction.id !== id));
   };
 
+  const handleUpdateTransaction = (id: string, updatedTransaction: Transaction) => {
+    setTransactions(transactions.map((transaction) => transaction.id === id ? updatedTransaction : transaction));
+  };
+
+  const handleCategorizeTransactions = () => {
+    setTransactions(transactions.map((transaction) => ({ ...transaction, category: categorizeTransaction(transaction) })));
+  };
+
   return (
     <div>
       <h1>Automated Cash Flow Forecasting</h1>
-      <table>
-        <thead>
-          <tr>
-            <th>Description</th>
-            <th>Amount</th>
-            <th>Type</th>
-            <th>Category</th>
-            <th>Date</th>
-            <th>Recurring</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {transactions.map((transaction) => (
-            <tr key={transaction.id}>
-              <td>{transaction.description}</td>
-              <td>{transaction.amount}</td>
-              <td>{transaction.type}</td>
-              <td>{transaction.category}</td>
-              <td>{transaction.date}</td>
-              <td>{transaction.recurring ? "Yes" : "No"}</td>
-              <td>
-                <button onClick={() => handleDeleteTransaction(transaction.id)}>
-                  <Trash2 />
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <button onClick={() => handleAddTransaction({
-        id: Math.random().toString(),
-        description: "New Transaction",
-        amount: 0,
-        type: "income",
-        date: new Date().toISOString().split("T")[0],
-        recurring: false,
-      })}>
-        <Plus />
-      </button>
+      <button onClick={handleCategorizeTransactions}>Categorize Transactions</button>
+      <ul>
+        {transactions.map((transaction) => (
+          <li key={transaction.id}>
+            <span>{transaction.description}</span>
+            <span>{transaction.amount}</span>
+            <span>{transaction.type}</span>
+            <span>{transaction.category}</span>
+            <span>{transaction.date}</span>
+            <span>{transaction.recurring ? "Recurring" : "Non-Recurring"}</span>
+            <button onClick={() => handleDeleteTransaction(transaction.id)}>Delete</button>
+            <button onClick={() => handleUpdateTransaction(transaction.id, { ...transaction, category: categorizeTransaction(transaction) })}>Update</button>
+          </li>
+        ))}
+      </ul>
+      <button onClick={() => handleAddTransaction({ id: Math.random().toString(), description: "New Transaction", amount: 0, type: "income", category: "", date: new Date().toISOString().split("T")[0], recurring: false })}>Add Transaction</button>
     </div>
   );
 }
 
-export default App;
+export default DashboardPage;
