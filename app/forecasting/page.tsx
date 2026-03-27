@@ -125,7 +125,7 @@ export default function ForecastingPage() {
     const newItem: RecurringItem = {
       id: Math.random().toString(36).substr(2, 9),
       label: newItem.label,
-      amount: parseInt(newItem.amount),
+      amount: parseFloat(newItem.amount),
       type: newItem.type,
       frequency: newItem.frequency,
     };
@@ -147,7 +147,7 @@ export default function ForecastingPage() {
     const scenario: RecurringItem = {
       id: Math.random().toString(36).substr(2, 9),
       label: whatIfScenario.label,
-      amount: parseInt(whatIfScenario.amount),
+      amount: parseFloat(whatIfScenario.amount),
       type: whatIfScenario.type,
       frequency: whatIfScenario.frequency,
     };
@@ -196,6 +196,10 @@ export default function ForecastingPage() {
     localStorage.setItem(RECURRING_KEY, JSON.stringify(recurringItems));
   }, [recurringItems]);
 
+  if (!mounted) {
+    setMounted(true);
+  }
+
   return (
     <div>
       <h1>Automated Cash Flow Forecasting</h1>
@@ -209,7 +213,7 @@ export default function ForecastingPage() {
       </div>
       <div>
         <label>Horizon (months):</label>
-        <select value={horizon} onChange={(e) => setHorizon(parseInt(e.target.value) as 3 | 6 | 12)}>
+        <select value={horizon} onChange={(e) => setHorizon(parseInt(e.target.value as string))}>
           <option value={3}>3 months</option>
           <option value={6}>6 months</option>
           <option value={12}>12 months</option>
@@ -224,9 +228,35 @@ export default function ForecastingPage() {
         />
       </div>
       <h2>Recurring Items</h2>
-      <button onClick={() => setShowAddForm(true)}>Add Recurring Item</button>
+      <table>
+        <thead>
+          <tr>
+            <th>Label</th>
+            <th>Amount</th>
+            <th>Type</th>
+            <th>Frequency</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {recurringItems.map((item) => (
+            <tr key={item.id}>
+              <td>{item.label}</td>
+              <td>{item.amount}</td>
+              <td>{item.type}</td>
+              <td>{item.frequency}</td>
+              <td>
+                <button onClick={() => handleRemoveRecurringItem(item.id)}>
+                  <Trash2 />
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
       {showAddForm && (
         <div>
+          <h2>Add Recurring Item</h2>
           <label>Label:</label>
           <input
             type="text"
@@ -261,16 +291,26 @@ export default function ForecastingPage() {
           <button onClick={handleAddRecurringItem}>Add</button>
         </div>
       )}
-      <ul>
-        {recurringItems.map((item) => (
-          <li key={item.id}>
-            {item.label} ({item.type}) - {item.amount} ({item.frequency})
-            <button onClick={() => handleRemoveRecurringItem(item.id)}>Remove</button>
-          </li>
-        ))}
-      </ul>
+      {!showAddForm && (
+        <button onClick={() => setShowAddForm(true)}>
+          <Plus />
+          Add Recurring Item
+        </button>
+      )}
+      <h2>Forecast</h2>
+      <ResponsiveContainer width="100%" height={300}>
+        <LineChart data={forecastData}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="month" />
+          <YAxis />
+          <Tooltip />
+          <Legend />
+          <Line type="monotone" dataKey="balance" stroke="#8884d8" activeDot={{ r: 8 }} />
+          <Line type="monotone" dataKey="income" stroke="#82ca9d" />
+          <Line type="monotone" dataKey="expenses" stroke="#8884d8" />
+        </LineChart>
+      </ResponsiveContainer>
       <h2>What-If Scenario</h2>
-      <button onClick={() => setShowWhatIfForm(true)}>Run What-If Scenario</button>
       {showWhatIfForm && (
         <div>
           <label>Label:</label>
@@ -306,33 +346,32 @@ export default function ForecastingPage() {
             <option value="quarterly">Quarterly</option>
             <option value="yearly">Yearly</option>
           </select>
-          <button onClick={handleWhatIfScenario}>Run</button>
+          <button onClick={handleWhatIfScenario}>Run Scenario</button>
         </div>
+      )}
+      {!showWhatIfForm && (
+        <button onClick={() => setShowWhatIfForm(true)}>
+          <Plus />
+          Run What-If Scenario
+        </button>
       )}
       {whatIfResults.data.length > 0 && (
         <div>
           <h2>What-If Scenario Results</h2>
-          <LineChart width={500} height={300} data={whatIfResults.data}>
-            <Line type="monotone" dataKey="balance" stroke="#8884d8" />
-            <XAxis dataKey="month" />
-            <YAxis />
-            <CartesianGrid stroke="#ccc" />
-            <Tooltip />
-            <Legend />
-          </LineChart>
-          <p>Final Balance: {whatIfResults.balance}</p>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={whatIfResults.data}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="month" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Line type="monotone" dataKey="balance" stroke="#8884d8" activeDot={{ r: 8 }} />
+              <Line type="monotone" dataKey="income" stroke="#82ca9d" />
+              <Line type="monotone" dataKey="expenses" stroke="#8884d8" />
+            </LineChart>
+          </ResponsiveContainer>
         </div>
       )}
-      <h2>Forecast</h2>
-      <LineChart width={500} height={300} data={forecastData}>
-        <Line type="monotone" dataKey="balance" stroke="#8884d8" />
-        <XAxis dataKey="month" />
-        <YAxis />
-        <CartesianGrid stroke="#ccc" />
-        <Tooltip />
-        <Legend />
-      </LineChart>
-      <p>Final Balance: {forecastData[forecastData.length - 1].balance}</p>
     </div>
   );
 }

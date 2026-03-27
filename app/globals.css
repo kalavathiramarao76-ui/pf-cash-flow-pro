@@ -179,24 +179,31 @@ img {
   h2 {
     font-size: var(--mobile-subheader-font-size);
   }
-}
 
-@media (prefers-reduced-motion: reduce) {
-  * {
-    transition: none;
-    animation: none;
+  .container {
+    grid-template-columns: repeat(6, 1fr);
+    gap: 10px;
+    padding: 10px;
   }
 }
 
-@media (print) {
+@media (max-width: 480px) {
   body {
-    font-size: 12pt;
-    line-height: 1.2;
+    font-size: calc(var(--mobile-font-size) * 0.9);
+    line-height: calc(var(--mobile-line-height) * 0.9);
+  }
+
+  h1 {
+    font-size: calc(var(--mobile-header-font-size) * 0.9);
+  }
+
+  h2 {
+    font-size: calc(var(--mobile-subheader-font-size) * 0.9);
   }
 
   .container {
-    max-width: 100%;
-    padding: 0;
-    margin: 0;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
+    padding: 5px;
   }
 }
