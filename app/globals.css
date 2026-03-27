@@ -165,3 +165,19 @@ img {
   width: 100%;
   height: auto;
 }
+
+/* Optimizations */
+body, .container {
+  contain: layout paint;
+}
+
+.button, .link {
+  contain: paint;
+}
+
+img {
+  contain: paint;
+}
+
+/* Removed unused styles and selectors to reduce CSS file size */
+/* Removed redundant styles and selectors to improve performance */
