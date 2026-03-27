@@ -112,16 +112,6 @@ export default function ForecastingPage() {
     setDateRange({ start, end });
   };
 
-  const filteredForecastData = useMemo(() => {
-    if (selectedMonth !== null) {
-      return forecastData.filter((data) => data.month === selectedMonth);
-    } else if (dateRange.start !== 1 || dateRange.end !== 6) {
-      return forecastData.filter((data) => data.month >= dateRange.start && data.month <= dateRange.end);
-    } else {
-      return forecastData;
-    }
-  }, [forecastData, selectedMonth, dateRange]);
-
   return (
     <div>
       <h1>Automated Cash Flow Forecasting</h1>
@@ -142,7 +132,7 @@ export default function ForecastingPage() {
         <input type="number" value={safetyThreshold} onChange={(e) => setSafetyThreshold(e.target.value)} />
       </div>
       <div>
-        <button onClick={() => setShowAddForm(true)}>Add Recurring Item</button>
+        <button onClick={() => setShowAddForm(!showAddForm)}>Add Recurring Item</button>
         {showAddForm && (
           <div>
             <label>Label:</label>
@@ -160,10 +150,7 @@ export default function ForecastingPage() {
               <option value="quarterly">Quarterly</option>
               <option value="yearly">Yearly</option>
             </select>
-            <button onClick={() => {
-              setRecurringItems([...recurringItems, { id: Math.random().toString(), ...newItem }]);
-              setShowAddForm(false);
-            }}>Add</button>
+            <button onClick={() => setRecurringItems([...recurringItems, { ...newItem, id: Math.random().toString(36).substr(2, 9) }])}>Add</button>
           </div>
         )}
       </div>
@@ -171,14 +158,16 @@ export default function ForecastingPage() {
         <h2>Recurring Items:</h2>
         <ul>
           {recurringItems.map((item) => (
-            <li key={item.id}>{item.label} ({item.type}) - {item.amount} ({item.frequency})</li>
+            <li key={item.id}>
+              {item.label} ({item.type}) - {item.amount} ({item.frequency})
+            </li>
           ))}
         </ul>
       </div>
       <div>
         <h2>Forecast:</h2>
         <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={filteredForecastData}>
+          <LineChart data={forecastData}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="month" />
             <YAxis />
@@ -190,19 +179,20 @@ export default function ForecastingPage() {
           </LineChart>
         </ResponsiveContainer>
         <div>
-          <label>Drill Down:</label>
-          <select value={selectedMonth} onChange={(e) => handleDrillDown(parseInt(e.target.value))}>
-            <option value="">All</option>
-            {forecastData.map((data) => (
-              <option key={data.month} value={data.month}>{data.month}</option>
-            ))}
-          </select>
-        </div>
-        <div>
           <label>Date Range:</label>
           <input type="number" value={dateRange.start} onChange={(e) => handleDateRangeChange(parseInt(e.target.value), dateRange.end)} />
           <input type="number" value={dateRange.end} onChange={(e) => handleDateRangeChange(dateRange.start, parseInt(e.target.value))} />
         </div>
+        {selectedMonth !== null && (
+          <div>
+            <h3>Drill Down:</h3>
+            <p>Month: {selectedMonth}</p>
+            <p>Balance: {forecastData[selectedMonth - 1].balance}</p>
+            <p>Income: {forecastData[selectedMonth - 1].income}</p>
+            <p>Expenses: {forecastData[selectedMonth - 1].expenses}</p>
+          </div>
+        )}
+        <button onClick={() => handleDrillDown(dateRange.start)}>Drill Down</button>
       </div>
     </div>
   );

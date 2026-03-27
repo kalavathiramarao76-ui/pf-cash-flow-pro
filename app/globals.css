@@ -166,8 +166,86 @@ img {
   height: auto;
 }
 
-/* Removed unnecessary styles and optimized selectors for better performance */
-/* Removed redundant styles for h1-h6 and instead used a single class for headings */
-/* Removed unnecessary transitions and will-change properties */
-/* Removed unused styles for mobile devices */
-/* Removed redundant styles for links and buttons */
+@media (max-width: 768px) {
+  body {
+    font-size: calc(1rem + 0.2vw);
+    padding: 10px;
+  }
+
+  h1 {
+    font-size: var(--mobile-header-font-size);
+  }
+
+  h2 {
+    font-size: var(--mobile-subheader-font-size);
+  }
+
+  h3 {
+    font-size: calc(var(--mobile-subheader-font-size) * 0.8);
+  }
+
+  h4 {
+    font-size: calc(var(--mobile-subheader-font-size) * 0.7);
+  }
+
+  h5 {
+    font-size: calc(var(--mobile-subheader-font-size) * 0.6);
+  }
+
+  h6 {
+    font-size: calc(var(--mobile-subheader-font-size) * 0.5);
+  }
+
+  .container {
+    grid-template-columns: repeat(6, 1fr);
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .button {
+    padding: 5px 10px;
+    font-size: calc(var(--font-size) * 0.8);
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    font-size: var(--mobile-font-size);
+    padding: 5px;
+  }
+
+  h1 {
+    font-size: calc(var(--mobile-header-font-size) * 0.8);
+  }
+
+  h2 {
+    font-size: calc(var(--mobile-subheader-font-size) * 0.8);
+  }
+
+  h3 {
+    font-size: calc(var(--mobile-subheader-font-size) * 0.6);
+  }
+
+  h4 {
+    font-size: calc(var(--mobile-subheader-font-size) * 0.5);
+  }
+
+  h5 {
+    font-size: calc(var(--mobile-subheader-font-size) * 0.4);
+  }
+
+  h6 {
+    font-size: calc(var(--mobile-subheader-font-size) * 0.3);
+  }
+
+  .container {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
+    padding: 5px;
+  }
+
+  .button {
+    padding: 2px 5px;
+    font-size: calc(var(--font-size) * 0.6);
+  }
+}
