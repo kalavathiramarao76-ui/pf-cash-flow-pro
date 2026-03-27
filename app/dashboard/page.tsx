@@ -124,10 +124,8 @@ function App() {
   const [mlModel, setMlModel] = useState<AdvancedMlModel | null>(null);
 
   useEffect(() => {
-    if (transactions.length > 0) {
-      const model = new AdvancedMlModel(transactions);
-      setMlModel(model);
-    }
+    const model = new AdvancedMlModel(transactions);
+    setMlModel(model);
   }, [transactions]);
 
   const handleAddTransaction = (transaction: Transaction) => {
@@ -154,13 +152,10 @@ function App() {
       <h1>Automated Cash Flow Forecasting</h1>
       <button onClick={handlePredict}>Predict</button>
       <ul>
-        {transactions.map(transaction => (
-          <li key={transaction.id}>
-            <span>{transaction.description}</span>
-            <span>{transaction.amount}</span>
-            <span>{transaction.category}</span>
-            <span>{transaction.date}</span>
-            <button onClick={() => handleRemoveTransaction(transaction.id)}>Remove</button>
+        {transactions.map(t => (
+          <li key={t.id}>
+            {t.description} - {t.amount} - {t.category}
+            <button onClick={() => handleRemoveTransaction(t.id)}>Remove</button>
           </li>
         ))}
       </ul>
@@ -179,21 +174,19 @@ function App() {
             <option key={category} value={category}>{category}</option>
           ))}
         </select>
-        <input type="date" placeholder="Date" />
-        <button onClick={(e) => {
+        <button type="submit" onClick={(e) => {
           e.preventDefault();
           const description = (document.querySelector('input[type="text"]') as HTMLInputElement).value;
           const amount = parseFloat((document.querySelector('input[type="number"]') as HTMLInputElement).value);
           const type = (document.querySelector('select') as HTMLSelectElement).value;
           const category = (document.querySelectorAll('select')[1] as HTMLSelectElement).value;
-          const date = (document.querySelector('input[type="date"]') as HTMLInputElement).value;
           const transaction: Transaction = {
-            id: Math.random().toString(),
+            id: Math.random().toString(36).substr(2, 9),
             description,
             amount,
             type: type as TransactionType,
             category,
-            date,
+            date: new Date().toISOString().split("T")[0],
             recurring: false,
           };
           handleAddTransaction(transaction);
