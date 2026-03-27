@@ -111,10 +111,9 @@ class AdvancedMlModel {
     let predictedIncome = 0;
     incomeTransactions.forEach(transaction => {
       const category = transaction.category;
-      const historicalAmounts = this.incomeModel[category];
-      if (historicalAmounts) {
-        const averageAmount = historicalAmounts.reduce((a, b) => a + b, 0) / historicalAmounts.length;
-        predictedIncome += averageAmount;
+      const amounts = this.incomeModel[category];
+      if (amounts) {
+        predictedIncome += amounts.reduce((a, b) => a + b, 0) / amounts.length;
       }
     });
     return predictedIncome;
@@ -125,10 +124,9 @@ class AdvancedMlModel {
     let predictedExpense = 0;
     expenseTransactions.forEach(transaction => {
       const category = transaction.category;
-      const historicalAmounts = this.expenseModel[category];
-      if (historicalAmounts) {
-        const averageAmount = historicalAmounts.reduce((a, b) => a + b, 0) / historicalAmounts.length;
-        predictedExpense += averageAmount;
+      const amounts = this.expenseModel[category];
+      if (amounts) {
+        predictedExpense += amounts.reduce((a, b) => a + b, 0) / amounts.length;
       }
     });
     return predictedExpense;
@@ -137,50 +135,108 @@ class AdvancedMlModel {
 
 function App() {
   const [transactions, setTransactions] = useState<Transaction[]>(getStoredTransactions());
-  const [predictedCashFlow, setPredictedCashFlow] = useState<number>(0);
+  const [newTransaction, setNewTransaction] = useState<Transaction>({
+    id: '',
+    description: '',
+    amount: 0,
+    type: 'income',
+    category: '',
+    date: '',
+    recurring: false,
+  });
 
   useEffect(() => {
-    const mlModel = new AdvancedMlModel(transactions);
-    const predictedCashFlow = mlModel.predictCashFlow(transactions);
-    setPredictedCashFlow(predictedCashFlow);
+    saveTransactions(transactions);
   }, [transactions]);
 
-  const handleAddTransaction = (transaction: Transaction) => {
-    const newTransactions = [...transactions, transaction];
-    setTransactions(newTransactions);
-    saveTransactions(newTransactions);
+  const handleAddTransaction = () => {
+    setTransactions([...transactions, newTransaction]);
+    setNewTransaction({
+      id: '',
+      description: '',
+      amount: 0,
+      type: 'income',
+      category: '',
+      date: '',
+      recurring: false,
+    });
   };
 
   const handleRemoveTransaction = (id: string) => {
-    const newTransactions = transactions.filter(t => t.id !== id);
-    setTransactions(newTransactions);
-    saveTransactions(newTransactions);
+    setTransactions(transactions.filter(t => t.id !== id));
   };
+
+  const mlModel = new AdvancedMlModel(transactions);
+  const predictedCashFlow = mlModel.predictCashFlow(transactions);
 
   return (
     <div>
       <h1>Automated Cash Flow Forecasting</h1>
       <p>Predicted Cash Flow: {predictedCashFlow}</p>
-      <ul>
-        {transactions.map(transaction => (
-          <li key={transaction.id}>
-            <span>{transaction.description}</span>
-            <span>{transaction.amount}</span>
-            <span>{transaction.category}</span>
-            <span>{transaction.date}</span>
-            <button onClick={() => handleRemoveTransaction(transaction.id)}>Remove</button>
-          </li>
-        ))}
-      </ul>
-      <button onClick={() => handleAddTransaction({
-        id: Math.random().toString(),
-        description: 'New Transaction',
-        amount: 100,
-        type: 'income',
-        category: 'Freelance / Contract',
-        date: new Date().toISOString().split("T")[0],
-        recurring: false,
-      })}>Add Transaction</button>
+      <table>
+        <thead>
+          <tr>
+            <th>Description</th>
+            <th>Amount</th>
+            <th>Type</th>
+            <th>Category</th>
+            <th>Date</th>
+            <th>Recurring</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {transactions.map(transaction => (
+            <tr key={transaction.id}>
+              <td>{transaction.description}</td>
+              <td>{transaction.amount}</td>
+              <td>{transaction.type}</td>
+              <td>{transaction.category}</td>
+              <td>{transaction.date}</td>
+              <td>{transaction.recurring ? 'Yes' : 'No'}</td>
+              <td>
+                <button onClick={() => handleRemoveTransaction(transaction.id)}>Remove</button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <form>
+        <label>
+          Description:
+          <input type="text" value={newTransaction.description} onChange={e => setNewTransaction({ ...newTransaction, description: e.target.value })} />
+        </label>
+        <label>
+          Amount:
+          <input type="number" value={newTransaction.amount} onChange={e => setNewTransaction({ ...newTransaction, amount: Number(e.target.value) })} />
+        </label>
+        <label>
+          Type:
+          <select value={newTransaction.type} onChange={e => setNewTransaction({ ...newTransaction, type: e.target.value as TransactionType })}>
+            <option value="income">Income</option>
+            <option value="expense">Expense</option>
+          </select>
+        </label>
+        <label>
+          Category:
+          <select value={newTransaction.category} onChange={e => setNewTransaction({ ...newTransaction, category: e.target.value })}>
+            {newTransaction.type === 'income' ? CATEGORIES_INCOME.map(category => (
+              <option key={category} value={category}>{category}</option>
+            )) : CATEGORIES_EXPENSE.map(category => (
+              <option key={category} value={category}>{category}</option>
+            ))}
+          </select>
+        </label>
+        <label>
+          Date:
+          <input type="date" value={newTransaction.date} onChange={e => setNewTransaction({ ...newTransaction, date: e.target.value })} />
+        </label>
+        <label>
+          Recurring:
+          <input type="checkbox" checked={newTransaction.recurring} onChange={e => setNewTransaction({ ...newTransaction, recurring: e.target.checked })} />
+        </label>
+        <button type="button" onClick={handleAddTransaction}>Add Transaction</button>
+      </form>
     </div>
   );
 }
