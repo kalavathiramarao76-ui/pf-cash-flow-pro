@@ -108,19 +108,25 @@ export default function ForecastingPage() {
     setSelectedMonth(month);
   };
 
-  const handleDateRangeChange = (start: number, end: number) => {
-    setDateRange({ start, end });
+  const handleResetDrillDown = () => {
+    setSelectedMonth(null);
   };
 
-  const filteredForecastData = useMemo(() => {
-    if (selectedMonth !== null) {
-      return forecastData.filter((data) => data.month === selectedMonth);
-    } else if (dateRange.start !== 1 || dateRange.end !== 6) {
-      return forecastData.filter((data) => data.month >= dateRange.start && data.month <= dateRange.end);
-    } else {
-      return forecastData;
-    }
-  }, [forecastData, selectedMonth, dateRange]);
+  const drillDownData = useMemo(() => {
+    if (selectedMonth === null) return null;
+    const data = forecastData.find((item) => item.month === selectedMonth);
+    if (!data) return null;
+    const incomeBreakdown: { label: string; amount: number }[] = [];
+    const expensesBreakdown: { label: string; amount: number }[] = [];
+    recurringItems.forEach((item) => {
+      if (item.type === "income") {
+        incomeBreakdown.push({ label: item.label, amount: getMonthlyEquivalent(item) });
+      } else {
+        expensesBreakdown.push({ label: item.label, amount: getMonthlyEquivalent(item) });
+      }
+    });
+    return { incomeBreakdown, expensesBreakdown };
+  }, [selectedMonth, forecastData, recurringItems]);
 
   return (
     <div>
@@ -132,23 +138,37 @@ export default function ForecastingPage() {
           <YAxis />
           <Tooltip />
           <Legend />
-          <Line type="monotone" dataKey="balance" stroke="#8884d8" />
+          <Line type="monotone" dataKey="balance" stroke="#8884d8" activeDot={{ r: 8 }} />
           <Line type="monotone" dataKey="income" stroke="#82ca9d" />
           <Line type="monotone" dataKey="expenses" stroke="#8884d8" />
+          {forecastData.map((entry, index) => (
+            <ReferenceLine key={index} x={entry.month} stroke="red" />
+          ))}
+          <Brush dataKey="month" height={30} stroke="#8884d8" />
         </LineChart>
       </ResponsiveContainer>
-      <div>
-        <button onClick={() => handleDrillDown(1)}>Drill Down to Month 1</button>
-        <button onClick={() => handleDrillDown(2)}>Drill Down to Month 2</button>
-        <button onClick={() => handleDrillDown(3)}>Drill Down to Month 3</button>
-      </div>
-      <div>
-        <label>Start Month:</label>
-        <input type="number" value={dateRange.start} onChange={(e) => handleDateRangeChange(parseInt(e.target.value), dateRange.end)} />
-        <label>End Month:</label>
-        <input type="number" value={dateRange.end} onChange={(e) => handleDateRangeChange(dateRange.start, parseInt(e.target.value))} />
-      </div>
-      <h2>Filtered Forecast Data</h2>
+      {drillDownData && (
+        <div>
+          <h2>Drill Down: Month {selectedMonth}</h2>
+          <h3>Income Breakdown:</h3>
+          <ul>
+            {drillDownData.incomeBreakdown.map((item) => (
+              <li key={item.label}>
+                {item.label}: ${item.amount}
+              </li>
+            ))}
+          </ul>
+          <h3>Expenses Breakdown:</h3>
+          <ul>
+            {drillDownData.expensesBreakdown.map((item) => (
+              <li key={item.label}>
+                {item.label}: ${item.amount}
+              </li>
+            ))}
+          </ul>
+          <button onClick={handleResetDrillDown}>Reset Drill Down</button>
+        </div>
+      )}
       <table>
         <thead>
           <tr>
@@ -156,15 +176,19 @@ export default function ForecastingPage() {
             <th>Balance</th>
             <th>Income</th>
             <th>Expenses</th>
+            <th>Drill Down</th>
           </tr>
         </thead>
         <tbody>
-          {filteredForecastData.map((data) => (
-            <tr key={data.month}>
-              <td>{data.month}</td>
-              <td>{data.balance}</td>
-              <td>{data.income}</td>
-              <td>{data.expenses}</td>
+          {forecastData.map((entry) => (
+            <tr key={entry.month}>
+              <td>{entry.month}</td>
+              <td>${entry.balance}</td>
+              <td>${entry.income}</td>
+              <td>${entry.expenses}</td>
+              <td>
+                <button onClick={() => handleDrillDown(entry.month)}>Drill Down</button>
+              </td>
             </tr>
           ))}
         </tbody>
