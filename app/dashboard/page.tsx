@@ -95,156 +95,91 @@ class AdvancedMlModel {
   private trainModel(categories: string[], transactions: Transaction[]): any {
     const model: any = {};
     categories.forEach(category => {
-      model[category] = transactions.filter(t => t.category === category).map(t => t.description);
+      model[category] = transactions.filter(t => t.category === category).map(t => t.amount);
     });
     return model;
   }
 
-  public predictCategory(description: string, type: TransactionType): string {
-    if (type === 'income') {
-      for (const category in this.incomeModel) {
-        if (this.incomeModel[category].some(d => d.includes(description))) {
-          return category;
-        }
+  predictCashFlow(transactions: Transaction[]): number {
+    const predictedIncome = this.predictIncome(transactions);
+    const predictedExpense = this.predictExpense(transactions);
+    return predictedIncome - predictedExpense;
+  }
+
+  private predictIncome(transactions: Transaction[]): number {
+    const incomeTransactions = transactions.filter(t => t.type === 'income');
+    let predictedIncome = 0;
+    incomeTransactions.forEach(transaction => {
+      const category = transaction.category;
+      const amounts = this.incomeModel[category];
+      if (amounts) {
+        predictedIncome += amounts.reduce((a, b) => a + b, 0) / amounts.length;
       }
-    } else {
-      for (const category in this.expenseModel) {
-        if (this.expenseModel[category].some(d => d.includes(description))) {
-          return category;
-        }
+    });
+    return predictedIncome;
+  }
+
+  private predictExpense(transactions: Transaction[]): number {
+    const expenseTransactions = transactions.filter(t => t.type === 'expense');
+    let predictedExpense = 0;
+    expenseTransactions.forEach(transaction => {
+      const category = transaction.category;
+      const amounts = this.expenseModel[category];
+      if (amounts) {
+        predictedExpense += amounts.reduce((a, b) => a + b, 0) / amounts.length;
       }
-    }
-    return 'Other';
+    });
+    return predictedExpense;
   }
 }
 
 function App() {
   const [transactions, setTransactions] = useState<Transaction[]>(getStoredTransactions());
-  const [newTransaction, setNewTransaction] = useState<Transaction>({
-    id: '',
-    description: '',
-    amount: 0,
-    type: 'income',
-    category: '',
-    date: '',
-    recurring: false,
-  });
-  const [suggestedCategory, setSuggestedCategory] = useState<string>('');
+  const [predictedCashFlow, setPredictedCashFlow] = useState<number>(0);
 
   useEffect(() => {
-    if (transactions.length > 0) {
-      const model = new AdvancedMlModel(transactions);
-      setSuggestedCategory(model.predictCategory(newTransaction.description, newTransaction.type));
-    }
-  }, [newTransaction.description, newTransaction.type, transactions]);
+    const mlModel = new AdvancedMlModel(transactions);
+    const predictedCashFlow = mlModel.predictCashFlow(transactions);
+    setPredictedCashFlow(predictedCashFlow);
+  }, [transactions]);
 
-  const handleAddTransaction = () => {
-    if (newTransaction.description && newTransaction.amount && newTransaction.type && newTransaction.category && newTransaction.date) {
-      const newTransactions = [...transactions, newTransaction];
-      setTransactions(newTransactions);
-      saveTransactions(newTransactions);
-      setNewTransaction({
-        id: '',
-        description: '',
-        amount: 0,
-        type: 'income',
-        category: '',
-        date: '',
-        recurring: false,
-      });
-    }
+  const handleAddTransaction = (transaction: Transaction) => {
+    const newTransactions = [...transactions, transaction];
+    setTransactions(newTransactions);
+    saveTransactions(newTransactions);
   };
 
-  const handleDeleteTransaction = (id: string) => {
+  const handleRemoveTransaction = (id: string) => {
     const newTransactions = transactions.filter(t => t.id !== id);
     setTransactions(newTransactions);
     saveTransactions(newTransactions);
   };
 
-  const handleUpdateTransaction = (id: string, updatedTransaction: Transaction) => {
-    const newTransactions = transactions.map(t => t.id === id ? updatedTransaction : t);
-    setTransactions(newTransactions);
-    saveTransactions(newTransactions);
-  };
-
-  const handleDescriptionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setNewTransaction({ ...newTransaction, description: e.target.value });
-  };
-
-  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setNewTransaction({ ...newTransaction, amount: parseFloat(e.target.value) });
-  };
-
-  const handleTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setNewTransaction({ ...newTransaction, type: e.target.value as TransactionType });
-  };
-
-  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setNewTransaction({ ...newTransaction, category: e.target.value });
-  };
-
-  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setNewTransaction({ ...newTransaction, date: e.target.value });
-  };
-
-  const handleRecurringChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setNewTransaction({ ...newTransaction, recurring: e.target.checked });
-  };
-
   return (
     <div>
       <h1>Automated Cash Flow Forecasting</h1>
-      <form>
-        <label>
-          Description:
-          <input type="text" value={newTransaction.description} onChange={handleDescriptionChange} />
-        </label>
-        <label>
-          Amount:
-          <input type="number" value={newTransaction.amount} onChange={handleAmountChange} />
-        </label>
-        <label>
-          Type:
-          <select value={newTransaction.type} onChange={handleTypeChange}>
-            <option value="income">Income</option>
-            <option value="expense">Expense</option>
-          </select>
-        </label>
-        <label>
-          Category:
-          <select value={newTransaction.category} onChange={handleCategoryChange}>
-            {newTransaction.type === 'income' ? CATEGORIES_INCOME.map(category => (
-              <option key={category} value={category}>{category}</option>
-            )) : CATEGORIES_EXPENSE.map(category => (
-              <option key={category} value={category}>{category}</option>
-            ))}
-          </select>
-          {suggestedCategory && <p>Suggested category: {suggestedCategory}</p>}
-        </label>
-        <label>
-          Date:
-          <input type="date" value={newTransaction.date} onChange={handleDateChange} />
-        </label>
-        <label>
-          Recurring:
-          <input type="checkbox" checked={newTransaction.recurring} onChange={handleRecurringChange} />
-        </label>
-        <button type="button" onClick={handleAddTransaction}>Add Transaction</button>
-      </form>
+      <p>Predicted Cash Flow: ${predictedCashFlow.toFixed(2)}</p>
       <ul>
         {transactions.map(transaction => (
           <li key={transaction.id}>
-            <p>{transaction.description}</p>
-            <p>Amount: {transaction.amount}</p>
-            <p>Type: {transaction.type}</p>
-            <p>Category: {transaction.category}</p>
-            <p>Date: {transaction.date}</p>
-            <p>Recurring: {transaction.recurring ? 'Yes' : 'No'}</p>
-            <button type="button" onClick={() => handleDeleteTransaction(transaction.id)}>Delete</button>
-            <button type="button" onClick={() => handleUpdateTransaction(transaction.id, { ...transaction, description: 'Updated description' })}>Update</button>
+            <span>{transaction.description}</span>
+            <span>${transaction.amount.toFixed(2)}</span>
+            <span>{transaction.type}</span>
+            <span>{transaction.category}</span>
+            <span>{transaction.date}</span>
+            <button onClick={() => handleRemoveTransaction(transaction.id)}>Remove</button>
           </li>
         ))}
       </ul>
+      <button onClick={() => handleAddTransaction({
+        id: Math.random().toString(36).substr(2, 9),
+        description: 'New Transaction',
+        amount: 100,
+        type: 'income',
+        category: 'Freelance / Contract',
+        date: new Date().toISOString().split("T")[0],
+        recurring: false,
+      })}>Add Transaction</button>
     </div>
   );
 }
