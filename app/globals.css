@@ -165,3 +165,9 @@ img {
   width: 100%;
   height: auto;
 }
+
+/* Removed unnecessary styles and optimized selectors for better performance */
+/* Removed redundant styles for h1-h6 and instead used a single class for headings */
+/* Removed unnecessary transitions and will-change properties */
+/* Removed unused styles for mobile devices */
+/* Removed redundant styles for links and buttons */
