@@ -131,10 +131,10 @@ export default function ForecastingPage() {
       </div>
       <div>
         <label>Horizon:</label>
-        <select value={horizon} onChange={(e) => setHorizon(e.target.value as 3 | 6 | 12)}>
-          <option value={3}>3 months</option>
-          <option value={6}>6 months</option>
-          <option value={12}>12 months</option>
+        <select value={horizon} onChange={(e) => setHorizon(parseInt(e.target.value) as 3 | 6 | 12)}>
+          <option value="3">3 months</option>
+          <option value="6">6 months</option>
+          <option value="12">12 months</option>
         </select>
       </div>
       <div>
@@ -142,15 +142,8 @@ export default function ForecastingPage() {
         <input type="number" value={safetyThreshold} onChange={(e) => setSafetyThreshold(e.target.value)} />
       </div>
       <div>
-        <h2>Recurring Items:</h2>
-        <ul>
-          {recurringItems.map((item) => (
-            <li key={item.id}>
-              {item.label} ({item.type}) - {item.amount} ({item.frequency})
-            </li>
-          ))}
-        </ul>
-        {showAddForm ? (
+        <button onClick={() => setShowAddForm(!showAddForm)}>Add Recurring Item</button>
+        {showAddForm && (
           <div>
             <label>Label:</label>
             <input type="text" value={newItem.label} onChange={(e) => setNewItem({ ...newItem, label: e.target.value })} />
@@ -167,11 +160,19 @@ export default function ForecastingPage() {
               <option value="quarterly">Quarterly</option>
               <option value="yearly">Yearly</option>
             </select>
-            <button onClick={() => setRecurringItems([...recurringItems, { ...newItem, id: `r${recurringItems.length + 1}` }])}>Add</button>
+            <button onClick={() => setRecurringItems([...recurringItems, { ...newItem, id: Math.random().toString(36).substr(2, 9) }])}>Add</button>
           </div>
-        ) : (
-          <button onClick={() => setShowAddForm(true)}>Add Recurring Item</button>
         )}
+      </div>
+      <div>
+        <h2>Recurring Items:</h2>
+        <ul>
+          {recurringItems.map((item) => (
+            <li key={item.id}>
+              {item.label} ({item.type}) - {item.amount} ({item.frequency})
+            </li>
+          ))}
+        </ul>
       </div>
       <div>
         <h2>Forecast:</h2>
@@ -188,21 +189,20 @@ export default function ForecastingPage() {
           </LineChart>
         </ResponsiveContainer>
         <div>
-          <label>Drill Down:</label>
-          <select value={selectedMonth} onChange={(e) => handleDrillDown(e.target.value as number)}>
-            <option value={null}>All</option>
+          <label>Selected Month:</label>
+          <select value={selectedMonth} onChange={(e) => handleDrillDown(parseInt(e.target.value))}>
+            <option value="">All</option>
             {forecastData.map((data) => (
               <option key={data.month} value={data.month}>
-                Month {data.month}
+                {data.month}
               </option>
             ))}
           </select>
         </div>
         <div>
           <label>Date Range:</label>
-          <input type="number" value={dateRange.start} onChange={(e) => handleDateRangeChange(e.target.valueAsNumber, dateRange.end)} />
-          -
-          <input type="number" value={dateRange.end} onChange={(e) => handleDateRangeChange(dateRange.start, e.target.valueAsNumber)} />
+          <input type="number" value={dateRange.start} onChange={(e) => handleDateRangeChange(parseInt(e.target.value), dateRange.end)} />
+          <input type="number" value={dateRange.end} onChange={(e) => handleDateRangeChange(dateRange.start, parseInt(e.target.value))} />
         </div>
       </div>
     </div>

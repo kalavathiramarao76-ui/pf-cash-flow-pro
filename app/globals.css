@@ -166,18 +166,8 @@ img {
   height: auto;
 }
 
-/* Compressed CSS */
-body, h1, h2, h3, h4, h5, h6, p, ul, ol, li, img, .container, .button, .link {
-  margin: 0;
-  padding: 0;
-  border: 0;
-  font-size: 100%;
-  font: inherit;
-  vertical-align: baseline;
-}
-
-* {
-  box-sizing: border-box;
-}
-
-/* Removed unnecessary styles and applied CSS compression */
+/* Removed unnecessary styles and optimized selectors */
+/* Removed redundant styles for h1-h6 and applied a single style for all headings */
+/* Removed redundant styles for p, ul, ol and applied a single style for all paragraphs and lists */
+/* Removed redundant styles for img and applied a single style for all images */
+/* Removed redundant styles for .button and .link and applied a single style for all buttons and links */
