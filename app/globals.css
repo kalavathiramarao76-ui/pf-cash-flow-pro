@@ -165,26 +165,3 @@ img {
   width: 100%;
   height: auto;
 }
-
-/* Optimizations to reduce page load time and improve overall application performance */
-body {
-  font-size: calc(1rem + 0.5vw);
-  transition: font-size 0.3s ease;
-}
-
-.container {
-  will-change: transform, opacity;
-}
-
-.button {
-  transition: background 0.3s ease;
-}
-
-.link {
-  transition: color 0.3s ease;
-}
-
-/* Removed unused CSS rules and selectors to reduce file size */
-/* Removed redundant CSS properties and values to reduce file size */
-/* Minified CSS code to reduce file size */
-/* Removed comments and whitespace to reduce file size */
