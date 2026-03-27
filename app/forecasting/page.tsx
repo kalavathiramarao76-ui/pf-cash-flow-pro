@@ -142,9 +142,15 @@ export default function ForecastingPage() {
         <input type="number" value={safetyThreshold} onChange={(e) => setSafetyThreshold(e.target.value)} />
       </div>
       <div>
-        <h2>Recurring Items</h2>
-        <button onClick={() => setShowAddForm(!showAddForm)}>Add New Item</button>
-        {showAddForm && (
+        <h2>Recurring Items:</h2>
+        <ul>
+          {recurringItems.map((item) => (
+            <li key={item.id}>
+              {item.label} ({item.type}) - {item.amount} ({item.frequency})
+            </li>
+          ))}
+        </ul>
+        {showAddForm ? (
           <div>
             <label>Label:</label>
             <input type="text" value={newItem.label} onChange={(e) => setNewItem({ ...newItem, label: e.target.value })} />
@@ -161,19 +167,14 @@ export default function ForecastingPage() {
               <option value="quarterly">Quarterly</option>
               <option value="yearly">Yearly</option>
             </select>
-            <button onClick={() => setRecurringItems([...recurringItems, newItem])}>Add Item</button>
+            <button onClick={() => setRecurringItems([...recurringItems, { ...newItem, id: `r${recurringItems.length + 1}` }])}>Add</button>
           </div>
+        ) : (
+          <button onClick={() => setShowAddForm(true)}>Add Recurring Item</button>
         )}
-        <ul>
-          {recurringItems.map((item) => (
-            <li key={item.id}>
-              {item.label} ({item.type}) - {item.amount} ({item.frequency})
-            </li>
-          ))}
-        </ul>
       </div>
       <div>
-        <h2>Forecast</h2>
+        <h2>Forecast:</h2>
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={filteredForecastData}>
             <CartesianGrid strokeDasharray="3 3" />
@@ -200,6 +201,7 @@ export default function ForecastingPage() {
         <div>
           <label>Date Range:</label>
           <input type="number" value={dateRange.start} onChange={(e) => handleDateRangeChange(e.target.valueAsNumber, dateRange.end)} />
+          -
           <input type="number" value={dateRange.end} onChange={(e) => handleDateRangeChange(dateRange.start, e.target.valueAsNumber)} />
         </div>
       </div>

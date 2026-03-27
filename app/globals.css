@@ -164,26 +164,20 @@ img {
   display: block;
   width: 100%;
   height: auto;
-  object-fit: cover;
 }
 
-@media (max-width: 768px) {
-  body {
-    font-size: var(--mobile-font-size);
-    line-height: var(--mobile-line-height);
-  }
-
-  h1 {
-    font-size: var(--mobile-header-font-size);
-  }
-
-  h2 {
-    font-size: var(--mobile-subheader-font-size);
-  }
+/* Compressed CSS */
+body, h1, h2, h3, h4, h5, h6, p, ul, ol, li, img, .container, .button, .link {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 100%;
+  font: inherit;
+  vertical-align: baseline;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  * {
-    transition: none;
-  }
+* {
+  box-sizing: border-box;
 }
+
+/* Removed unnecessary styles and applied CSS compression */
