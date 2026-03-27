@@ -85,6 +85,18 @@ export default function ForecastingPage() {
   const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
   const [dateRange, setDateRange] = useState({ start: 1, end: 6 });
 
+  const [whatIfScenario, setWhatIfScenario] = useState({
+    label: "",
+    amount: "",
+    type: "income" as "income" | "expense",
+    frequency: "monthly" as RecurringItem["frequency"],
+  });
+  const [showWhatIfForm, setShowWhatIfForm] = useState(false);
+  const [whatIfResults, setWhatIfResults] = useState({
+    data: [],
+    balance: 0,
+  });
+
   const forecastData = useMemo(() => {
     const data: { month: number; balance: number; income: number; expenses: number }[] = [];
     let balance = parseInt(currentBalance);
@@ -104,96 +116,93 @@ export default function ForecastingPage() {
     return data;
   }, [currentBalance, horizon, recurringItems]);
 
-  const handleDrillDown = (month: number) => {
-    setSelectedMonth(month);
-  };
+  const whatIfForecastData = useMemo(() => {
+    if (!whatIfScenario.label || !whatIfScenario.amount) return [];
+    const data: { month: number; balance: number; income: number; expenses: number }[] = [];
+    let balance = parseInt(currentBalance);
+    for (let i = 0; i < horizon; i++) {
+      let income = 0;
+      let expenses = 0;
+      recurringItems.forEach((item) => {
+        if (item.type === "income") {
+          income += getMonthlyEquivalent(item);
+        } else {
+          expenses += getMonthlyEquivalent(item);
+        }
+      });
+      if (whatIfScenario.type === "income") {
+        income += getMonthlyEquivalent({ ...whatIfScenario, id: "what-if" });
+      } else {
+        expenses += getMonthlyEquivalent({ ...whatIfScenario, id: "what-if" });
+      }
+      balance += income - expenses;
+      data.push({ month: i + 1, balance, income, expenses });
+    }
+    return data;
+  }, [currentBalance, horizon, recurringItems, whatIfScenario]);
 
-  const handleDateRangeChange = (start: number, end: number) => {
-    setDateRange({ start, end });
+  const handleWhatIfSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setWhatIfResults({
+      data: whatIfForecastData,
+      balance: whatIfForecastData[whatIfForecastData.length - 1].balance,
+    });
   };
 
   return (
     <div>
       <h1>Automated Cash Flow Forecasting</h1>
-      <div>
-        <label>Current Balance:</label>
-        <input type="number" value={currentBalance} onChange={(e) => setCurrentBalance(e.target.value)} />
-      </div>
-      <div>
-        <label>Horizon:</label>
-        <select value={horizon} onChange={(e) => setHorizon(parseInt(e.target.value) as 3 | 6 | 12)}>
-          <option value="3">3 months</option>
-          <option value="6">6 months</option>
-          <option value="12">12 months</option>
-        </select>
-      </div>
-      <div>
-        <label>Safety Threshold:</label>
-        <input type="number" value={safetyThreshold} onChange={(e) => setSafetyThreshold(e.target.value)} />
-      </div>
-      <div>
-        <button onClick={() => setShowAddForm(!showAddForm)}>Add Recurring Item</button>
-        {showAddForm && (
-          <div>
-            <label>Label:</label>
-            <input type="text" value={newItem.label} onChange={(e) => setNewItem({ ...newItem, label: e.target.value })} />
-            <label>Amount:</label>
-            <input type="number" value={newItem.amount} onChange={(e) => setNewItem({ ...newItem, amount: e.target.value })} />
-            <label>Type:</label>
-            <select value={newItem.type} onChange={(e) => setNewItem({ ...newItem, type: e.target.value as "income" | "expense" })}>
+      <button onClick={() => setShowWhatIfForm(!showWhatIfForm)}>What-If Scenario</button>
+      {showWhatIfForm && (
+        <form onSubmit={handleWhatIfSubmit}>
+          <label>
+            Label:
+            <input type="text" value={whatIfScenario.label} onChange={(e) => setWhatIfScenario({ ...whatIfScenario, label: e.target.value })} />
+          </label>
+          <label>
+            Amount:
+            <input type="number" value={whatIfScenario.amount} onChange={(e) => setWhatIfScenario({ ...whatIfScenario, amount: e.target.valueAsNumber })} />
+          </label>
+          <label>
+            Type:
+            <select value={whatIfScenario.type} onChange={(e) => setWhatIfScenario({ ...whatIfScenario, type: e.target.value as "income" | "expense" })}>
               <option value="income">Income</option>
               <option value="expense">Expense</option>
             </select>
-            <label>Frequency:</label>
-            <select value={newItem.frequency} onChange={(e) => setNewItem({ ...newItem, frequency: e.target.value as RecurringItem["frequency"] })}>
+          </label>
+          <label>
+            Frequency:
+            <select value={whatIfScenario.frequency} onChange={(e) => setWhatIfScenario({ ...whatIfScenario, frequency: e.target.value as RecurringItem["frequency"] })}>
               <option value="monthly">Monthly</option>
               <option value="quarterly">Quarterly</option>
               <option value="yearly">Yearly</option>
             </select>
-            <button onClick={() => setRecurringItems([...recurringItems, { ...newItem, id: Math.random().toString(36).substr(2, 9) }])}>Add</button>
-          </div>
-        )}
-      </div>
-      <div>
-        <h2>Recurring Items:</h2>
-        <ul>
-          {recurringItems.map((item) => (
-            <li key={item.id}>
-              {item.label} ({item.type}) - {item.amount} ({item.frequency})
-            </li>
-          ))}
-        </ul>
-      </div>
-      <div>
-        <h2>Forecast:</h2>
-        <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={forecastData}>
-            <CartesianGrid strokeDasharray="3 3" />
+          </label>
+          <button type="submit">Run Scenario</button>
+        </form>
+      )}
+      {whatIfResults.data.length > 0 && (
+        <div>
+          <h2>What-If Scenario Results</h2>
+          <p>Final Balance: {whatIfResults.balance}</p>
+          <LineChart width={500} height={300} data={whatIfResults.data}>
+            <Line type="monotone" dataKey="balance" stroke="#8884d8" />
             <XAxis dataKey="month" />
             <YAxis />
+            <CartesianGrid stroke="#ccc" />
             <Tooltip />
             <Legend />
-            <Line type="monotone" dataKey="balance" stroke="#8884d8" activeDot={{ r: 8 }} />
-            <Line type="monotone" dataKey="income" stroke="#82ca9d" />
-            <Line type="monotone" dataKey="expenses" stroke="#8884d8" />
           </LineChart>
-        </ResponsiveContainer>
-        <div>
-          <label>Date Range:</label>
-          <input type="number" value={dateRange.start} onChange={(e) => handleDateRangeChange(parseInt(e.target.value), dateRange.end)} />
-          <input type="number" value={dateRange.end} onChange={(e) => handleDateRangeChange(dateRange.start, parseInt(e.target.value))} />
         </div>
-        {selectedMonth !== null && (
-          <div>
-            <h3>Drill Down:</h3>
-            <p>Month: {selectedMonth}</p>
-            <p>Balance: {forecastData[selectedMonth - 1].balance}</p>
-            <p>Income: {forecastData[selectedMonth - 1].income}</p>
-            <p>Expenses: {forecastData[selectedMonth - 1].expenses}</p>
-          </div>
-        )}
-        <button onClick={() => handleDrillDown(dateRange.start)}>Drill Down</button>
-      </div>
+      )}
+      <LineChart width={500} height={300} data={forecastData}>
+        <Line type="monotone" dataKey="balance" stroke="#8884d8" />
+        <XAxis dataKey="month" />
+        <YAxis />
+        <CartesianGrid stroke="#ccc" />
+        <Tooltip />
+        <Legend />
+      </LineChart>
     </div>
   );
 }
