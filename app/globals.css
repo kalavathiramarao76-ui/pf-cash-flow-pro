@@ -164,6 +164,7 @@ img {
   display: block;
   width: 100%;
   height: auto;
+  object-fit: cover;
 }
 
 @media (max-width: 768px) {
@@ -184,12 +185,6 @@ img {
 @media (prefers-reduced-motion: reduce) {
   * {
     transition: none;
-  }
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 248, 250, 252;
-    --background-rgb: 15, 23, 42;
+    animation: none;
   }
 }
