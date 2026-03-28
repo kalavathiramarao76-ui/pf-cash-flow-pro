@@ -168,33 +168,68 @@ img {
 
 @media (max-width: 768px) {
   body {
-    font-size: var(--mobile-font-size);
-    line-height: var(--mobile-line-height);
-  }
-
-  h1 {
-    font-size: var(--mobile-header-font-size);
-  }
-
-  h2 {
-    font-size: var(--mobile-subheader-font-size);
-  }
-
-  .container {
-    grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
-    padding: 10px;
+    font-size: calc(1rem + 0.2vw);
   }
 }
 
 @media (max-width: 480px) {
   body {
-    padding: 10px;
+    font-size: calc(1rem + 0.1vw);
   }
-
   .container {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 5px;
-    padding: 5px;
+    padding: 10px;
+    gap: 10px;
+  }
+  h1 {
+    font-size: var(--mobile-header-font-size);
+  }
+  h2 {
+    font-size: var(--mobile-subheader-font-size);
+  }
+}
+
+/* Optimizations for page load times and responsiveness */
+body {
+  font-size: calc(1rem + 0.5vw);
+  transition: font-size 0.3s ease;
+}
+
+img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+.button, .link {
+  transition: all 0.3s ease;
+}
+
+.glass-card {
+  backdrop-filter: blur(10px);
+}
+
+/* Reduce unnecessary re-renders and improve scrolling performance */
+* {
+  will-change: transform, opacity;
+}
+
+/* Optimize images */
+img {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+/* Optimize font sizes for different screen sizes */
+@media (max-width: 768px) {
+  body {
+    font-size: calc(1rem + 0.2vw);
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    font-size: calc(1rem + 0.1vw);
   }
 }
