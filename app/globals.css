@@ -167,72 +167,22 @@ img {
 }
 
 /* Optimizations */
-body, html {
-  height: 100%;
-}
-
 body {
   font-size: calc(1rem + 0.5vw);
-  line-height: calc(1.6 + 0.1vw);
+  transition: font-size 0.3s ease;
 }
 
-h1, h2, h3, h4, h5, h6 {
-  line-height: calc(1.4 + 0.1vw);
-}
-
-p, ul, ol {
-  font-size: calc(1rem + 0.2vw);
-  line-height: calc(1.4 + 0.1vw);
-}
-
-.button {
-  font-size: calc(1rem + 0.1vw);
-}
-
-.link {
-  font-size: calc(1rem + 0.1vw);
-}
-
-/* Reduce unnecessary reflows */
 .container {
   will-change: transform, opacity;
 }
 
-/* Reduce unnecessary repaints */
-.button, .link {
-  transition: background 0.3s ease, color 0.3s ease;
+.button {
+  transition: background 0.3s ease;
 }
 
-/* Leverage GPU acceleration */
-.glass-card {
-  will-change: transform, opacity;
-  transform: translateZ(0);
+.link {
+  transition: color 0.3s ease;
 }
 
-/* Optimize images */
-img {
-  display: block;
-  width: 100%;
-  height: auto;
-  object-fit: cover;
-}
-
-/* Optimize scrolling */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: #f1f5f9;
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #c7d2fe;
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #818cf8;
-}
+/* Removed unused styles and selectors to reduce file size */
+/* Removed redundant styles to improve performance */
