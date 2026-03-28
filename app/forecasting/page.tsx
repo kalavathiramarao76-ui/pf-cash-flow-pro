@@ -112,57 +112,172 @@ export default function ForecastingPage() {
         }
       });
       balance += income - expenses;
-      data.push({ month: i + 1, balance, income, expenses });
+      data.push({
+        month: i + 1,
+        balance,
+        income,
+        expenses,
+      });
     }
     return data;
   }, [currentBalance, horizon, recurringItems]);
 
-  const chartData = useMemo(() => {
-    return forecastData.map((item) => ({
-      month: item.month,
-      balance: item.balance,
-      income: item.income,
-      expenses: item.expenses,
-    }));
-  }, [forecastData]);
+  const handleMonthSelect = (month: number) => {
+    setSelectedMonth(month);
+  };
+
+  const handleDateRangeChange = (start: number, end: number) => {
+    setDateRange({ start, end });
+  };
+
+  const handleWhatIfScenarioChange = (scenario: any) => {
+    setWhatIfScenario(scenario);
+  };
+
+  const handleWhatIfFormSubmit = (event: any) => {
+    event.preventDefault();
+    const scenario = whatIfScenario;
+    const data = forecastData.map((point) => ({ ...point }));
+    let balance = parseInt(currentBalance);
+    for (let i = 0; i < horizon; i++) {
+      let income = 0;
+      let expenses = 0;
+      recurringItems.forEach((item) => {
+        if (item.type === "income") {
+          income += getMonthlyEquivalent(item);
+        } else {
+          expenses += getMonthlyEquivalent(item);
+        }
+      });
+      if (scenario.type === "income") {
+        income += getMonthlyEquivalent(scenario);
+      } else {
+        expenses += getMonthlyEquivalent(scenario);
+      }
+      balance += income - expenses;
+      data[i].balance = balance;
+      data[i].income = income;
+      data[i].expenses = expenses;
+    }
+    setWhatIfResults({ data, balance });
+  };
 
   return (
     <div>
       <h1>Automated Cash Flow Forecasting</h1>
       <div>
-        <LineChart width={800} height={400} data={chartData}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="month" />
-          <YAxis />
-          <Tooltip />
-          <Legend />
-          <Line type="monotone" dataKey="balance" stroke="#8884d8" />
-          <Line type="monotone" dataKey="income" stroke="#82ca9d" />
-          <Line type="monotone" dataKey="expenses" stroke="#f44336" />
-        </LineChart>
+        <label>Current Balance:</label>
+        <input type="number" value={currentBalance} onChange={(event) => setCurrentBalance(event.target.value)} />
       </div>
       <div>
-        <AreaChart width={800} height={400} data={chartData}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="month" />
-          <YAxis />
-          <Tooltip />
-          <Legend />
-          <Area type="monotone" dataKey="balance" fill="#8884d8" stroke="#8884d8" />
-          <Area type="monotone" dataKey="income" fill="#82ca9d" stroke="#82ca9d" />
-          <Area type="monotone" dataKey="expenses" fill="#f44336" stroke="#f44336" />
-        </AreaChart>
+        <label>Horizon:</label>
+        <select value={horizon} onChange={(event) => setHorizon(event.target.value as 3 | 6 | 12)}>
+          <option value={3}>3 months</option>
+          <option value={6}>6 months</option>
+          <option value={12}>12 months</option>
+        </select>
       </div>
       <div>
-        <VictoryChart>
-          <VictoryLine data={chartData} x="month" y="balance" />
-          <VictoryLine data={chartData} x="month" y="income" />
-          <VictoryLine data={chartData} x="month" y="expenses" />
-          <VictoryAxis dependentAxis />
-          <VictoryAxis tickFormat={(t) => `Month ${t}`} />
-        </VictoryChart>
+        <label>Recurring Items:</label>
+        <ul>
+          {recurringItems.map((item) => (
+            <li key={item.id}>
+              {item.label} ({item.type}) - {item.amount} ({item.frequency})
+            </li>
+          ))}
+        </ul>
+        <button onClick={() => setShowAddForm(true)}>Add New Item</button>
+        {showAddForm && (
+          <form onSubmit={(event) => {
+            event.preventDefault();
+            const newItem = {
+              id: Math.random().toString(36).substr(2, 9),
+              label: event.target.label.value,
+              amount: parseInt(event.target.amount.value),
+              type: event.target.type.value as "income" | "expense",
+              frequency: event.target.frequency.value as RecurringItem["frequency"],
+            };
+            setRecurringItems([...recurringItems, newItem]);
+            setShowAddForm(false);
+          }}>
+            <label>Label:</label>
+            <input type="text" name="label" />
+            <label>Amount:</label>
+            <input type="number" name="amount" />
+            <label>Type:</label>
+            <select name="type">
+              <option value="income">Income</option>
+              <option value="expense">Expense</option>
+            </select>
+            <label>Frequency:</label>
+            <select name="frequency">
+              <option value="monthly">Monthly</option>
+              <option value="quarterly">Quarterly</option>
+              <option value="yearly">Yearly</option>
+            </select>
+            <button type="submit">Add</button>
+          </form>
+        )}
       </div>
-      {/* Rest of your code remains the same */}
+      <div>
+        <label>Safety Threshold:</label>
+        <input type="number" value={safetyThreshold} onChange={(event) => setSafetyThreshold(event.target.value)} />
+      </div>
+      <div>
+        <h2>Forecast</h2>
+        <ResponsiveContainer width="100%" height={300}>
+          <LineChart data={forecastData}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="month" />
+            <YAxis />
+            <Tooltip />
+            <Legend />
+            <Line type="monotone" dataKey="balance" stroke="#8884d8" activeDot={{ r: 8 }} />
+            <Line type="monotone" dataKey="income" stroke="#82ca9d" />
+            <Line type="monotone" dataKey="expenses" stroke="#8884d8" />
+          </LineChart>
+        </ResponsiveContainer>
+        <button onClick={() => handleMonthSelect(1)}>Select Month 1</button>
+        <button onClick={() => handleDateRangeChange(1, 3)}>Select Date Range 1-3</button>
+      </div>
+      <div>
+        <h2>What-If Scenario</h2>
+        <form onSubmit={handleWhatIfFormSubmit}>
+          <label>Label:</label>
+          <input type="text" value={whatIfScenario.label} onChange={(event) => handleWhatIfScenarioChange({ ...whatIfScenario, label: event.target.value })} />
+          <label>Amount:</label>
+          <input type="number" value={whatIfScenario.amount} onChange={(event) => handleWhatIfScenarioChange({ ...whatIfScenario, amount: event.target.value })} />
+          <label>Type:</label>
+          <select value={whatIfScenario.type} onChange={(event) => handleWhatIfScenarioChange({ ...whatIfScenario, type: event.target.value as "income" | "expense" })}>
+            <option value="income">Income</option>
+            <option value="expense">Expense</option>
+          </select>
+          <label>Frequency:</label>
+          <select value={whatIfScenario.frequency} onChange={(event) => handleWhatIfScenarioChange({ ...whatIfScenario, frequency: event.target.value as RecurringItem["frequency"] })}>
+            <option value="monthly">Monthly</option>
+            <option value="quarterly">Quarterly</option>
+            <option value="yearly">Yearly</option>
+          </select>
+          <button type="submit">Run Scenario</button>
+        </form>
+        {whatIfResults.data.length > 0 && (
+          <div>
+            <h3>Results</h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={whatIfResults.data}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Line type="monotone" dataKey="balance" stroke="#8884d8" activeDot={{ r: 8 }} />
+                <Line type="monotone" dataKey="income" stroke="#82ca9d" />
+                <Line type="monotone" dataKey="expenses" stroke="#8884d8" />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
