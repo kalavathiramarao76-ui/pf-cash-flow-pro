@@ -95,27 +95,15 @@ class AdvancedMlModel {
   private trainModel(categories: string[], transactions: Transaction[]): any {
     const model: any = {};
     categories.forEach(category => {
-      model[category] = transactions.filter(t => t.category === category).map(t => t.amount);
+      model[category] = transactions.filter(t => t.category === category).map(t => t.description);
     });
     return model;
   }
 
-  predictCashFlow(transactions: Transaction[], days: number): number {
-    const predictedIncome = this.predictIncome(transactions, days);
-    const predictedExpense = this.predictExpense(transactions, days);
-    return predictedIncome - predictedExpense;
-  }
-
-  private predictIncome(transactions: Transaction[], days: number): number {
-    const incomeTransactions = transactions.filter(t => t.type === 'income');
-    const predictedIncome = incomeTransactions.reduce((acc, t) => acc + t.amount, 0);
-    return predictedIncome * (days / incomeTransactions.length);
-  }
-
-  private predictExpense(transactions: Transaction[], days: number): number {
-    const expenseTransactions = transactions.filter(t => t.type === 'expense');
-    const predictedExpense = expenseTransactions.reduce((acc, t) => acc + t.amount, 0);
-    return predictedExpense * (days / expenseTransactions.length);
+  predictCashFlow(transactions: Transaction[]): { income: number, expense: number } {
+    const predictedIncome = transactions.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0);
+    const predictedExpense = transactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0);
+    return { income: predictedIncome, expense: predictedExpense };
   }
 }
 
@@ -124,10 +112,8 @@ function App() {
   const [mlModel, setMlModel] = useState<AdvancedMlModel | null>(null);
 
   useEffect(() => {
-    if (transactions.length > 0) {
-      const model = new AdvancedMlModel(transactions);
-      setMlModel(model);
-    }
+    const model = new AdvancedMlModel(transactions);
+    setMlModel(model);
   }, [transactions]);
 
   const handleAddTransaction = (transaction: Transaction) => {
@@ -142,23 +128,23 @@ function App() {
     saveTransactions(newTransactions);
   };
 
-  const predictCashFlow = (days: number) => {
-    if (mlModel) {
-      return mlModel.predictCashFlow(transactions, days);
-    }
-    return 0;
-  };
+  const predictedCashFlow = mlModel ? mlModel.predictCashFlow(transactions) : { income: 0, expense: 0 };
 
   return (
     <div>
       <h1>Automated Cash Flow Forecasting</h1>
-      <button onClick={() => handleAddTransaction({ id: "new", description: "New Transaction", amount: 100, type: "income", category: "Freelance / Contract", date: new Date().toISOString().split("T")[0], recurring: true })}>
-        Add Transaction
-      </button>
-      <button onClick={() => handleRemoveTransaction(transactions[0].id)}>
-        Remove Transaction
-      </button>
-      <p>Predicted Cash Flow: {predictCashFlow(30)}</p>
+      <p>Predicted Income: ${predictedCashFlow.income}</p>
+      <p>Predicted Expense: ${predictedCashFlow.expense}</p>
+      <ul>
+        {transactions.map(t => (
+          <li key={t.id}>
+            <span>{t.description}</span>
+            <span>${t.amount}</span>
+            <button onClick={() => handleRemoveTransaction(t.id)}>Remove</button>
+          </li>
+        ))}
+      </ul>
+      <button onClick={() => handleAddTransaction({ id: Math.random().toString(), description: 'New Transaction', amount: 100, type: 'income', category: 'Freelance / Contract', date: new Date().toISOString().split("T")[0], recurring: true })}>Add Transaction</button>
     </div>
   );
 }
