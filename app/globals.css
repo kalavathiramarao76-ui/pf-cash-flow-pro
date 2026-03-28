@@ -153,32 +153,27 @@ img[lazy].loaded {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 10px;
+  background: #ccc;
+  border-radius: 3px;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #a1c9f2;
-}
-
-@media only screen and (max-width: 768px) {
+@media (max-width: 768px) {
   body {
-    font-size: var(--mobile-font-size);
-    line-height: var(--mobile-line-height);
-  }
-
-  h1 {
-    font-size: var(--mobile-header-font-size);
-  }
-
-  h2 {
-    font-size: var(--mobile-subheader-font-size);
+    font-size: calc(1rem + 0.2vw);
   }
 }
 
-@media only screen and (prefers-reduced-motion: reduce) {
+@media (max-width: 480px) {
+  body {
+    font-size: calc(1rem + 0.1vw);
+  }
+  .container {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
   * {
     transition: none;
-    animation: none;
   }
 }

@@ -100,34 +100,47 @@ class AdvancedMlModel {
     return model;
   }
 
-  public predict(transactions: Transaction[]): { income: number, expense: number } {
-    const predictedIncome = this.predictIncome(transactions.filter(t => t.type === 'income'));
-    const predictedExpense = this.predictExpense(transactions.filter(t => t.type === 'expense'));
-    return { income: predictedIncome, expense: predictedExpense };
+  predictCashFlow(transactions: Transaction[]): number {
+    const predictedIncome = this.predictIncome(transactions);
+    const predictedExpense = this.predictExpense(transactions);
+    return predictedIncome - predictedExpense;
   }
 
   private predictIncome(transactions: Transaction[]): number {
-    const incomeAmounts = transactions.map(t => t.amount);
-    const averageIncome = incomeAmounts.reduce((a, b) => a + b, 0) / incomeAmounts.length;
-    return averageIncome;
+    const incomeTransactions = transactions.filter(t => t.type === 'income');
+    let predictedIncome = 0;
+    incomeTransactions.forEach(transaction => {
+      const category = transaction.category;
+      const amounts = this.incomeModel[category];
+      if (amounts) {
+        predictedIncome += amounts.reduce((a, b) => a + b, 0) / amounts.length;
+      }
+    });
+    return predictedIncome;
   }
 
   private predictExpense(transactions: Transaction[]): number {
-    const expenseAmounts = transactions.map(t => t.amount);
-    const averageExpense = expenseAmounts.reduce((a, b) => a + b, 0) / expenseAmounts.length;
-    return averageExpense;
+    const expenseTransactions = transactions.filter(t => t.type === 'expense');
+    let predictedExpense = 0;
+    expenseTransactions.forEach(transaction => {
+      const category = transaction.category;
+      const amounts = this.expenseModel[category];
+      if (amounts) {
+        predictedExpense += amounts.reduce((a, b) => a + b, 0) / amounts.length;
+      }
+    });
+    return predictedExpense;
   }
 }
 
 function App() {
   const [transactions, setTransactions] = useState<Transaction[]>(getStoredTransactions());
-  const [mlModel, setMlModel] = useState<AdvancedMlModel | null>(null);
+  const [predictedCashFlow, setPredictedCashFlow] = useState<number>(0);
 
   useEffect(() => {
-    if (transactions.length > 0) {
-      const model = new AdvancedMlModel(transactions);
-      setMlModel(model);
-    }
+    const mlModel = new AdvancedMlModel(transactions);
+    const predictedCashFlow = mlModel.predictCashFlow(transactions);
+    setPredictedCashFlow(predictedCashFlow);
   }, [transactions]);
 
   const handleAddTransaction = (transaction: Transaction) => {
@@ -142,17 +155,10 @@ function App() {
     saveTransactions(newTransactions);
   };
 
-  const handlePredict = () => {
-    if (mlModel) {
-      const prediction = mlModel.predict(transactions);
-      console.log(`Predicted income: ${prediction.income}, Predicted expense: ${prediction.expense}`);
-    }
-  };
-
   return (
     <div>
       <h1>Automated Cash Flow Forecasting</h1>
-      <button onClick={handlePredict}>Predict</button>
+      <p>Predicted Cash Flow: {predictedCashFlow}</p>
       <ul>
         {transactions.map(transaction => (
           <li key={transaction.id}>
@@ -164,41 +170,15 @@ function App() {
           </li>
         ))}
       </ul>
-      <form>
-        <input type="text" placeholder="Description" />
-        <input type="number" placeholder="Amount" />
-        <select>
-          <option value="income">Income</option>
-          <option value="expense">Expense</option>
-        </select>
-        <select>
-          {CATEGORIES_INCOME.map(category => (
-            <option key={category} value={category}>{category}</option>
-          ))}
-          {CATEGORIES_EXPENSE.map(category => (
-            <option key={category} value={category}>{category}</option>
-          ))}
-        </select>
-        <input type="date" placeholder="Date" />
-        <button onClick={(e) => {
-          e.preventDefault();
-          const description = (document.querySelector('input[type="text"]') as HTMLInputElement).value;
-          const amount = parseFloat((document.querySelector('input[type="number"]') as HTMLInputElement).value);
-          const type = (document.querySelector('select') as HTMLSelectElement).value;
-          const category = (document.querySelectorAll('select')[1] as HTMLSelectElement).value;
-          const date = (document.querySelector('input[type="date"]') as HTMLInputElement).value;
-          const transaction: Transaction = {
-            id: Math.random().toString(),
-            description,
-            amount,
-            type: type as TransactionType,
-            category,
-            date,
-            recurring: false,
-          };
-          handleAddTransaction(transaction);
-        }}>Add Transaction</button>
-      </form>
+      <button onClick={() => handleAddTransaction({
+        id: Math.random().toString(),
+        description: 'New Transaction',
+        amount: 100,
+        type: 'income',
+        category: 'Freelance / Contract',
+        date: new Date().toISOString().split("T")[0],
+        recurring: false,
+      })}>Add Transaction</button>
     </div>
   );
 }
