@@ -112,8 +112,10 @@ function App() {
   const [mlModel, setMlModel] = useState<AdvancedMlModel | null>(null);
 
   useEffect(() => {
-    const model = new AdvancedMlModel(transactions);
-    setMlModel(model);
+    if (transactions.length > 0) {
+      const model = new AdvancedMlModel(transactions);
+      setMlModel(model);
+    }
   }, [transactions]);
 
   const handleAddTransaction = (transaction: Transaction) => {
@@ -144,6 +146,7 @@ function App() {
           <li key={t.id}>
             <span>{t.description}</span>
             <span>{t.amount}</span>
+            <span>{t.type}</span>
             <span>{t.category}</span>
             <span>{t.date}</span>
             <button onClick={() => handleRemoveTransaction(t.id)}>Remove</button>
