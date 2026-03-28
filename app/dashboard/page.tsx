@@ -105,29 +105,19 @@ class AdvancedMlModel {
     const predictedExpense: number[] = [];
     for (let i = 0; i < days; i++) {
       const date = new Date(Date.now() + i * 86400000);
-      const incomeTransactions = transactions.filter(t => t.type === 'income' && t.recurring);
-      const expenseTransactions = transactions.filter(t => t.type === 'expense' && t.recurring);
-      let predictedIncomeAmount = 0;
-      incomeTransactions.forEach(transaction => {
-        if (new Date(transaction.date).getDate() === date.getDate()) {
-          predictedIncomeAmount += transaction.amount;
-        }
-      });
-      predictedIncome.push(predictedIncomeAmount);
-      let predictedExpenseAmount = 0;
-      expenseTransactions.forEach(transaction => {
-        if (new Date(transaction.date).getDate() === date.getDate()) {
-          predictedExpenseAmount += transaction.amount;
-        }
-      });
-      predictedExpense.push(predictedExpenseAmount);
+      const incomeTransactions = transactions.filter(t => t.type === 'income' && t.date <= date.toISOString().split('T')[0]);
+      const expenseTransactions = transactions.filter(t => t.type === 'expense' && t.date <= date.toISOString().split('T')[0]);
+      const incomeAmount = incomeTransactions.reduce((acc, t) => acc + t.amount, 0);
+      const expenseAmount = expenseTransactions.reduce((acc, t) => acc + t.amount, 0);
+      predictedIncome.push(incomeAmount);
+      predictedExpense.push(expenseAmount);
     }
-    const predictedCashFlow = predictedIncome.reduce((a, b) => a + b, 0) - predictedExpense.reduce((a, b) => a + b, 0);
+    const predictedCashFlow = predictedIncome.reduce((acc, amount, index) => acc + amount - predictedExpense[index], 0);
     return predictedCashFlow;
   }
 }
 
-function DashboardPage() {
+function App() {
   const [transactions, setTransactions] = useState<Transaction[]>(getStoredTransactions());
   const [mlModel, setMlModel] = useState<AdvancedMlModel | null>(null);
 
@@ -144,7 +134,7 @@ function DashboardPage() {
     saveTransactions(newTransactions);
   };
 
-  const handleDeleteTransaction = (id: string) => {
+  const handleRemoveTransaction = (id: string) => {
     const newTransactions = transactions.filter(t => t.id !== id);
     setTransactions(newTransactions);
     saveTransactions(newTransactions);
@@ -153,7 +143,7 @@ function DashboardPage() {
   const handlePredictCashFlow = () => {
     if (mlModel) {
       const predictedCashFlow = mlModel.predictCashFlow(transactions, 30);
-      console.log(`Predicted cash flow for the next 30 days: ${predictedCashFlow}`);
+      console.log(predictedCashFlow);
     }
   };
 
@@ -168,7 +158,7 @@ function DashboardPage() {
             <span>{transaction.amount}</span>
             <span>{transaction.category}</span>
             <span>{transaction.date}</span>
-            <button onClick={() => handleDeleteTransaction(transaction.id)}>Delete</button>
+            <button onClick={() => handleRemoveTransaction(transaction.id)}>Remove</button>
           </li>
         ))}
       </ul>
@@ -188,15 +178,20 @@ function DashboardPage() {
           ))}
         </select>
         <input type="date" placeholder="Date" />
-        <button type="submit" onClick={(e) => {
+        <button onClick={(e) => {
           e.preventDefault();
+          const description = (document.querySelector('input[type="text"]') as HTMLInputElement).value;
+          const amount = parseFloat((document.querySelector('input[type="number"]') as HTMLInputElement).value);
+          const type = (document.querySelector('select') as HTMLSelectElement).value;
+          const category = (document.querySelector('select') as HTMLSelectElement).value;
+          const date = (document.querySelector('input[type="date"]') as HTMLInputElement).value;
           const transaction: Transaction = {
             id: Math.random().toString(),
-            description: (document.querySelector('input[type="text"]') as HTMLInputElement).value,
-            amount: parseFloat((document.querySelector('input[type="number"]') as HTMLInputElement).value),
-            type: (document.querySelector('select') as HTMLSelectElement).value as TransactionType,
-            category: (document.querySelectorAll('select')[1] as HTMLSelectElement).value,
-            date: (document.querySelector('input[type="date"]') as HTMLInputElement).value,
+            description,
+            amount,
+            type: type as TransactionType,
+            category,
+            date,
             recurring: false,
           };
           handleAddTransaction(transaction);
@@ -206,4 +201,4 @@ function DashboardPage() {
   );
 }
 
-export default DashboardPage;
+export default App;
