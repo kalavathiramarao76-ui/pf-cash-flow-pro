@@ -165,3 +165,95 @@ img {
   width: 100%;
   height: auto;
 }
+
+@media (max-width: 768px) {
+  body {
+    font-size: calc(1rem + 0.2vw);
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    font-size: var(--mobile-font-size);
+    line-height: var(--mobile-line-height);
+  }
+  h1 {
+    font-size: var(--mobile-header-font-size);
+  }
+  h2 {
+    font-size: var(--mobile-subheader-font-size);
+  }
+}
+
+/* Optimizations for better page load times and responsiveness */
+body {
+  font-size: calc(1rem + 0.5vw);
+  transition: font-size 0.3s ease;
+}
+
+img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+.container {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 20px;
+  padding: 20px;
+  max-width: var(--max-width);
+  margin: 0 auto;
+  background: rgb(var(--background-rgb));
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  transition: grid-template-columns 0.3s ease;
+  will-change: transform, opacity;
+}
+
+.button {
+  background: var(--primary-color);
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  font-size: var(--font-size);
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background 0.3s ease;
+}
+
+.button:hover {
+  background: var(--secondary-color);
+}
+
+.link {
+  color: var(--primary-color);
+}
+
+.link:hover {
+  color: var(--accent-color);
+}
+
+/* Lazy loading images */
+img[lazy] {
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+img[lazy].loaded {
+  opacity: 1;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .container {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}

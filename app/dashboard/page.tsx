@@ -95,82 +95,110 @@ class AdvancedMlModel {
   private trainModel(categories: string[], transactions: Transaction[]): any {
     const model: any = {};
     categories.forEach(category => {
-      model[category] = transactions.filter(t => t.category === category).map(t => t.date);
+      model[category] = transactions.filter(t => t.category === category).map(t => t.description);
     });
     return model;
   }
 
-  predictFutureTransactions(transactions: Transaction[], days: number): Transaction[] {
-    const futureTransactions: Transaction[] = [];
-    const today = new Date();
-    for (let i = 1; i <= days; i++) {
-      const date = new Date(today.getTime() + i * 86400000);
-      const dateStr = date.toISOString().split("T")[0];
-      Object.keys(this.incomeModel).forEach(category => {
-        if (this.incomeModel[category].includes(dateStr)) {
-          futureTransactions.push({
-            id: `predicted-${i}`,
-            description: `Predicted Income - ${category}`,
-            amount: 1000,
-            type: 'income',
-            category,
-            date: dateStr,
-            recurring: true,
-          });
-        }
-      });
-      Object.keys(this.expenseModel).forEach(category => {
-        if (this.expenseModel[category].includes(dateStr)) {
-          futureTransactions.push({
-            id: `predicted-${i}`,
-            description: `Predicted Expense - ${category}`,
-            amount: 500,
-            type: 'expense',
-            category,
-            date: dateStr,
-            recurring: true,
-          });
-        }
-      });
-    }
-    return futureTransactions;
+  public predict(transactions: Transaction[]): { income: number, expense: number } {
+    const predictedIncome = transactions.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0);
+    const predictedExpense = transactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0);
+    return { income: predictedIncome, expense: predictedExpense };
   }
 }
 
 function App() {
   const [transactions, setTransactions] = useState<Transaction[]>(getStoredTransactions());
-  const [futureTransactions, setFutureTransactions] = useState<Transaction[]>([]);
+  const [mlModel, setMlModel] = useState<AdvancedMlModel | null>(null);
 
   useEffect(() => {
-    saveTransactions(transactions);
+    const model = new AdvancedMlModel(transactions);
+    setMlModel(model);
   }, [transactions]);
 
-  const mlModel = new AdvancedMlModel(transactions);
+  const handleAddTransaction = (transaction: Transaction) => {
+    const newTransactions = [...transactions, transaction];
+    setTransactions(newTransactions);
+    saveTransactions(newTransactions);
+  };
 
-  const handlePredictFutureTransactions = () => {
-    const futureTransactions = mlModel.predictFutureTransactions(transactions, 30);
-    setFutureTransactions(futureTransactions);
+  const handleRemoveTransaction = (id: string) => {
+    const newTransactions = transactions.filter(t => t.id !== id);
+    setTransactions(newTransactions);
+    saveTransactions(newTransactions);
+  };
+
+  const handlePredict = () => {
+    if (mlModel) {
+      const predicted = mlModel.predict(transactions);
+      console.log(predicted);
+    }
   };
 
   return (
     <div>
       <h1>Automated Cash Flow Forecasting</h1>
-      <button onClick={handlePredictFutureTransactions}>Predict Future Transactions</button>
+      <button onClick={handlePredict}>Predict</button>
       <ul>
-        {transactions.map(transaction => (
-          <li key={transaction.id}>
-            {transaction.description} - {transaction.amount} - {transaction.date}
+        {transactions.map(t => (
+          <li key={t.id}>
+            <span>{t.description}</span>
+            <span>{t.amount}</span>
+            <span>{t.category}</span>
+            <span>{t.date}</span>
+            <button onClick={() => handleRemoveTransaction(t.id)}>Remove</button>
           </li>
         ))}
       </ul>
-      <h2>Future Transactions</h2>
-      <ul>
-        {futureTransactions.map(transaction => (
-          <li key={transaction.id}>
-            {transaction.description} - {transaction.amount} - {transaction.date}
-          </li>
-        ))}
-      </ul>
+      <form onSubmit={(e) => {
+        e.preventDefault();
+        const transaction: Transaction = {
+          id: Math.random().toString(),
+          description: e.currentTarget.description.value,
+          amount: parseFloat(e.currentTarget.amount.value),
+          type: e.currentTarget.type.value as TransactionType,
+          category: e.currentTarget.category.value,
+          date: e.currentTarget.date.value,
+          recurring: e.currentTarget.recurring.checked,
+        };
+        handleAddTransaction(transaction);
+      }}>
+        <label>
+          Description:
+          <input type="text" name="description" />
+        </label>
+        <label>
+          Amount:
+          <input type="number" name="amount" />
+        </label>
+        <label>
+          Type:
+          <select name="type">
+            <option value="income">Income</option>
+            <option value="expense">Expense</option>
+          </select>
+        </label>
+        <label>
+          Category:
+          <select name="category">
+            {CATEGORIES_INCOME.map(category => (
+              <option key={category} value={category}>{category}</option>
+            ))}
+            {CATEGORIES_EXPENSE.map(category => (
+              <option key={category} value={category}>{category}</option>
+            ))}
+          </select>
+        </label>
+        <label>
+          Date:
+          <input type="date" name="date" />
+        </label>
+        <label>
+          Recurring:
+          <input type="checkbox" name="recurring" />
+        </label>
+        <button type="submit">Add Transaction</button>
+      </form>
     </div>
   );
 }
