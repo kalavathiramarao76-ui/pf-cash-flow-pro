@@ -22,6 +22,7 @@
   --mobile-line-height: 1.4;
   --mobile-header-font-size: 2rem;
   --mobile-subheader-font-size: 1.5rem;
+  --responsive-spacing: 1.5rem;
 }
 
 * {
@@ -47,7 +48,7 @@ body {
 h1, h2, h3, h4, h5, h6 {
   font-weight: bold;
   line-height: var(--responsive-line-height);
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--responsive-spacing);
   color: var(--primary-color);
 }
 
@@ -76,7 +77,7 @@ h6 {
 }
 
 p, ul, ol {
-  margin-bottom: 1rem;
+  margin-bottom: var(--responsive-spacing);
 }
 
 li {
@@ -95,8 +96,8 @@ img[lazy].loaded {
 .container {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
-  gap: 20px;
-  padding: 20px;
+  gap: var(--responsive-spacing);
+  padding: var(--responsive-spacing);
   max-width: var(--max-width);
   margin: 0 auto;
   background: rgb(var(--background-rgb));
@@ -110,7 +111,7 @@ img[lazy].loaded {
   background: var(--primary-color);
   color: #fff;
   border: none;
-  padding: 10px 20px;
+  padding: var(--responsive-spacing) var(--responsive-spacing);
   font-size: var(--font-size);
   cursor: pointer;
   border-radius: 5px;
@@ -164,27 +165,24 @@ img {
   display: block;
   width: 100%;
   height: auto;
-  object-fit: cover;
 }
 
 @media (max-width: 768px) {
-  body {
-    font-size: var(--mobile-font-size);
-    line-height: var(--mobile-line-height);
-  }
-
-  h1 {
-    font-size: var(--mobile-header-font-size);
-  }
-
-  h2 {
-    font-size: var(--mobile-subheader-font-size);
+  :root {
+    --font-size: 14px;
+    --line-height: 1.4;
+    --header-font-size: 2rem;
+    --subheader-font-size: 1.5rem;
+    --responsive-spacing: 1rem;
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  * {
-    transition: none;
-    animation: none;
+@media (max-width: 480px) {
+  :root {
+    --font-size: 12px;
+    --line-height: 1.2;
+    --header-font-size: 1.5rem;
+    --subheader-font-size: 1rem;
+    --responsive-spacing: 0.5rem;
   }
 }
