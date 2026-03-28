@@ -128,30 +128,29 @@ function App() {
     saveTransactions(newTransactions);
   };
 
-  const handlePredict = () => {
+  const handlePredictCashFlow = () => {
     if (mlModel) {
-      const predicted = mlModel.predict(transactions);
-      console.log(predicted);
+      const predictedCashFlow = mlModel.predict(transactions);
+      console.log(predictedCashFlow);
     }
   };
 
   return (
     <div>
       <h1>Automated Cash Flow Forecasting</h1>
-      <button onClick={handlePredict}>Predict</button>
+      <button onClick={handlePredictCashFlow}>Predict Cash Flow</button>
       <ul>
         {transactions.map(t => (
           <li key={t.id}>
             <span>{t.description}</span>
             <span>{t.amount}</span>
-            <span>{t.type}</span>
             <span>{t.category}</span>
             <span>{t.date}</span>
             <button onClick={() => handleRemoveTransaction(t.id)}>Remove</button>
           </li>
         ))}
       </ul>
-      <button onClick={() => handleAddTransaction({ id: "new", description: "New Transaction", amount: 100, type: "income", category: "Freelance / Contract", date: new Date().toISOString().split("T")[0], recurring: true })}>Add Transaction</button>
+      <button onClick={() => handleAddTransaction({ id: Math.random().toString(), description: 'New Transaction', amount: 100, type: 'income', category: 'Freelance / Contract', date: new Date().toISOString().split('T')[0], recurring: true })}>Add Transaction</button>
     </div>
   );
 }

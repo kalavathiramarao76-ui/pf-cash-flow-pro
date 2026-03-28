@@ -157,7 +157,7 @@ img[lazy].loaded {
   border-radius: 3px;
 }
 
-@media (max-width: 768px) {
+@media only screen and (max-width: 768px) {
   body {
     font-size: var(--mobile-font-size);
     line-height: var(--mobile-line-height);
@@ -169,32 +169,11 @@ img[lazy].loaded {
 
   h2 {
     font-size: var(--mobile-subheader-font-size);
-  }
-
-  .container {
-    grid-template-columns: repeat(6, 1fr);
-    gap: var(--responsive-spacing);
-    padding: var(--responsive-spacing);
   }
 }
 
-@media (max-width: 480px) {
-  body {
-    font-size: var(--mobile-font-size);
-    line-height: var(--mobile-line-height);
-  }
-
-  h1 {
-    font-size: var(--mobile-header-font-size);
-  }
-
-  h2 {
-    font-size: var(--mobile-subheader-font-size);
-  }
-
-  .container {
-    grid-template-columns: repeat(3, 1fr);
-    gap: var(--responsive-spacing);
-    padding: var(--responsive-spacing);
+@media only screen and (prefers-reduced-motion: reduce) {
+  * {
+    transition: none;
   }
 }
