@@ -100,26 +100,22 @@ class AdvancedMlModel {
     return model;
   }
 
-  predictCashFlow(transactions: Transaction[], days: number): number {
-    const predictedIncome: number[] = [];
-    const predictedExpense: number[] = [];
-    for (let i = 0; i < days; i++) {
-      const date = new Date(Date.now() + i * 86400000).toISOString().split("T")[0];
-      const incomeTransactions = transactions.filter(t => t.type === 'income' && t.date === date);
-      const expenseTransactions = transactions.filter(t => t.type === 'expense' && t.date === date);
-      let predictedIncomeAmount = 0;
-      let predictedExpenseAmount = 0;
-      incomeTransactions.forEach(transaction => {
-        predictedIncomeAmount += transaction.amount;
-      });
-      expenseTransactions.forEach(transaction => {
-        predictedExpenseAmount += transaction.amount;
-      });
-      predictedIncome.push(predictedIncomeAmount);
-      predictedExpense.push(predictedExpenseAmount);
-    }
-    const predictedCashFlow = predictedIncome.reduce((a, b) => a + b, 0) - predictedExpense.reduce((a, b) => a + b, 0);
-    return predictedCashFlow;
+  public predict(transactions: Transaction[]): { income: number, expense: number } {
+    const predictedIncome = this.predictIncome(transactions.filter(t => t.type === 'income'));
+    const predictedExpense = this.predictExpense(transactions.filter(t => t.type === 'expense'));
+    return { income: predictedIncome, expense: predictedExpense };
+  }
+
+  private predictIncome(transactions: Transaction[]): number {
+    const incomeAmounts = transactions.map(t => t.amount);
+    const averageIncome = incomeAmounts.reduce((a, b) => a + b, 0) / incomeAmounts.length;
+    return averageIncome;
+  }
+
+  private predictExpense(transactions: Transaction[]): number {
+    const expenseAmounts = transactions.map(t => t.amount);
+    const averageExpense = expenseAmounts.reduce((a, b) => a + b, 0) / expenseAmounts.length;
+    return averageExpense;
   }
 }
 
@@ -146,23 +142,22 @@ function App() {
     saveTransactions(newTransactions);
   };
 
-  const handlePredictCashFlow = () => {
+  const handlePredict = () => {
     if (mlModel) {
-      const predictedCashFlow = mlModel.predictCashFlow(transactions, 30);
-      console.log(predictedCashFlow);
+      const prediction = mlModel.predict(transactions);
+      console.log(`Predicted income: ${prediction.income}, Predicted expense: ${prediction.expense}`);
     }
   };
 
   return (
     <div>
       <h1>Automated Cash Flow Forecasting</h1>
-      <button onClick={handlePredictCashFlow}>Predict Cash Flow</button>
+      <button onClick={handlePredict}>Predict</button>
       <ul>
         {transactions.map(transaction => (
           <li key={transaction.id}>
             <span>{transaction.description}</span>
             <span>{transaction.amount}</span>
-            <span>{transaction.type}</span>
             <span>{transaction.category}</span>
             <span>{transaction.date}</span>
             <button onClick={() => handleRemoveTransaction(transaction.id)}>Remove</button>
@@ -185,7 +180,7 @@ function App() {
           ))}
         </select>
         <input type="date" placeholder="Date" />
-        <button type="submit" onClick={(e) => {
+        <button onClick={(e) => {
           e.preventDefault();
           const description = (document.querySelector('input[type="text"]') as HTMLInputElement).value;
           const amount = parseFloat((document.querySelector('input[type="number"]') as HTMLInputElement).value);
