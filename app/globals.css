@@ -154,9 +154,59 @@ img[lazy].loaded {
 
 ::-webkit-scrollbar-thumb {
   background: #ccc;
+  border-radius: 3px;
 }
 
-/* Minified and compressed version of the above CSS */
-/* Note: This is not a recommended approach for development, 
-but rather for production environments where file size is critical. */
-/* The above CSS has been minified and compressed using a tool like Gzip or Brotli. */
+::-webkit-scrollbar-thumb:hover {
+  background: #aaa;
+}
+
+/* Optimizations */
+body, html {
+  height: 100%;
+}
+
+body {
+  font-size: 16px;
+  line-height: 1.6;
+  font-family: var(--font-family);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+a {
+  text-decoration: none;
+  color: var(--primary-color);
+}
+
+a:hover {
+  color: var(--accent-color);
+}
+
+/* Media Queries */
+@media (max-width: 768px) {
+  body {
+    font-size: 14px;
+  }
+  .container {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    font-size: 12px;
+  }
+  .container {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
