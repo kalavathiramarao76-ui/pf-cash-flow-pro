@@ -161,23 +161,104 @@ img[lazy].loaded {
   background: #aaa;
 }
 
-@media (max-width: 768px) {
-  body {
-    font-size: var(--mobile-font-size);
-    line-height: var(--mobile-line-height);
+@keyframes load {
+  from {
+    width: 0;
   }
-
-  h1 {
-    font-size: var(--mobile-header-font-size);
-  }
-
-  h2 {
-    font-size: var(--mobile-subheader-font-size);
+  to {
+    width: 100%;
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  * {
-    transition: none;
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Optimizations for performance */
+body {
+  font-size: calc(1rem + 0.5vw);
+  line-height: 1.6;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-size: var(--header-font-size);
+  line-height: var(--responsive-line-height);
+}
+
+p, ul, ol {
+  font-size: var(--content-font-size);
+  line-height: var(--responsive-line-height);
+}
+
+img {
+  width: 100%;
+  height: auto;
+}
+
+.container {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: var(--responsive-spacing);
+}
+
+.button {
+  font-size: var(--font-size);
+  padding: var(--responsive-spacing) var(--responsive-spacing);
+}
+
+.link {
+  font-size: var(--font-size);
+}
+
+/* Media queries for responsiveness */
+@media (max-width: 768px) {
+  body {
+    font-size: calc(1rem + 0.25vw);
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-size: var(--mobile-header-font-size);
+  }
+  p, ul, ol {
+    font-size: var(--mobile-font-size);
+  }
+  .container {
+    padding: var(--responsive-spacing) var(--responsive-spacing);
+  }
+  .button {
+    font-size: var(--mobile-font-size);
+    padding: var(--responsive-spacing) var(--responsive-spacing);
+  }
+  .link {
+    font-size: var(--mobile-font-size);
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    font-size: calc(1rem + 0.1vw);
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-size: var(--mobile-subheader-font-size);
+  }
+  p, ul, ol {
+    font-size: var(--mobile-font-size);
+  }
+  .container {
+    padding: var(--responsive-spacing) var(--responsive-spacing);
+  }
+  .button {
+    font-size: var(--mobile-font-size);
+    padding: var(--responsive-spacing) var(--responsive-spacing);
+  }
+  .link {
+    font-size: var(--mobile-font-size);
   }
 }

@@ -107,84 +107,142 @@ export default function ForecastingPage() {
 
   useEffect(() => {
     if (mounted) {
-      // Load data from storage
+      // Update local storage with new recurring items
+      localStorage.setItem(RECURRING_KEY, JSON.stringify(recurringItems));
     }
-  }, [mounted]);
+  }, [recurringItems, mounted]);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleAddItem = () => {
-    // Add new item to recurring items
+    if (newItem.label && newItem.amount && newItem.type && newItem.frequency) {
+      const newRecurringItem: RecurringItem = {
+        id: Math.random().toString(36).substr(2, 9),
+        label: newItem.label,
+        amount: parseFloat(newItem.amount),
+        type: newItem.type,
+        frequency: newItem.frequency,
+      };
+      setRecurringItems([...recurringItems, newRecurringItem]);
+      setNewItem({
+        label: "",
+        amount: "",
+        type: "income",
+        frequency: "monthly",
+      });
+      setShowAddForm(false);
+    } else {
+      setFormErrors({
+        label: !newItem.label ? "Label is required" : "",
+        amount: !newItem.amount ? "Amount is required" : "",
+        type: !newItem.type ? "Type is required" : "",
+        frequency: !newItem.frequency ? "Frequency is required" : "",
+      });
+    }
   };
 
   const handleRemoveItem = (id: string) => {
-    // Remove item from recurring items
+    setRecurringItems(recurringItems.filter((item) => item.id !== id));
   };
 
   const handleWhatIfScenario = () => {
-    // Calculate what-if scenario results
+    if (whatIfScenario.label && whatIfScenario.amount && whatIfScenario.type && whatIfScenario.frequency) {
+      const newRecurringItem: RecurringItem = {
+        id: Math.random().toString(36).substr(2, 9),
+        label: whatIfScenario.label,
+        amount: parseFloat(whatIfScenario.amount),
+        type: whatIfScenario.type,
+        frequency: whatIfScenario.frequency,
+      };
+      setWhatIfResults({
+        data: [...whatIfResults.data, newRecurringItem],
+      });
+      setWhatIfScenario({
+        label: "",
+        amount: "",
+        type: "income",
+        frequency: "monthly",
+      });
+      setShowWhatIfForm(false);
+    } else {
+      setFormErrors({
+        label: !whatIfScenario.label ? "Label is required" : "",
+        amount: !whatIfScenario.amount ? "Amount is required" : "",
+        type: !whatIfScenario.type ? "Type is required" : "",
+        frequency: !whatIfScenario.frequency ? "Frequency is required" : "",
+      });
+    }
   };
 
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-3xl font-bold mb-4">Automated Cash Flow Forecasting</h1>
       <div className="flex flex-wrap justify-center mb-4">
-        <div className="w-full md:w-1/2 xl:w-1/3 p-6">
+        <div className="w-full lg:w-1/2 xl:w-1/3 p-6 bg-white rounded-lg shadow-md">
           <h2 className="text-2xl font-bold mb-2">Current Balance</h2>
-          <p className="text-xl">${currentBalance}</p>
-        </div>
-        <div className="w-full md:w-1/2 xl:w-1/3 p-6">
-          <h2 className="text-2xl font-bold mb-2">Safety Threshold</h2>
-          <p className="text-xl">${safetyThreshold}</p>
-        </div>
-        <div className="w-full md:w-1/2 xl:w-1/3 p-6">
-          <h2 className="text-2xl font-bold mb-2">Horizon</h2>
-          <select
-            value={horizon}
-            onChange={(e) => setHorizon(e.target.value as 3 | 6 | 12)}
-            className="w-full p-2 border border-gray-400 rounded"
+          <p className="text-xl font-bold mb-4">${currentBalance}</p>
+          <button
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+            onClick={() => setHorizon(3)}
           >
-            <option value={3}>3 months</option>
-            <option value={6}>6 months</option>
-            <option value={12}>12 months</option>
-          </select>
+            3 Months
+          </button>
+          <button
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ml-2"
+            onClick={() => setHorizon(6)}
+          >
+            6 Months
+          </button>
+          <button
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ml-2"
+            onClick={() => setHorizon(12)}
+          >
+            12 Months
+          </button>
         </div>
-      </div>
-      <div className="flex flex-wrap justify-center mb-4">
-        <div className="w-full md:w-1/2 xl:w-1/3 p-6">
+        <div className="w-full lg:w-1/2 xl:w-1/3 p-6 bg-white rounded-lg shadow-md ml-4">
           <h2 className="text-2xl font-bold mb-2">Recurring Items</h2>
           <ul>
             {recurringItems.map((item) => (
-              <li key={item.id} className="py-2 border-b border-gray-200">
-                <span className="text-xl">{item.label}</span>
-                <span className="text-lg ml-2">${getMonthlyEquivalent(item)}</span>
+              <li key={item.id} className="mb-2">
+                <span className="font-bold">{item.label}</span> (${getMonthlyEquivalent(item)}) {item.type} - {item.frequency}
                 <button
+                  className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded ml-2"
                   onClick={() => handleRemoveItem(item.id)}
-                  className="ml-2 text-red-500 hover:text-red-700"
                 >
                   Remove
                 </button>
               </li>
             ))}
           </ul>
-          {showAddForm ? (
-            <form onSubmit={handleAddItem}>
+          <button
+            className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+            onClick={() => setShowAddForm(true)}
+          >
+            Add New Item
+          </button>
+          {showAddForm && (
+            <div className="mt-4">
               <input
                 type="text"
                 value={newItem.label}
                 onChange={(e) => setNewItem({ ...newItem, label: e.target.value })}
                 placeholder="Label"
-                className="w-full p-2 border border-gray-400 rounded mb-2"
+                className="w-full p-2 mb-2 border border-gray-400 rounded"
               />
               <input
                 type="number"
                 value={newItem.amount}
                 onChange={(e) => setNewItem({ ...newItem, amount: e.target.value })}
                 placeholder="Amount"
-                className="w-full p-2 border border-gray-400 rounded mb-2"
+                className="w-full p-2 mb-2 border border-gray-400 rounded"
               />
               <select
                 value={newItem.type}
                 onChange={(e) => setNewItem({ ...newItem, type: e.target.value as "income" | "expense" })}
-                className="w-full p-2 border border-gray-400 rounded mb-2"
+                className="w-full p-2 mb-2 border border-gray-400 rounded"
               >
                 <option value="income">Income</option>
                 <option value="expense">Expense</option>
@@ -192,47 +250,49 @@ export default function ForecastingPage() {
               <select
                 value={newItem.frequency}
                 onChange={(e) => setNewItem({ ...newItem, frequency: e.target.value as RecurringItem["frequency"] })}
-                className="w-full p-2 border border-gray-400 rounded mb-2"
+                className="w-full p-2 mb-2 border border-gray-400 rounded"
               >
                 <option value="monthly">Monthly</option>
                 <option value="quarterly">Quarterly</option>
                 <option value="yearly">Yearly</option>
               </select>
-              <button type="submit" className="w-full p-2 bg-blue-500 text-white rounded">
+              <button
+                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                onClick={handleAddItem}
+              >
                 Add Item
               </button>
-            </form>
-          ) : (
-            <button
-              onClick={() => setShowAddForm(true)}
-              className="w-full p-2 bg-blue-500 text-white rounded"
-            >
-              Add New Item
-            </button>
+            </div>
           )}
         </div>
-        <div className="w-full md:w-1/2 xl:w-1/3 p-6">
+        <div className="w-full lg:w-1/2 xl:w-1/3 p-6 bg-white rounded-lg shadow-md ml-4">
           <h2 className="text-2xl font-bold mb-2">What-If Scenario</h2>
-          {showWhatIfForm ? (
-            <form onSubmit={handleWhatIfScenario}>
+          <button
+            className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+            onClick={() => setShowWhatIfForm(true)}
+          >
+            Add Scenario
+          </button>
+          {showWhatIfForm && (
+            <div className="mt-4">
               <input
                 type="text"
                 value={whatIfScenario.label}
                 onChange={(e) => setWhatIfScenario({ ...whatIfScenario, label: e.target.value })}
                 placeholder="Label"
-                className="w-full p-2 border border-gray-400 rounded mb-2"
+                className="w-full p-2 mb-2 border border-gray-400 rounded"
               />
               <input
                 type="number"
                 value={whatIfScenario.amount}
                 onChange={(e) => setWhatIfScenario({ ...whatIfScenario, amount: e.target.value })}
                 placeholder="Amount"
-                className="w-full p-2 border border-gray-400 rounded mb-2"
+                className="w-full p-2 mb-2 border border-gray-400 rounded"
               />
               <select
                 value={whatIfScenario.type}
                 onChange={(e) => setWhatIfScenario({ ...whatIfScenario, type: e.target.value as "income" | "expense" })}
-                className="w-full p-2 border border-gray-400 rounded mb-2"
+                className="w-full p-2 mb-2 border border-gray-400 rounded"
               >
                 <option value="income">Income</option>
                 <option value="expense">Expense</option>
@@ -240,34 +300,37 @@ export default function ForecastingPage() {
               <select
                 value={whatIfScenario.frequency}
                 onChange={(e) => setWhatIfScenario({ ...whatIfScenario, frequency: e.target.value as RecurringItem["frequency"] })}
-                className="w-full p-2 border border-gray-400 rounded mb-2"
+                className="w-full p-2 mb-2 border border-gray-400 rounded"
               >
                 <option value="monthly">Monthly</option>
                 <option value="quarterly">Quarterly</option>
                 <option value="yearly">Yearly</option>
               </select>
-              <button type="submit" className="w-full p-2 bg-blue-500 text-white rounded">
-                Run Scenario
+              <button
+                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                onClick={handleWhatIfScenario}
+              >
+                Add Scenario
               </button>
-            </form>
-          ) : (
-            <button
-              onClick={() => setShowWhatIfForm(true)}
-              className="w-full p-2 bg-blue-500 text-white rounded"
-            >
-              Run What-If Scenario
-            </button>
+            </div>
           )}
+          <ul>
+            {whatIfResults.data.map((item, index) => (
+              <li key={index} className="mb-2">
+                <span className="font-bold">{item.label}</span> (${getMonthlyEquivalent(item)}) {item.type} - {item.frequency}
+              </li>
+            ))}
+          </ul>
         </div>
-        <div className="w-full md:w-1/2 xl:w-1/3 p-6">
-          <h2 className="text-2xl font-bold mb-2">Forecast</h2>
-          <InteractiveLineChart
-            data={whatIfResults.data}
-            x_axis="month"
-            y_axis="balance"
-            title="Cash Flow Forecast"
-          />
-        </div>
+      </div>
+      <div className="mt-4">
+        <InteractiveLineChart
+          data={recurringItems.map((item) => ({
+            label: item.label,
+            amount: getMonthlyEquivalent(item),
+            type: item.type,
+          }))}
+        />
       </div>
     </div>
   );
