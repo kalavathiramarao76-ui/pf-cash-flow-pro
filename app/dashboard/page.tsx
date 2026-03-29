@@ -95,82 +95,115 @@ class AdvancedMlModel {
   }
 
   private trainModel(categories: string[], transactions: Transaction[]): tf.Sequential {
-    const xs: number[][] = [];
-    const ys: number[][] = [];
-
-    transactions.forEach(t => {
-      const categoryIndex = categories.indexOf(t.category);
-      const amount = t.amount;
-      xs.push([amount]);
-      ys.push([categoryIndex]);
-    });
-
-    const xTensor = tf.tensor2d(xs, [xs.length, 1]);
-    const yTensor = tf.tensor2d(ys, [ys.length, 1]);
-
     const model = tf.sequential();
-    model.add(tf.layers.dense({ units: 10, activation: 'relu', inputShape: [1] }));
+    model.add(tf.layers.embedding({ inputDim: categories.length, outputDim: 10, inputLength: 1 }));
+    model.add(tf.layers.flatten());
     model.add(tf.layers.dense({ units: categories.length, activation: 'softmax' }));
-    model.compile({ optimizer: tf.optimizers.adam(), loss: 'meanSquaredError' });
+    model.compile({ optimizer: tf.optimizers.adam(), loss: 'categoricalCrossentropy', metrics: ['accuracy'] });
 
-    model.fit(xTensor, yTensor, { epochs: 100 });
+    const descriptions = transactions.map(t => t.description);
+    const labels = transactions.map(t => categories.indexOf(t.category));
+
+    const xs = tf.tensor1d(descriptions.map(d => categories.indexOf(d)), 'int32');
+    const ys = tf.tensor1d(labels, 'int32');
+
+    model.fit(xs, ys, { epochs: 100 });
 
     return model;
   }
 
-  predict(transaction: Transaction): string {
-    const amount = transaction.amount;
-    const xTensor = tf.tensor2d([[amount]], [1, 1]);
+  public categorize(description: string, type: TransactionType): string {
+    const categories = type === 'income' ? CATEGORIES_INCOME : CATEGORIES_EXPENSE;
+    const model = type === 'income' ? this.incomeModel : this.expenseModel;
 
-    if (transaction.type === 'income') {
-      const prediction = this.incomeModel.predict(xTensor);
-      const categoryIndex = prediction.argMax(1).dataSync()[0];
-      return CATEGORIES_INCOME[categoryIndex];
-    } else {
-      const prediction = this.expenseModel.predict(xTensor);
-      const categoryIndex = prediction.argMax(1).dataSync()[0];
-      return CATEGORIES_EXPENSE[categoryIndex];
-    }
+    const xs = tf.tensor1d([categories.indexOf(description)], 'int32');
+    const prediction = model.predict(xs);
+    const categoryIndex = prediction.argMax(1).dataSync()[0];
+    return categories[categoryIndex];
   }
 }
 
 function App() {
-  const [transactions, setTransactions] = useState<Transaction[]>(getStoredTransactions());
+  const [transactions, setTransactions] = useState(getStoredTransactions());
+  const [newDescription, setNewDescription] = useState('');
+  const [newAmount, setNewAmount] = useState(0);
+  const [newType, setNewType] = useState('income' as TransactionType);
+  const [newCategory, setNewCategory] = useState('');
+  const [newDate, setNewDate] = useState('');
+  const [newRecurring, setNewRecurring] = useState(false);
+
+  const mlModel = new AdvancedMlModel(transactions);
 
   useEffect(() => {
     saveTransactions(transactions);
   }, [transactions]);
 
-  const mlModel = new AdvancedMlModel(transactions);
+  const handleAddTransaction = () => {
+    const newTransaction: Transaction = {
+      id: Date.now().toString(),
+      description: newDescription,
+      amount: newAmount,
+      type: newType,
+      category: newCategory || mlModel.categorize(newDescription, newType),
+      date: newDate,
+      recurring: newRecurring,
+    };
 
-  const handleAddTransaction = (transaction: Transaction) => {
-    setTransactions([...transactions, transaction]);
-  };
-
-  const handleRemoveTransaction = (id: string) => {
-    setTransactions(transactions.filter(t => t.id !== id));
-  };
-
-  const handlePredictCategory = (transaction: Transaction) => {
-    const predictedCategory = mlModel.predict(transaction);
-    console.log(`Predicted category: ${predictedCategory}`);
+    setTransactions([...transactions, newTransaction]);
+    setNewDescription('');
+    setNewAmount(0);
+    setNewType('income');
+    setNewCategory('');
+    setNewDate('');
+    setNewRecurring(false);
   };
 
   return (
     <div>
       <h1>Automated Cash Flow Forecasting</h1>
+      <form>
+        <label>
+          Description:
+          <input type="text" value={newDescription} onChange={(e) => setNewDescription(e.target.value)} />
+        </label>
+        <br />
+        <label>
+          Amount:
+          <input type="number" value={newAmount} onChange={(e) => setNewAmount(Number(e.target.value))} />
+        </label>
+        <br />
+        <label>
+          Type:
+          <select value={newType} onChange={(e) => setNewType(e.target.value as TransactionType)}>
+            <option value="income">Income</option>
+            <option value="expense">Expense</option>
+          </select>
+        </label>
+        <br />
+        <label>
+          Category:
+          <input type="text" value={newCategory} onChange={(e) => setNewCategory(e.target.value)} />
+        </label>
+        <br />
+        <label>
+          Date:
+          <input type="date" value={newDate} onChange={(e) => setNewDate(e.target.value)} />
+        </label>
+        <br />
+        <label>
+          Recurring:
+          <input type="checkbox" checked={newRecurring} onChange={(e) => setNewRecurring(e.target.checked)} />
+        </label>
+        <br />
+        <button type="button" onClick={handleAddTransaction}>Add Transaction</button>
+      </form>
       <ul>
-        {transactions.map(t => (
-          <li key={t.id}>
-            <span>{t.description}</span>
-            <span>{t.amount}</span>
-            <span>{t.category}</span>
-            <button onClick={() => handleRemoveTransaction(t.id)}>Remove</button>
-            <button onClick={() => handlePredictCategory(t)}>Predict Category</button>
+        {transactions.map((transaction) => (
+          <li key={transaction.id}>
+            {transaction.description} - {transaction.amount} - {transaction.type} - {transaction.category} - {transaction.date} - {transaction.recurring ? 'Recurring' : 'Non-Recurring'}
           </li>
         ))}
       </ul>
-      <button onClick={() => handleAddTransaction({ id: 'new', description: 'New transaction', amount: 100, type: 'income', category: 'Freelance / Contract', date: new Date().toISOString().split("T")[0], recurring: true })}>Add Transaction</button>
     </div>
   );
 }
