@@ -157,7 +157,7 @@ img[lazy].loaded {
   border-radius: 3px;
 }
 
-@media only screen and (max-width: 768px) {
+@media (max-width: 768px) {
   body {
     font-size: var(--mobile-font-size);
     line-height: var(--mobile-line-height);
@@ -172,7 +172,7 @@ img[lazy].loaded {
   }
 }
 
-@media only screen and (prefers-reduced-motion: reduce) {
+@media (prefers-reduced-motion: reduce) {
   * {
     transition: none;
   }
