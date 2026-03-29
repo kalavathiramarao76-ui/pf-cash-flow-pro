@@ -125,7 +125,7 @@ function App() {
   const [transactions, setTransactions] = useState(getStoredTransactions());
   const [newDescription, setNewDescription] = useState('');
   const [newAmount, setNewAmount] = useState(0);
-  const [newType, setNewType] = useState<TransactionType>('income');
+  const [newType, setNewType] = useState('income' as TransactionType);
   const [newCategory, setNewCategory] = useState('');
   const [newDate, setNewDate] = useState('');
   const [newRecurring, setNewRecurring] = useState(false);
@@ -138,7 +138,7 @@ function App() {
 
   const handleAddTransaction = () => {
     const newTransaction: Transaction = {
-      id: Math.random().toString(36).substr(2, 9),
+      id: Date.now().toString(),
       description: newDescription,
       amount: newAmount,
       type: newType,
@@ -146,7 +146,6 @@ function App() {
       date: newDate,
       recurring: newRecurring,
     };
-
     setTransactions([...transactions, newTransaction]);
     setNewDescription('');
     setNewAmount(0);
@@ -159,39 +158,17 @@ function App() {
   return (
     <div>
       <h1>Automated Cash Flow Forecasting</h1>
-      <table>
-        <thead>
-          <tr>
-            <th>Description</th>
-            <th>Amount</th>
-            <th>Type</th>
-            <th>Category</th>
-            <th>Date</th>
-            <th>Recurring</th>
-          </tr>
-        </thead>
-        <tbody>
-          {transactions.map((transaction, index) => (
-            <tr key={index}>
-              <td>{transaction.description}</td>
-              <td>{transaction.amount}</td>
-              <td>{transaction.type}</td>
-              <td>{transaction.category}</td>
-              <td>{transaction.date}</td>
-              <td>{transaction.recurring ? 'Yes' : 'No'}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
       <form>
         <label>
           Description:
           <input type="text" value={newDescription} onChange={(e) => setNewDescription(e.target.value)} />
         </label>
+        <br />
         <label>
           Amount:
           <input type="number" value={newAmount} onChange={(e) => setNewAmount(Number(e.target.value))} />
         </label>
+        <br />
         <label>
           Type:
           <select value={newType} onChange={(e) => setNewType(e.target.value as TransactionType)}>
@@ -199,20 +176,31 @@ function App() {
             <option value="expense">Expense</option>
           </select>
         </label>
+        <br />
         <label>
           Category:
           <input type="text" value={newCategory} onChange={(e) => setNewCategory(e.target.value)} />
         </label>
+        <br />
         <label>
           Date:
           <input type="date" value={newDate} onChange={(e) => setNewDate(e.target.value)} />
         </label>
+        <br />
         <label>
           Recurring:
           <input type="checkbox" checked={newRecurring} onChange={(e) => setNewRecurring(e.target.checked)} />
         </label>
+        <br />
         <button type="button" onClick={handleAddTransaction}>Add Transaction</button>
       </form>
+      <ul>
+        {transactions.map((transaction) => (
+          <li key={transaction.id}>
+            {transaction.description} - {transaction.amount} - {transaction.type} - {transaction.category} - {transaction.date} - {transaction.recurring ? 'Recurring' : 'Non-Recurring'}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
