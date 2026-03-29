@@ -157,10 +157,6 @@ img[lazy].loaded {
   border-radius: 3px;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #aaa;
-}
-
 @media (max-width: 768px) {
   body {
     font-size: var(--mobile-font-size);
