@@ -18,6 +18,8 @@ import {
   RefreshCw,
 } from "lucide-react";
 
+import * as tf from '@tensorflow/tfjs';
+
 type TransactionType = "income" | "expense";
 
 interface Transaction {
@@ -84,87 +86,91 @@ interface MlModel {
 }
 
 class AdvancedMlModel {
-  private incomeModel: any;
-  private expenseModel: any;
+  private incomeModel: tf.Sequential;
+  private expenseModel: tf.Sequential;
 
   constructor(transactions: Transaction[]) {
     this.incomeModel = this.trainModel(CATEGORIES_INCOME, transactions.filter(t => t.type === 'income'));
     this.expenseModel = this.trainModel(CATEGORIES_EXPENSE, transactions.filter(t => t.type === 'expense'));
   }
 
-  private trainModel(categories: string[], transactions: Transaction[]): any {
-    const model: any = {};
-    categories.forEach(category => {
-      model[category] = transactions.filter(t => t.category === category).map(t => t.amount);
+  private trainModel(categories: string[], transactions: Transaction[]): tf.Sequential {
+    const xs: number[][] = [];
+    const ys: number[][] = [];
+
+    transactions.forEach(t => {
+      const categoryIndex = categories.indexOf(t.category);
+      const amount = t.amount;
+      xs.push([amount]);
+      ys.push([categoryIndex]);
     });
+
+    const xTensor = tf.tensor2d(xs, [xs.length, 1]);
+    const yTensor = tf.tensor2d(ys, [ys.length, 1]);
+
+    const model = tf.sequential();
+    model.add(tf.layers.dense({ units: 10, activation: 'relu', inputShape: [1] }));
+    model.add(tf.layers.dense({ units: categories.length, activation: 'softmax' }));
+    model.compile({ optimizer: tf.optimizers.adam(), loss: 'meanSquaredError' });
+
+    model.fit(xTensor, yTensor, { epochs: 100 });
+
     return model;
   }
 
-  public predict(transactions: Transaction[]): { income: number, expense: number } {
-    const incomePrediction = this.predictIncome(transactions.filter(t => t.type === 'income'));
-    const expensePrediction = this.predictExpense(transactions.filter(t => t.type === 'expense'));
-    return { income: incomePrediction, expense: expensePrediction };
-  }
+  predict(transaction: Transaction): string {
+    const amount = transaction.amount;
+    const xTensor = tf.tensor2d([[amount]], [1, 1]);
 
-  private predictIncome(transactions: Transaction[]): number {
-    const amounts = transactions.map(t => t.amount);
-    const average = amounts.reduce((a, b) => a + b, 0) / amounts.length;
-    return average;
-  }
-
-  private predictExpense(transactions: Transaction[]): number {
-    const amounts = transactions.map(t => t.amount);
-    const average = amounts.reduce((a, b) => a + b, 0) / amounts.length;
-    return average;
+    if (transaction.type === 'income') {
+      const prediction = this.incomeModel.predict(xTensor);
+      const categoryIndex = prediction.argMax(1).dataSync()[0];
+      return CATEGORIES_INCOME[categoryIndex];
+    } else {
+      const prediction = this.expenseModel.predict(xTensor);
+      const categoryIndex = prediction.argMax(1).dataSync()[0];
+      return CATEGORIES_EXPENSE[categoryIndex];
+    }
   }
 }
 
 function App() {
   const [transactions, setTransactions] = useState<Transaction[]>(getStoredTransactions());
-  const [mlModel, setMlModel] = useState<AdvancedMlModel | null>(null);
 
   useEffect(() => {
-    if (transactions.length > 0) {
-      const model = new AdvancedMlModel(transactions);
-      setMlModel(model);
-    }
+    saveTransactions(transactions);
   }, [transactions]);
 
+  const mlModel = new AdvancedMlModel(transactions);
+
   const handleAddTransaction = (transaction: Transaction) => {
-    const newTransactions = [...transactions, transaction];
-    setTransactions(newTransactions);
-    saveTransactions(newTransactions);
+    setTransactions([...transactions, transaction]);
   };
 
   const handleRemoveTransaction = (id: string) => {
-    const newTransactions = transactions.filter(t => t.id !== id);
-    setTransactions(newTransactions);
-    saveTransactions(newTransactions);
+    setTransactions(transactions.filter(t => t.id !== id));
   };
 
-  const handlePredict = () => {
-    if (mlModel) {
-      const prediction = mlModel.predict(transactions);
-      console.log(`Predicted income: ${prediction.income}, Predicted expense: ${prediction.expense}`);
-    }
+  const handlePredictCategory = (transaction: Transaction) => {
+    const predictedCategory = mlModel.predict(transaction);
+    console.log(`Predicted category: ${predictedCategory}`);
   };
 
   return (
     <div>
       <h1>Automated Cash Flow Forecasting</h1>
-      <button onClick={handlePredict}>Predict</button>
       <ul>
-        {transactions.map(transaction => (
-          <li key={transaction.id}>
-            <span>{transaction.description}</span>
-            <span>{transaction.amount}</span>
-            <span>{transaction.category}</span>
-            <span>{transaction.date}</span>
-            <button onClick={() => handleRemoveTransaction(transaction.id)}>Remove</button>
+        {transactions.map(t => (
+          <li key={t.id}>
+            <span>{t.description}</span>
+            <span>{t.amount}</span>
+            <span>{t.category}</span>
+            <button onClick={() => handleRemoveTransaction(t.id)}>Remove</button>
+            <button onClick={() => handlePredictCategory(t)}>Predict Category</button>
           </li>
         ))}
       </ul>
-      <button onClick={() => handleAddTransaction({ id: Math.random().toString(), description: 'New transaction', amount: 100, type: 'income', category: 'Freelance / Contract', date: new Date().toISOString().split('T')[0], recurring: true })}>Add transaction</button>
+      <button onClick={() => handleAddTransaction({ id: 'new', description: 'New transaction', amount: 100, type: 'income', category: 'Freelance / Contract', date: new Date().toISOString().split("T")[0], recurring: true })}>Add Transaction</button>
     </div>
   );
 }

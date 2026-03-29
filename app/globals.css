@@ -154,7 +154,7 @@ img[lazy].loaded {
 
 ::-webkit-scrollbar-thumb {
   background: #ccc;
-  border-radius: 3px;
+  border-radius: 10px;
 }
 
 @media (max-width: 768px) {
@@ -175,5 +175,6 @@ img[lazy].loaded {
 @media (prefers-reduced-motion: reduce) {
   * {
     transition: none;
+    animation: none;
   }
 }
