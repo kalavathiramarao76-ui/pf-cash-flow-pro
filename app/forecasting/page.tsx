@@ -105,142 +105,214 @@ export default function ForecastingPage() {
     data: [],
   });
 
-  const [chartData, setChartData] = useState([
-    { month: 1, balance: 10000 },
-    { month: 2, balance: 9500 },
-    { month: 3, balance: 9000 },
-    { month: 4, balance: 8500 },
-    { month: 5, balance: 8000 },
-    { month: 6, balance: 7500 },
-  ]);
-
-  const handleMonthSelect = (month: number) => {
-    setSelectedMonth(month);
-  };
-
-  const handleDateRangeChange = (start: number, end: number) => {
-    setDateRange({ start, end });
-  };
-
-  const handleWhatIfScenarioChange = (label: string, amount: string, type: string, frequency: string) => {
-    setWhatIfScenario({ label, amount, type, frequency });
-  };
-
-  const handleWhatIfFormSubmit = () => {
-    const newChartData = chartData.map((dataPoint) => {
-      if (whatIfScenario.type === "income") {
-        return { ...dataPoint, balance: dataPoint.balance + parseInt(whatIfScenario.amount) };
-      } else {
-        return { ...dataPoint, balance: dataPoint.balance - parseInt(whatIfScenario.amount) };
-      }
-    });
-    setWhatIfResults({ data: newChartData });
-  };
-
   return (
-    <div>
-      <h1>Automated Cash Flow Forecasting</h1>
-      <div>
-        <h2>Current Balance: ${currentBalance}</h2>
-        <h2>Horizon: {horizon} months</h2>
-        <h2>Safety Threshold: ${safetyThreshold}</h2>
+    <div className="container mx-auto p-4 pt-6 md:p-6 lg:p-12 xl:p-24">
+      <h1 className="text-3xl font-bold mb-4">Automated Cash Flow Forecasting</h1>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="bg-white p-4 rounded shadow-md">
+          <h2 className="text-xl font-bold mb-2">Current Balance</h2>
+          <p className="text-lg">${currentBalance}</p>
+        </div>
+        <div className="bg-white p-4 rounded shadow-md">
+          <h2 className="text-xl font-bold mb-2">Horizon</h2>
+          <select
+            className="w-full p-2 pl-10 text-lg text-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-600"
+            value={horizon}
+            onChange={(e) => setHorizon(parseInt(e.target.value) as 3 | 6 | 12)}
+          >
+            <option value="3">3 months</option>
+            <option value="6">6 months</option>
+            <option value="12">12 months</option>
+          </select>
+        </div>
+        <div className="bg-white p-4 rounded shadow-md">
+          <h2 className="text-xl font-bold mb-2">Safety Threshold</h2>
+          <input
+            type="number"
+            className="w-full p-2 pl-10 text-lg text-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-600"
+            value={safetyThreshold}
+            onChange={(e) => setSafetyThreshold(e.target.value)}
+          />
+        </div>
       </div>
-      <div>
-        <h2>Recurring Items:</h2>
-        <ul>
+      <div className="mt-4">
+        <h2 className="text-xl font-bold mb-2">Recurring Items</h2>
+        <button
+          className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+          onClick={() => setShowAddForm(true)}
+        >
+          Add New Item
+        </button>
+        {showAddForm && (
+          <div className="bg-white p-4 rounded shadow-md mt-4">
+            <h3 className="text-lg font-bold mb-2">Add New Recurring Item</h3>
+            <form>
+              <div className="mb-4">
+                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="label">
+                  Label
+                </label>
+                <input
+                  type="text"
+                  className="w-full p-2 pl-10 text-lg text-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-600"
+                  id="label"
+                  value={newItem.label}
+                  onChange={(e) => setNewItem({ ...newItem, label: e.target.value })}
+                />
+                {formErrors.label && <p className="text-red-500 text-xs italic">{formErrors.label}</p>}
+              </div>
+              <div className="mb-4">
+                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="amount">
+                  Amount
+                </label>
+                <input
+                  type="number"
+                  className="w-full p-2 pl-10 text-lg text-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-600"
+                  id="amount"
+                  value={newItem.amount}
+                  onChange={(e) => setNewItem({ ...newItem, amount: e.target.value })}
+                />
+                {formErrors.amount && <p className="text-red-500 text-xs italic">{formErrors.amount}</p>}
+              </div>
+              <div className="mb-4">
+                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="type">
+                  Type
+                </label>
+                <select
+                  className="w-full p-2 pl-10 text-lg text-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-600"
+                  id="type"
+                  value={newItem.type}
+                  onChange={(e) => setNewItem({ ...newItem, type: e.target.value as "income" | "expense" })}
+                >
+                  <option value="income">Income</option>
+                  <option value="expense">Expense</option>
+                </select>
+                {formErrors.type && <p className="text-red-500 text-xs italic">{formErrors.type}</p>}
+              </div>
+              <div className="mb-4">
+                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="frequency">
+                  Frequency
+                </label>
+                <select
+                  className="w-full p-2 pl-10 text-lg text-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-600"
+                  id="frequency"
+                  value={newItem.frequency}
+                  onChange={(e) => setNewItem({ ...newItem, frequency: e.target.value as RecurringItem["frequency"] })}
+                >
+                  <option value="monthly">Monthly</option>
+                  <option value="quarterly">Quarterly</option>
+                  <option value="yearly">Yearly</option>
+                </select>
+                {formErrors.frequency && <p className="text-red-500 text-xs italic">{formErrors.frequency}</p>}
+              </div>
+              <button
+                className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+                type="submit"
+              >
+                Add Item
+              </button>
+            </form>
+          </div>
+        )}
+        <ul className="mt-4">
           {recurringItems.map((item) => (
-            <li key={item.id}>
-              {item.label} ({item.type}) - ${getMonthlyEquivalent(item)}
+            <li key={item.id} className="bg-white p-4 rounded shadow-md mb-2">
+              <h3 className="text-lg font-bold mb-2">{item.label}</h3>
+              <p className="text-lg">Amount: ${item.amount}</p>
+              <p className="text-lg">Type: {item.type}</p>
+              <p className="text-lg">Frequency: {item.frequency}</p>
             </li>
           ))}
         </ul>
       </div>
-      <div>
-        <h2>Add New Recurring Item:</h2>
-        {showAddForm ? (
-          <form>
-            <label>
-              Label:
-              <input type="text" value={newItem.label} onChange={(e) => setNewItem({ ...newItem, label: e.target.value })} />
-            </label>
-            <label>
-              Amount:
-              <input type="number" value={newItem.amount} onChange={(e) => setNewItem({ ...newItem, amount: e.target.value })} />
-            </label>
-            <label>
-              Type:
-              <select value={newItem.type} onChange={(e) => setNewItem({ ...newItem, type: e.target.value })}>
-                <option value="income">Income</option>
-                <option value="expense">Expense</option>
-              </select>
-            </label>
-            <label>
-              Frequency:
-              <select value={newItem.frequency} onChange={(e) => setNewItem({ ...newItem, frequency: e.target.value })}>
-                <option value="monthly">Monthly</option>
-                <option value="quarterly">Quarterly</option>
-                <option value="yearly">Yearly</option>
-              </select>
-            </label>
-            <button type="submit">Add</button>
-          </form>
-        ) : (
-          <button onClick={() => setShowAddForm(true)}>Add New Recurring Item</button>
+      <div className="mt-4">
+        <h2 className="text-xl font-bold mb-2">What-If Scenario</h2>
+        <button
+          className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+          onClick={() => setShowWhatIfForm(true)}
+        >
+          Run Scenario
+        </button>
+        {showWhatIfForm && (
+          <div className="bg-white p-4 rounded shadow-md mt-4">
+            <h3 className="text-lg font-bold mb-2">What-If Scenario</h3>
+            <form>
+              <div className="mb-4">
+                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="label">
+                  Label
+                </label>
+                <input
+                  type="text"
+                  className="w-full p-2 pl-10 text-lg text-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-600"
+                  id="label"
+                  value={whatIfScenario.label}
+                  onChange={(e) => setWhatIfScenario({ ...whatIfScenario, label: e.target.value })}
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="amount">
+                  Amount
+                </label>
+                <input
+                  type="number"
+                  className="w-full p-2 pl-10 text-lg text-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-600"
+                  id="amount"
+                  value={whatIfScenario.amount}
+                  onChange={(e) => setWhatIfScenario({ ...whatIfScenario, amount: e.target.value })}
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="type">
+                  Type
+                </label>
+                <select
+                  className="w-full p-2 pl-10 text-lg text-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-600"
+                  id="type"
+                  value={whatIfScenario.type}
+                  onChange={(e) => setWhatIfScenario({ ...whatIfScenario, type: e.target.value as "income" | "expense" })}
+                >
+                  <option value="income">Income</option>
+                  <option value="expense">Expense</option>
+                </select>
+              </div>
+              <div className="mb-4">
+                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="frequency">
+                  Frequency
+                </label>
+                <select
+                  className="w-full p-2 pl-10 text-lg text-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-600"
+                  id="frequency"
+                  value={whatIfScenario.frequency}
+                  onChange={(e) => setWhatIfScenario({ ...whatIfScenario, frequency: e.target.value as RecurringItem["frequency"] })}
+                >
+                  <option value="monthly">Monthly</option>
+                  <option value="quarterly">Quarterly</option>
+                  <option value="yearly">Yearly</option>
+                </select>
+              </div>
+              <button
+                className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+                type="submit"
+              >
+                Run Scenario
+              </button>
+            </form>
+          </div>
         )}
-      </div>
-      <div>
-        <h2>What-If Scenario:</h2>
-        {showWhatIfForm ? (
-          <form>
-            <label>
-              Label:
-              <input type="text" value={whatIfScenario.label} onChange={(e) => setWhatIfScenario({ ...whatIfScenario, label: e.target.value })} />
-            </label>
-            <label>
-              Amount:
-              <input type="number" value={whatIfScenario.amount} onChange={(e) => setWhatIfScenario({ ...whatIfScenario, amount: e.target.value })} />
-            </label>
-            <label>
-              Type:
-              <select value={whatIfScenario.type} onChange={(e) => setWhatIfScenario({ ...whatIfScenario, type: e.target.value })}>
-                <option value="income">Income</option>
-                <option value="expense">Expense</option>
-              </select>
-            </label>
-            <label>
-              Frequency:
-              <select value={whatIfScenario.frequency} onChange={(e) => setWhatIfScenario({ ...whatIfScenario, frequency: e.target.value })}>
-                <option value="monthly">Monthly</option>
-                <option value="quarterly">Quarterly</option>
-                <option value="yearly">Yearly</option>
-              </select>
-            </label>
-            <button type="submit" onClick={handleWhatIfFormSubmit}>Run Scenario</button>
-          </form>
-        ) : (
-          <button onClick={() => setShowWhatIfForm(true)}>Run What-If Scenario</button>
+        {whatIfResults.data.length > 0 && (
+          <div className="bg-white p-4 rounded shadow-md mt-4">
+            <h3 className="text-lg font-bold mb-2">Scenario Results</h3>
+            <ul>
+              {whatIfResults.data.map((result, index) => (
+                <li key={index} className="bg-gray-100 p-4 rounded shadow-md mb-2">
+                  <h4 className="text-lg font-bold mb-2">Month {index + 1}</h4>
+                  <p className="text-lg">Balance: ${result.balance}</p>
+                  <p className="text-lg">Income: ${result.income}</p>
+                  <p className="text-lg">Expenses: ${result.expenses}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
         )}
-      </div>
-      <div>
-        <h2>Forecast Chart:</h2>
-        <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="month" />
-            <YAxis dataKey="balance" />
-            <Tooltip />
-            <Legend />
-            <Line type="monotone" dataKey="balance" stroke="#8884d8" />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
-      <div>
-        <h2>Interactive Line Chart:</h2>
-        <InteractiveLineChart data={chartData} handleMonthSelect={handleMonthSelect} handleDateRangeChange={handleDateRangeChange} />
-      </div>
-      <div>
-        <h2>Scenario Planning Tool:</h2>
-        <ScenarioPlanningTool data={whatIfResults.data} />
       </div>
     </div>
   );

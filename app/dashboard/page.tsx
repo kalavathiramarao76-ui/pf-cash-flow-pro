@@ -96,108 +96,57 @@ class AdvancedMlModel {
 
   private trainModel(categories: string[], transactions: Transaction[]): tf.Sequential {
     const model = tf.sequential();
-    model.add(tf.layers.embedding({ inputDim: categories.length, outputDim: 10, inputLength: 1 }));
-    model.add(tf.layers.flatten());
+    model.add(tf.layers.dense({ units: 10, activation: 'relu', inputShape: [1] }));
     model.add(tf.layers.dense({ units: categories.length, activation: 'softmax' }));
     model.compile({ optimizer: tf.optimizers.adam(), loss: 'categoricalCrossentropy', metrics: ['accuracy'] });
 
-    const descriptions = transactions.map(t => t.description);
-    const labels = transactions.map(t => categories.indexOf(t.category));
+    const xs = transactions.map(t => [t.amount]);
+    const ys = transactions.map(t => categories.indexOf(t.category));
 
-    const xs = tf.tensor1d(descriptions.map(d => categories.indexOf(d)), 'int32');
-    const ys = tf.tensor1d(labels, 'int32');
+    const xsTensor = tf.tensor2d(xs, [xs.length, 1]);
+    const ysTensor = tf.tensor2d(ys.map(y => {
+      const arr = new Array(categories.length).fill(0);
+      arr[y] = 1;
+      return arr;
+    }), [ys.length, categories.length]);
 
-    model.fit(xs, ys, { epochs: 100 });
+    model.fit(xsTensor, ysTensor, { epochs: 100 });
 
     return model;
   }
 
-  public categorize(description: string, type: TransactionType): string {
-    const categories = type === 'income' ? CATEGORIES_INCOME : CATEGORIES_EXPENSE;
-    const xs = tf.tensor1d([categories.indexOf(description)], 'int32');
-    const prediction = this.incomeModel.predict(xs);
+  public categorize(transaction: Transaction): string {
+    const xsTensor = tf.tensor2d([[transaction.amount]], [1, 1]);
+    const prediction = this[transaction.type === 'income' ? 'incomeModel' : 'expenseModel'].predict(xsTensor);
     const categoryIndex = prediction.argMax(1).dataSync()[0];
-    return categories[categoryIndex];
+    return transaction.type === 'income' ? CATEGORIES_INCOME[categoryIndex] : CATEGORIES_EXPENSE[categoryIndex];
   }
 }
 
 function App() {
   const [transactions, setTransactions] = useState(getStoredTransactions());
-  const [newDescription, setNewDescription] = useState('');
-  const [newAmount, setNewAmount] = useState(0);
-  const [newType, setNewType] = useState('income' as TransactionType);
-  const [newCategory, setNewCategory] = useState('');
-  const [newDate, setNewDate] = useState('');
-  const [newRecurring, setNewRecurring] = useState(false);
-
-  const mlModel = new AdvancedMlModel(transactions);
 
   useEffect(() => {
     saveTransactions(transactions);
   }, [transactions]);
 
-  const handleAddTransaction = () => {
-    const newTransaction: Transaction = {
-      id: Date.now().toString(),
-      description: newDescription,
-      amount: newAmount,
-      type: newType,
-      category: newCategory || mlModel.categorize(newDescription, newType),
-      date: newDate,
-      recurring: newRecurring,
-    };
-    setTransactions([...transactions, newTransaction]);
-    setNewDescription('');
-    setNewAmount(0);
-    setNewType('income');
-    setNewCategory('');
-    setNewDate('');
-    setNewRecurring(false);
+  const mlModel = new AdvancedMlModel(transactions);
+
+  const handleAddTransaction = (transaction: Transaction) => {
+    const categorizedTransaction = { ...transaction, category: mlModel.categorize(transaction) };
+    setTransactions([...transactions, categorizedTransaction]);
   };
 
   return (
     <div>
       <h1>Automated Cash Flow Forecasting</h1>
-      <form>
-        <label>
-          Description:
-          <input type="text" value={newDescription} onChange={(e) => setNewDescription(e.target.value)} />
-        </label>
-        <br />
-        <label>
-          Amount:
-          <input type="number" value={newAmount} onChange={(e) => setNewAmount(Number(e.target.value))} />
-        </label>
-        <br />
-        <label>
-          Type:
-          <select value={newType} onChange={(e) => setNewType(e.target.value as TransactionType)}>
-            <option value="income">Income</option>
-            <option value="expense">Expense</option>
-          </select>
-        </label>
-        <br />
-        <label>
-          Category:
-          <input type="text" value={newCategory} onChange={(e) => setNewCategory(e.target.value)} />
-        </label>
-        <br />
-        <label>
-          Date:
-          <input type="date" value={newDate} onChange={(e) => setNewDate(e.target.value)} />
-        </label>
-        <br />
-        <label>
-          Recurring:
-          <input type="checkbox" checked={newRecurring} onChange={(e) => setNewRecurring(e.target.checked)} />
-        </label>
-        <br />
-        <button type="button" onClick={handleAddTransaction}>Add Transaction</button>
-      </form>
+      <button onClick={() => handleAddTransaction({ id: Date.now().toString(), description: 'New Transaction', amount: 100, type: 'income', date: new Date().toISOString().split("T")[0], recurring: false })}>
+        Add Transaction
+      </button>
       <ul>
-        {transactions.map((transaction) => (
+        {transactions.map(transaction => (
           <li key={transaction.id}>
-            {transaction.description} - {transaction.amount} - {transaction.type} - {transaction.category} - {transaction.date} - {transaction.recurring ? 'Recurring' : 'Non-Recurring'}
+            {transaction.description} - {transaction.amount} - {transaction.category}
           </li>
         ))}
       </ul>
